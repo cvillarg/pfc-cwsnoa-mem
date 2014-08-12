@@ -76,7 +76,7 @@ TeXiS/TeXiS_pream,TeXiS/TeXiS_cab,TeXiS/TeXiS_bib,TeXiS/TeXiS_cover,%
 TeXiS/TeXiS_part%
 }
 \newcommand{\ficherosBasicosTexto}{%
-constantes,guionado,Cascaras/bibliografia,config%
+constantes,guionado,Cascaras/bibliografia,config,shortcuts%
 }
 \newcommand{\compilaCapitulo}[1]{%
 \includeonly{\ficherosBasicosTeXiS,\ficherosBasicosTexto,Capitulos/#1}%
@@ -94,6 +94,8 @@ constantes,guionado,Cascaras/bibliografia,config%
 % definiciones  de  constantes que  cambian  el  comportamiento de  la
 % compilación. Debe incluirse antes del paquete TeXiS/TeXiS.sty
 \include{config}
+
+\include{shortcuts}
 
 % Paquete de la plantilla
 \usepackage{TeXiS/TeXiS}
@@ -142,8 +144,6 @@ constantes,guionado,Cascaras/bibliografia,config%
 
 \include{Cascaras/resumenEs}
 
-%\include{Cascaras/resumenEn}
-
 \include{Cascaras/dedicatoria}
 
 \include{Cascaras/agradecimientos}
@@ -161,6 +161,7 @@ constantes,guionado,Cascaras/bibliografia,config%
 \include{Capitulos/01Introduction}
 %\include{Capitulos/02State}
 %\include{Capitulos/03Work}
+\include{Capitulos/04Design}
 %\include{Capitulos/04Results}
 %\include{Capitulos/05Conclusions}
 

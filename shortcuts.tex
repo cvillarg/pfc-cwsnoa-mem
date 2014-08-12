@@ -1,0 +1,58 @@
+%---------------------------------------------------------------------
+%
+%                          shortcuts.tex
+%
+%---------------------------------------------------------------------
+%
+% Fichero que  declara nuevos comandos LaTeX para evitar la repetición de
+% texto y centralizar funcionalidad
+%
+%---------------------------------------------------------------------
+
+\def\android{\emph{Android}}
+\def\nc{\small{No usado/indiferente}}
+\def\messApp{Messenger de la aplicaci\'{o}n}
+\def\bt{\emph{Bluetooth}}
+\def\wifi{\emph{WiFi}}
+\def\integer{entero}
+\def\double{\emph{double}}
+\def\String{\emph{cadena de car\'{a}cteres}}
+
+%-------------------------
+% Tabla: estructura mensaje android
+%	_init: iniciliza tabla e incluye los campos del mensaje
+%	_extra: fila extras incluye un par de valores
+%	_extraAddrow: fila adicional
+%	_end: finaliza la tabla y e introduce caption y label
+%-------------------------
+\providecommand{\messageTableInit}[5]{%
+\begin{table}[h]%
+\begin{center}
+	\begin{tabular}{|m{3.5cm}|m{2.5cm}|m{2.5cm}|m{2.5cm}|m{2.5cm}|}%
+	\hline%
+	\multicolumn{5}{c}{\textbf{Campos mensaje}} \\%
+	\hline%
+	\emph{What} & \emph{arg1} & \emph{arg2} & \emph{obj} & \emph{replyTo} \\%
+	\hline%
+	\parbox[t]{3.5cm}{#1} & #2 & #3 & #4 & #5 \\%
+	\hline%
+}
+\providecommand{\messageTableExtra}[2]{
+	\multicolumn{5}{l}{Extras}\\%
+	\hline%
+	\emph{key} & \multicolumn{4}{l|}{\emph{value}}\\%
+	\hline%
+     	#1 & \multicolumn{4}{l|}{#2}\\%
+	\hline%
+}
+\providecommand{\messageTableExtraAddrow}[2]{
+	#1 & \multicolumn{4}{l|}{#2}\\%
+	\hline%
+}
+\providecommand{\messageTableEnd}[2]{       
+	\end{tabular}%
+	\caption{#1} \label{tab:#2}
+\end{center} 
+\end{table}%
+}
+%-------------------------

@@ -1,0 +1,165 @@
+%---------------------------------------------------------------------
+%
+%                          Capítulo 4
+%
+%---------------------------------------------------------------------
+
+\chapter{Diseño}
+
+\begin{resumen}
+Contar que es una arquitectura modular y comparación con una arquitectura cognitiva.
+\end{resumen}
+
+
+%-------------------------------------------------------------------
+\section{Arquitectura cognitiva}
+%-------------------------------------------------------------------
+\label{sec:arquitecturaCognitiva}
+
+Explicación de los diferentes bloques de una arquitectura cognitiva: Repositorio, ejecutor, optimizador....
+                                                                                      
+%-------------------------------------------------------------------
+\section{Arquitectura implementada}
+%-------------------------------------------------------------------
+\label{sec:arquitecturaImplementada}
+
+Características de nuestra arquitectura: modular, homogénea, escalable (hasta 7 nodos) lo que le hace especialmente compatible a cambios en el futuro ya que los procesos están fuertemente marcados e independientes.
+\subsection{Comparación ambas arquitecturas}
+\label{sec:comparacionArquitecturas}
+Clasificar nuestros metodos en los bloques de una arquitectura cognitiva.
+
+%-------------------------------------------------------------------
+\section{Detalles de implementación}
+%-------------------------------------------------------------------
+\label{sec:detallesImplementacion}
+
+Servicio vs activity.... multi app...
+
+%-------------------------------------------------------------------
+\section{Cómo montar una aplicación sobre el servicio cognitivo, definición de la API}
+%-------------------------------------------------------------------
+\label{sec:api}
+
+Tipos de mensajes que se intercambian, y como tienen que ir rellenos estos.
+
+%-------------------------------------------------------------------
+\section{Procesos de red}
+%-------------------------------------------------------------------
+\label{sec:procesosRed}
+
+\comp{Relatar los diferentes procesos que ocurren en el servicio, quién los dispara y como se transmiten al resto de nodos y las apps que estén montadas}
+%..........
+\subsection{Registro de una aplicación en el servicio cognitivo}
+Para que una aplicación pueda registrarse de forma correcta en el servicio debe cumplir un cierto \emph{handshaking} consistente en el intercambio de tres mensajes, el primero servirá para que el servicio nos tenga en cuenta, el segundo para informarle de nuestros parámetros de aplicación y el tercero será una confirmación del servicio hacia la aplicación informando de todos los parámetros del servicio respecto a nuestra aplicación.
+
+Tras la petición de \emph{bind}, que inicializará el servicio si no estuviese arracando ya, obtendremos el \emph{Messenger} del servicio, indispensable para poder comunicarnos con él. Tras esto debemos mandar un primer mensaje para registrar nuestra aplicación en el servicio, donde éste, registrará nuestro messenger para habilitar la comunicación en sentido contrario y nos incluirá en su lista de aplicaciones registradas. Los detalles de este mensaje son:\\
+
+\messageTableInit{1 =\\ \footnotesize{REGISTER\_CLIENT}}{\nc{}}{\nc{}}{\nc{}}{\messApp{}}
+\messageTableEnd{Mensaje registro cliente}{registerClientMenssage}
+
+En el siguiente mensaje que debemos enviar, informaremos acerca de nuestros parámetros de aplicación como es: nuestro papel, un entero cuyo valor 0 corresponde a papel secundario y el valor 1 corresponde al papel primario y nuestro código de aplicación, útil para que el servicio nos entregue sólo los mensajes que nos atañen.
+
+\messageTableInit{3 =\\ \scriptsize{REGISTER\_EXCHANGE}}{0=secundario / 1=primario}{\nc}{\nc}{\messApp{}}
+\messageTableExtra{appCode}{Una string con el código de aplicación}
+\messageTableEnd{Mensaje intercambio parámetros aplicación}{registerExchangeMessage}
+
+Este mensaje ha sido separado del anterior para poder reutilizarlo e introducirlo en el flujo descrito en \ref{subsec:updateSettings}. Con esta información el servicio dependiendo del punto en que se encuentre actuará de una forma u otra.
+
+%..........
+\subsubsection{Punto de partida inicial, CWSN no establecida}
+Esta situación, (la más común) es cuando nuestra petición de \emph{bind} ha arrancado el servicio y por lo tanto estamos en una situación inicial o hay aplicaciones ya montadas sobre el servicio pero no hay conectividad con otros nodos, en otras palabras, estamos solos en la red. (Hay otra forma de llegar a esta situación que veremos en \ref{subsec:updateSettings}, que no explicamos ahora para no enmarañar el texto). 
+
+En esta situación, configuraremos de nuevo la interfaz, actualizaremos los parámetros pasados en el anterior mensaje y lanzaremos nuevamente los procesos de registro en la red para intentar establecer una CWSN. Al finalizar éstos, el servicio nos devolverá (a todas las aplicaciones montadas) información acerca de todos los parámetros y el estado actual de la red. A saber:
+
+\begin{description}
+\label{itm:serviceParamsToAll}
+  \item[Estado de la interfaz] Un \integer{} que representa el estado de la interfaz 0 = Down, 1 = Idle (no en red), 2 = Idle (en red), 3 = conectando (estado visto sólo en \bt{}), 4 = Enviando, 5 = Reciviendo.
+  \item[Interfaz] Un \integer{}  cuyo valor 0 representa a \bt{}, el valor 1 representa a \wifi{} y -1 representa a una inerfaz desconicida (útil para casos de error y cambios de contexto)
+	\item[Papel del nodo] Un \integer{} cuyo valor 0 = secundario y 1 = primario
+	\item[Tipo de nodo] Un \integer{} cuyo valor 0 = normal, 1 = coordinador y 2 = coordinador temporal en \bt{} (no usado en estos momentos)
+	\item[Periodo tarea cognitiva] Un \double{}  que representa los segundos que transcurren entre ejecuciones de la tarea cognitiva
+	\item[Nombre del nodo en la red] Una \String{}  con el nombre del nodo en la red
+\end{description}
+
+El detalle del mensaje, queda:
+
+\messageTableInit{3\\ \scriptsize{REGISTER\_EXCHANGE}}{Estado de la interfaz}{Interfaz}{\textbf{False}}{\nc{}}
+\messageTableExtra{nodeRole}{Papel del nodo}
+\messageTableExtraAddrow{nodeType}{Tipo de nodo}
+\messageTableExtraAddrow{periodTask}{Periodo tarea cognitiva}
+\messageTableExtraAddrow{nodeName}{Nombre del nodo en la red}
+\messageTableEnd{Mensaje finalización de \emph{handshaking}: CWSN no establecida}{endHandshakingNotCWSNMessage}
+
+%..........
+\subsubsection{CWSN previamente configurada}
+Puede darse el caso que en este punto del proceso, ya haya aplicaciones montadas sobre el servicio y estén cooperando en una CWSN, en este caso el servicio no tiene que configurar nada y se delimita a ver si satisfacer las necesidades que le acaba de transmitir la nueva aplicación que acaba de registrar, es decir, cambiará el papel del nodo a primario si este era secundario, un cambio en sentido contrario será ignorado. Una vez hecho esto nos devolverá (en exclusiva) los parámetros del servicio (ver lista página~ \pageref{itm:serviceParamsToAll}) más estos que listamos a continuación: 
+
+\begin{description}
+  \item[Cógigo de la aplicación] Un \String{} que representa el código de la aplicación
+	\item[Lista nodos] TODO TODO TODO en el código
+\end{description}
+
+El detalle del mensaje queda \footnote{Notar que el campo del mensaje \emph{obj} viene informado con el valor booleano \emph{True} lo que nos ayuda a distinguir si previamente el servicio ya cooperaba en una red, a parte que esta respuesta es casi inmediata, a diferencia de la anterior.}:
+
+\messageTableInit{3\\ \scriptsize{REGISTER\_EXCHANGE}}{Estado de la interfaz}{Interfaz}{\textbf{True}}{\nc{}}
+\messageTableExtra{nodeRole}{Papel del nodo}
+\messageTableExtraAddrow{nodeType}{Tipo de nodo}
+\messageTableExtraAddrow{periodTask}{Periodo tarea cognitiva}
+\messageTableExtraAddrow{nodeName}{Nombre del nodo en la red}
+\messageTableExtraAddrow{codeName}{Código de la aplicación}
+\messageTableExtraAddrow{nodeNamesList}{Array de \String{} con los nombres de los nodos}
+\messageTableExtraAddrow{nodeIdsList}{Array de \integer{}s con los identificadores de los nodos}
+\messageTableEnd{Mensaje finalización de \emph{handshaking}: CWSN establecida}{endHandshakingInCWSNMessage}
+
+%..........
+\subsection{Configuración de la interfaz de comunicación}
+\subsubsection{WiFi}
+\subsubsection{Bluetooth}
+
+\subsection{Registro de un nodo en la red}
+
+\subsection{Salida de un nodo de la red}
+\subsubsection{WiFi}
+voluntaria / no voluntaria
+\subsubsection{Bluetooth}
+voluntaria = no voluntaria
+
+\subsection{Actualización de parámetros en la red}
+\label{subsec:updateSettings}
+Hablar que en wifi con la entrada se actualizan y en bt no.
+
+\subsection{Intercambio de mensajes}
+
+\subsection{Sensado del entorno}
+
+\subsection{Cambios de contexto}
+\subsubsection{Cambio de contexto con interfaz destino WiFi}
+\subsubsection{Cambio de contexto con interfaz destino Bluetooth}
+%-------------------------------------------------------------------
+%\section*{\NotasBibliograficas}
+%-------------------------------------------------------------------
+%\TocNotasBibliograficas
+
+%Citamos algo para que aparezca en la bibliografía\ldots
+%\citep{ldesc2e}
+
+%\medskip
+
+%Y también ponemos el acrónimo \ac{CVS} para que no cruja.
+
+%Ten en cuenta que si no quieres acrónimos (o no quieres que te falle la compilación en ``release'' mientras no tengas ninguno) basta con que no definas la constante \verb+\acronimosEnRelease+ (en \texttt{config.tex}).
+
+
+%-------------------------------------------------------------------
+%\section*{\ProximoCapitulo}
+%-------------------------------------------------------------------
+%\TocProximoCapitulo
+
+
+% Variable local para emacs, para  que encuentre el fichero maestro de
+% compilación y funcionen mejor algunas teclas rápidas de AucTeX
+%%%
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "../Tesis.tex"
+%%% End:
