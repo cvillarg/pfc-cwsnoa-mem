@@ -17,6 +17,18 @@
 \def\integer{entero}
 \def\double{\emph{double}}
 \def\String{\emph{cadena de car\'{a}cteres}}
+\def\false{\emph{false}}
+\def\true{\emph{true}}
+
+%---------------from---to-----------------------
+\def\servToApp{desde el servicio a la aplicaci\'{o}n}
+\def\servToApps{desde el servicio a todas las aplicaciones}
+\def\appToServ{desde la aplicaci\'{o}n al servicio}
+\def\servToBt{desde el servicio al controlador de \bt}
+\def\btToServ{desde el controlador de \bt al servicio}
+\def\servToWifi{desde el servicio al controlador de \wifi}
+\def\wifiToServ{desde el controlador de \wifi al servicio}
+%---------------from---to-----------------------
 
 %-------------------------
 % Tabla: estructura mensaje android
@@ -25,16 +37,16 @@
 %	_extraAddrow: fila adicional
 %	_end: finaliza la tabla y e introduce caption y label
 %-------------------------
-\providecommand{\messageTableInit}[5]{%
+\providecommand{\messageTableInit}[6]{%
 \begin{table}[h]%
 \begin{center}
-	\begin{tabular}{|m{3.5cm}|m{2.5cm}|m{2.5cm}|m{2.5cm}|m{2.5cm}|}%
+	\begin{tabular}{|m{3.4cm}|m{2.3cm}|m{2.3cm}|m{2.3cm}|m{2.3cm}|}%
 	\hline%
-	\multicolumn{5}{c}{\textbf{Campos mensaje}} \\%
+	\multicolumn{5}{c}{\textbf{Campos mensaje #1}} \\%
 	\hline%
 	\emph{What} & \emph{arg1} & \emph{arg2} & \emph{obj} & \emph{replyTo} \\%
 	\hline%
-	\parbox[t]{3.5cm}{#1} & #2 & #3 & #4 & #5 \\%
+	\parbox[t]{3.4cm}{#2} & #3 & #4 & #5 & #6 \\%
 	\hline%
 }
 \providecommand{\messageTableExtra}[2]{

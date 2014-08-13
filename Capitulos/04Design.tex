@@ -54,12 +54,12 @@ Para que una aplicación pueda registrarse de forma correcta en el servicio debe 
 
 Tras la petición de \emph{bind}, que inicializará el servicio si no estuviese arracando ya, obtendremos el \emph{Messenger} del servicio, indispensable para poder comunicarnos con él. Tras esto debemos mandar un primer mensaje para registrar nuestra aplicación en el servicio, donde éste, registrará nuestro messenger para habilitar la comunicación en sentido contrario y nos incluirá en su lista de aplicaciones registradas. Los detalles de este mensaje son:\\
 
-\messageTableInit{1 =\\ \footnotesize{REGISTER\_CLIENT}}{\nc{}}{\nc{}}{\nc{}}{\messApp{}}
+\messageTableInit{\appToServ}{1 =\\ \footnotesize{REGISTER\_CLIENT}}{\nc{}}{\nc{}}{\nc{}}{\messApp{}}
 \messageTableEnd{Mensaje registro cliente}{registerClientMenssage}
 
 En el siguiente mensaje que debemos enviar, informaremos acerca de nuestros parámetros de aplicación como es: nuestro papel, un entero cuyo valor 0 corresponde a papel secundario y el valor 1 corresponde al papel primario y nuestro código de aplicación, útil para que el servicio nos entregue sólo los mensajes que nos atañen.
 
-\messageTableInit{3 =\\ \scriptsize{REGISTER\_EXCHANGE}}{0=secundario / 1=primario}{\nc}{\nc}{\messApp{}}
+\messageTableInit{\appToServ}{3 =\\ \scriptsize{REGISTER\_EXCHANGE}}{0=secundario / 1=primario}{\nc}{\nc}{\messApp{}}
 \messageTableExtra{appCode}{Una string con el código de aplicación}
 \messageTableEnd{Mensaje intercambio parámetros aplicación}{registerExchangeMessage}
 
@@ -79,20 +79,22 @@ En esta situación, configuraremos de nuevo la interfaz, actualizaremos los parám
 	\item[Tipo de nodo] Un \integer{} cuyo valor 0 = normal, 1 = coordinador y 2 = coordinador temporal en \bt{} (no usado en estos momentos)
 	\item[Periodo tarea cognitiva] Un \double{}  que representa los segundos que transcurren entre ejecuciones de la tarea cognitiva
 	\item[Nombre del nodo en la red] Una \String{}  con el nombre del nodo en la red
+	\item[Resultado configuración interfaz] Un valor booleano con el resutado de configurar la interfaz de comunicación de forma correcta
 \end{description}
 
 El detalle del mensaje, queda:
 
-\messageTableInit{3\\ \scriptsize{REGISTER\_EXCHANGE}}{Estado de la interfaz}{Interfaz}{\textbf{False}}{\nc{}}
+\messageTableInit{\servToApps}{3\\ \scriptsize{REGISTER\_EXCHANGE}}{Estado de la interfaz}{Interfaz}{\textbf{False}}{\nc{}}
 \messageTableExtra{nodeRole}{Papel del nodo}
 \messageTableExtraAddrow{nodeType}{Tipo de nodo}
 \messageTableExtraAddrow{periodTask}{Periodo tarea cognitiva}
 \messageTableExtraAddrow{nodeName}{Nombre del nodo en la red}
+\messageTableExtraAddrow{errorSetupInterface}{Resultado configuración interfaz}
 \messageTableEnd{Mensaje finalización de \emph{handshaking}: CWSN no establecida}{endHandshakingNotCWSNMessage}
 
 %..........
-\subsubsection{CWSN previamente configurada}
-Puede darse el caso que en este punto del proceso, ya haya aplicaciones montadas sobre el servicio y estén cooperando en una CWSN, en este caso el servicio no tiene que configurar nada y se delimita a ver si satisfacer las necesidades que le acaba de transmitir la nueva aplicación que acaba de registrar, es decir, cambiará el papel del nodo a primario si este era secundario, un cambio en sentido contrario será ignorado. Una vez hecho esto nos devolverá (en exclusiva) los parámetros del servicio (ver lista página~ \pageref{itm:serviceParamsToAll}) más estos que listamos a continuación: 
+\subsubsection{Punto de partida, CWSN previamente configurada}
+Puede darse el caso que en este punto del proceso, ya haya aplicaciones montadas sobre el servicio y estén cooperando en una CWSN, en este caso el servicio no tiene que configurar nada y se delimita a ver si satisfacer las necesidades que le acaba de transmitir la nueva aplicación que acaba de registrar, es decir, cambiará el papel del nodo a primario si este era secundario, un cambio en sentido contrario será ignorado. Una vez hecho esto nos devolverá (en exclusiva) los parámetros del servicio (ver lista página~ \pageref{itm:serviceParamsToAll}) menos el resultado de configurar la interfaz ya que no ha sido necesaria ninguna configuración pero incluye estos nuevos: 
 
 \begin{description}
   \item[Cógigo de la aplicación] Un \String{} que representa el código de la aplicación
@@ -101,22 +103,53 @@ Puede darse el caso que en este punto del proceso, ya haya aplicaciones montadas
 
 El detalle del mensaje queda \footnote{Notar que el campo del mensaje \emph{obj} viene informado con el valor booleano \emph{True} lo que nos ayuda a distinguir si previamente el servicio ya cooperaba en una red, a parte que esta respuesta es casi inmediata, a diferencia de la anterior.}:
 
-\messageTableInit{3\\ \scriptsize{REGISTER\_EXCHANGE}}{Estado de la interfaz}{Interfaz}{\textbf{True}}{\nc{}}
+\messageTableInit{\servToApp}{3\\ \scriptsize{REGISTER\_EXCHANGE}}{Estado de la interfaz}{Interfaz}{\textbf{True}}{\nc{}}
 \messageTableExtra{nodeRole}{Papel del nodo}
 \messageTableExtraAddrow{nodeType}{Tipo de nodo}
 \messageTableExtraAddrow{periodTask}{Periodo tarea cognitiva}
 \messageTableExtraAddrow{nodeName}{Nombre del nodo en la red}
-\messageTableExtraAddrow{codeName}{Código de la aplicación}
+\messageTableExtraAddrow{appCode}{Código de la aplicación}
 \messageTableExtraAddrow{nodeNamesList}{Array de \String{} con los nombres de los nodos}
 \messageTableExtraAddrow{nodeIdsList}{Array de \integer{}s con los identificadores de los nodos}
 \messageTableEnd{Mensaje finalización de \emph{handshaking}: CWSN establecida}{endHandshakingInCWSNMessage}
 
 %..........
 \subsection{Configuración de la interfaz de comunicación}
-\subsubsection{WiFi}
-\subsubsection{Bluetooth}
+Tras recibir el \emph{handshaking} de registro de la aplicación, el servicio si no se encuentra colaborando en una CWSN, procede a la configuración de una interfaz de comunicación, esta configuración se realiza en una \emph{AsynTask} de \android{} que permite descargar la \emph{UI-Thread} evitando errores del tipo \emph{ANR ``Application Not Responding''} ya parte de la tarea se ejecuta en segundo plano, además este tipo de tarea habilita mecanismos de paso de información entre ambas hebras. Antes de configurar una interfaz pediremos a los controlladores de las otras interfaces que liberen los recursos (llamando a su método \emph{stop}) para  poder partir de una situación deseable.  
+\subsubsection{WiFi: servicio y controlador}
+\begin{codeInvolved}
+\begin{files}
+SetupWifiInterface (asynTask)\\
+WifiController: stop(), start()
+\end{files}
+\end{codeInvolved}
 
+La interfaz \wifi{} permite configurarse en varias modalidades como: Infraestructura, Tethering o Ad-hoc. En la actualidad sólo está implementado el modo infraestructura por los problemas descritos en \ref{sec:analisisWifi}. Una vez lanzada la tarea en segundo plano, lo primero que hacemos es intentar parar las hebras asociadas a la interfaz \wifi{} que cerrarán los \emph{serverSockets} y el \emph{broadcastReceiver} útil para registrarse a eventos de información relativa a la interfaz \wifi{} como son RSSI y los eventos de conexión/desconexión a un punto de acceso. Partiendo de una situación en que todos los recursos están liberados, encendemos la interfaz si no lo estuviese ya, esperamos a que se encienda mediante una espera de consulta a una variable que es modificada por  \emph{StatusReceiver\_wifi.java}, nuestro \emph{broadcastReceiver} para la interfaz \wifi{}. Si nos han pasado como parámetro el SSID, intentamos conectarnos a él desconectándonos del punto de acceso acutual si no fuese el mismo. Esperamos mediante \emph{polling} con límite de tiempo seleccionable desde las preferencias en la sección de \emph{test}. Si agotamos el tiempo y no hemos sido capaces de conectarnos, devolvemos un valor \false{} que provoca el envío de mensaje a todas las aplicaciones del tipo \emph{REGISTER\_EXCHANGE} con el campo EXTRA ``errorSetupInterface'' a \true{}. Si por el contrario nuestro \emph{broadcastReceiver} ha podido capturar la acción de conexión al citado punto de acceso o ya estamos conectados a éste continuamos arrancando las hebras del controllador dependiendo del tipo de nodo que seamos:
+\paragraph{Normal} Arrancamos una hebra que escuche gracias a un \emph{serverSocket} para que acepte conexiones TCP, una vez estemos escuchando en el puerto indicado, enviamos el mensaje de tipo \emph{REGISTER\_EXCHANGE} con el campo EXTRA ``errorSetupInterface'' a \false{} y el resto de campos descritos en la tabla~\ref{tab:endHandshakingNotCWSNMessage} y lanzamos el proceso de registro en la red.
+
+\paragraph{Coordinador} Arrancamos un par de hebras, una para tráfico TCP que admita conexiones fiables y otra para el tráfico UDP que escuche y capture paquetes, si todo se ha configurado bien enviamos un mensaje análogo al párrafo anterior y quedamos a la espera de capturar paquetes.
+
+
+\subsubsection{Bluetooth: servicio y controlador}
+\begin{codeInvolved}
+\begin{files}
+SetupBTinterface (asynTask)\\
+BluetoothController: stop(), start(), connect(), setState()
+\end{files}
+\end{codeInvolved}
+
+Como en el controllador de \wifi{} empezamos (en segundo plano) liberando si no estuviesen ya cada uno de los recursos, en \bt{} coexisten dependiendo del tipo de nodo 3 tipos de hebras, la que acepta conexiones (\emph{AcceptThread}), la que lanza la conexión (\emph{ConnectThread}) y la que mantiene la conexión entre el esclavo y el maestro (\emph{ConnectedThread}), de este tipo podemos tener más de una.
+Encendemos la interfaz \bt{} si no estuviese encendida ya, mediante una petición al sistema \android{} y esperando mediante \emph{polling} a que \emph{StatusReceiver\_bt.java}, el \emph{broadcastReceiver} para la interfaz \bt{} modifique la variable de control de esta espera. Una vez finalizada, procedemos a configurar las hebras del controllador según el tipo de nodo.
+\paragraph{Normal} Este tipo de nodo se comporta como esclavo en la comunicación \bt{} por lo que necesita arrancar una hebra para aceptar conexiones, como sólo esperamos un maestro cuando consigue una conexión (disparada sobre el mismo UUID por el que hemos registrado el socket) liberamos este recurso. Como ya hemos configurado la interfaz enviamos el mensaje final del \emph{handshaking} con las instrucciones que hemos visto ya.
+
+\paragraph{Coordinador} Este tipo de nodo se comporta como maestro en la comunicación \bt{}, no necesita aceptar conexiones, pero si disparar éstas. Para ello, recogemos de la base de datos los nodos inactivos y para cada uno de ellos lanzamos una conexión gracias al método connect() que se ejecuta en su propia hebra para asegurarnos que no se ejecuta en la hebra de la interfaz de usuario, en este caso no hace falta ya que la estamos llamando desde el segundo plano, pero como veremos este método se llama también directamente desde la UI-thread. Este método coge como parámetros la dirección MAC con la cual queremos establecer una conexión y el número de intentos que vamos a intentar establecer esta conexión (a parte de otras constantes como el UIID), como en \bt{} es fácil que falle el establecimiento intentamos minimizar este riesgo reintentando la conexión. En el momento que conseguimos establecer la conexión, liberamos esta hebra que se volverá a crear con el siguiente intento de conexión a otro nodo y manejamos la conexión con una nueva hebra del tipo \emph{connectedThread}, al final tendremos tantas hebras como nodos activos en la red. La forma en la que sabemos cuando podemos pasar al siguiente nodo radica en 2 flags que son modificadas gracias al sistema de estados: setState(), que tienen los controladores. En esencia, cuando disparamos una conexión y ésta falla propagamos un estado de conexión fallida al servicio que aumentara el flag de conexiones fallidas (\emph{numFailConnection}), si la conexión se produce con éxito se propaga análogamente un estado de nuevo nodo en la red y modificaremos el flag de nuevo dispositivo (\emph{flagNewDevice}) saliendo de la espera en la que nos encontramos, por establecimiento de la conexión o por llegar al máximo de intentos.
+
+ Una vez hemos acabado con la lista de nodos inactivos habremos terminado de configurar la interfaz y procederemos al envío del último mensaje del \emph{handshaking} con el formato visto en la tabla~\ref{tab:endHandshakingNotCWSNMessage}.
+
+ 
 \subsection{Registro de un nodo en la red}
+ acto seguido procedemos al registro del nodo en la red enviando ``HelloPackets'' (UDP) a la dirección de \emph{broadcast/multicast}
+
 
 \subsection{Salida de un nodo de la red}
 \subsubsection{WiFi}
