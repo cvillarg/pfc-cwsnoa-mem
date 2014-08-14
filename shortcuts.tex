@@ -19,7 +19,13 @@
 \def\String{\emph{cadena de car\'{a}cteres}}
 \def\false{\emph{false}}
 \def\true{\emph{true}}
-
+%-------------------------
+% Tabla: estructura mensaje android
+%	_init: iniciliza tabla e incluye los campos del mensaje
+%	_extra: fila extras incluye un par de valores
+%	_extraAddrow: fila adicional
+%	_end: finaliza la tabla y e introduce caption y label
+%-------------------------
 %---------------from---to-----------------------
 \def\servToApp{desde el servicio a la aplicaci\'{o}n}
 \def\servToApps{desde el servicio a todas las aplicaciones}
@@ -29,14 +35,6 @@
 \def\servToWifi{desde el servicio al controlador de \wifi}
 \def\wifiToServ{desde el controlador de \wifi al servicio}
 %---------------from---to-----------------------
-
-%-------------------------
-% Tabla: estructura mensaje android
-%	_init: iniciliza tabla e incluye los campos del mensaje
-%	_extra: fila extras incluye un par de valores
-%	_extraAddrow: fila adicional
-%	_end: finaliza la tabla y e introduce caption y label
-%-------------------------
 \providecommand{\messageTableInit}[6]{%
 \begin{table}[h]%
 \begin{center}
