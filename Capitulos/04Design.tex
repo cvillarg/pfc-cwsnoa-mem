@@ -51,8 +51,6 @@ Tipos de mensajes que se intercambian, y como tienen que ir rellenos estos.
 %..........
 \subsection{Registro de una aplicación en el servicio cognitivo}
 \label{subsec:serviceRegisterProcess}
-\subsection{Actualización de parámetros en la red}
-\label{subsec:updateSettings}
 \begin{codeInvolved}
 \begin{files}
 \textbf{Service}: m2service (manejador de mensajes entre servicio y aplicaciones)
@@ -158,7 +156,7 @@ Encendemos la interfaz \bt{} si no estuviese encendida ya, mediante una petición
  
 \subsection{Registro de un nodo en la red}
 
-Según la interfaz en la que nos encontremos se alterna el papel de quién da el primer paso, asi en \bt{} el nodo normal espera una conexión entrante y en \wifi{} es el coordinador quién espera un paquete UDP enviado desde un nodo normal.
+Según la interfaz en la que nos encontremos se alterna el papel de quién da el primer paso. Así en \bt{} el nodo normal espera una conexión entrante y en \wifi{} es el coordinador quién espera un paquete UDP enviado desde un nodo normal.
 \subsubsection{WiFi}
 \begin{codeInvolved}
 \begin{files}
@@ -275,7 +273,7 @@ Los parámetros del servicio se pueden dividir en dos grupos, los propios del ser
 \end{center}
 \end{table}
 
-Los primeros parámetros son ajustes del servicio que traspasan a cualquier aplicación, sin embargo los segundos si son propios de cada aplicación el primero expresa sus necesidades de comunicación y el segundo nos sirve para filtrar mensajes en el servicio y entregar el contenido que está dirigido a esa aplicación en concreto. El parámetro ``papel del nodo'' en realidad es un parámetro compartido, es decir si varias aplicaciones están registradas en el servicio cada una habrá aportado un valor distinto, como este valor es único, elegimos el que más adecuado a las necesidades de comunicación de la aplicación mas restringida. En otras palabras si una aplicación pide ser ``nodo primario'' y otra aplicación pide ser ``nodo secundario'' el valor del parámetro será ``nodo primario''.
+Los primeros parámetros son ajustes del servicio que traspasan a cualquier aplicación, sin embargo los segundos si son propios de cada aplicación el primero expresa sus necesidades de comunicación y el segundo nos sirve para filtrar mensajes en el servicio y entregar el contenido que está dirigido a esa aplicación en concreto. El parámetro ``papel del nodo'' en realidad es un parámetro compartido, es decir si varias aplicaciones están registradas en el servicio cada una habrá aportado un valor distinto, como este valor es único, elegimos el que es más adecuado a las necesidades de comunicación de la aplicación mas restringida. En otras palabras si una aplicación pide ser ``nodo primario'' y otra aplicación pide ser ``nodo secundario'' el valor del parámetro será ``nodo primario''.
 
 La primera forma de actualizar los parámetros de aplicación es con el registro de la aplicación en el servicio (ver sección~\ref{subsec:serviceRegisterProcess}) o en cualquier momento enviando un mensaje desde la aplicación al servicio del tipo {\small(REGISTER\_EXCHANGE)} (visto en la tabla~\ref{tab:registerExchangeMessage}) que desembocará en una contestación con todos los parámetros del servicio.
 Con respecto a los parámetros exclusivos del servicio, la forma de actualizarlos está un poco escondida en la API, ya que son ajustes propios del servicio y no de la aplicación y por tanto sometidos a cambios poco frecuentes. Normalmente estos parámetros están guardados en base de datos y se recuperan al recibir un mensaje del tipo {\small(REGISTER\_EXCHANGE)}, sin embargo si en este mensaje viene informado el campo \emph{obj} con un valor booleano a \true{} entonces en vez de coger los parámetros de la base de datos, los extraemos del mensaje. El detalle del mensaje con todos los parámetros es el siguiente:
@@ -292,9 +290,123 @@ Con respecto a la actualización de estos parámetros al resto de nodos, una vez v
 
 En \bt{} puede darse la situación de que si somos un nodo normal los demás nodos nos vean con parámetros antiguos, esto es debido a que si actualizamos nuestros parámetros fuera de una CWSN, estos obviamente no son propagados a la red, al ser incluidos en la red por el coordinador, que ya nos conoce de veces anteriores, no tiene manera de saber que hemos actualizado los parámetros y como para minimizar el paso de mensajes por la red no nos pregunta sino que saca una copia de su base de datos los parámetros que tiene el resto de la red son la copia desactualizada de la base de datos del coordinador y no los parámetros nuestros. Esta situación es muy poco frecuente por lo que se ha preferido minimizar el tamaño de mensajes de señalización y el número de estos antes de mantener actualizados en todo momento los parámetros del nodo (``nombre del nodo'', ``papel del nodo'' y ``tipo de nodo'' aunque este último es deducible por el contexto). Esta situación no ocurre en \wifi{} ya que la forma de registro en la red conlleva el envío de un paquete para registrarse en el que enviamos toda la información del nodo, por lo que sobre \wifi{} se puede actualizar en cualquier momento y sobre \bt{} sólo en momentos de cooperación en red. No obstante la situación de desactualización se soluciona cuando hay un cambio de contexto con interfaz destino \wifi{}.
 
-
+%----------------------
 \subsection{Intercambio de mensajes}
+La transmisión y recepción de datos se realizan a través del intercambio de mensajes definidos en la API. Podemos destacar tres acciones, el envío, la recepción y una mezcla de ambos reservada sólo al coordinador que es el re-envío o \emph{forward} de mensajes.
 
+\subsubsection{Recepción de mensajes}
+\begin{codeInvolved}
+\begin{files}
+\textbf{Service}: m2service, mHandler<controlador>, incomingContentNormal(), incomingDataMessageToApp()\\
+\end{files}
+\end{codeInvolved}
+Empezamos explicando este proceso por ser el más fácil. Cuando la hebra del controlador (no importando cual) sale de su bloqueo al recibir datos, se genera el evento de recepción de datos que es manejado en el servicio. Cuando ha terminado de recibir todo el mensaje, el controlador proporciona nuevamente al servicio esta información que dependiendo del controlador, incluirá {\small EXTRAS} distintos.
+
+\messageTableInit{\controllerToServ}{2 =\\ \scriptsize{MESSAGE\_READ}}{Número de \emph{bytes} leídos}{\nc{}}{\emph{bytes} leídos de la red}{\nc{}}
+
+\messageTableExtraControllerSpecified{\wifi{}}{device\_ip\_address}{Una \String{} con la direción IP del nodo que nos envía los datos}
+
+\messageTableExtraControllerSpecified{\bt{}}{device\_name}{Una \String{} con el nombre proporcionado por los servicios de \bt{} de \android{} (no es relevante)}
+\messageTableExtraAddrow{device\_address}{Una \String{} con la dirección MAC de \bt{} del nodo que nos envía los datos}
+
+\messageTableEnd{Mensaje recibido por la red entregado por ambos controladores al servicio}{MessageReadController}
+
+Una vez tenemos los \emph{bytes} leídos en el servicio los procesamos. Este procesamiento puede ser tan simple como entregar el contenido del mensaje a la aplicación correspondiente o reenviar el mensaje al siguiente eslabón de la cadena (sección explicada en la página~\pageref{forwardProcess}). El tratamiento del mensaje depende del tipo de nodo. Sin embargo, la presentación del mensaje hacia la aplicación si éste está dirigido hacia nosotros es común. Para ello necesitamos obtener el ``Código de aplicación'' (ver tabla~\ref{itm:dataMessage}) que nos permite recuperar el \emph{messenger} de la aplicación. Así filtramos y entregamos a cada aplicación los mensajes que le interesan. También, gracias al campo ``Desde'' sabemos quién es el originador del mensaje. Una vez hemos recuperado la aplicación destinataria y el nodo que envío el mensaje, podemos trasladar esta información a la aplicación correspondiente. 
+
+\messageTableInit{\servToApp}{8 =\\ \scriptsize{INCOMING\_CONTENT \_PROGRESS}}{\nc{}}{\nc{}}{\emph{payload}}{\nc{}}
+\messageTableExtra{device\_id}{Un \integer{} que identifica al nodo que ha enviado el mensaje}
+\messageTableEnd{Mensaje datos recibidos}{incomingContent}
+ 
+
+\subsubsection{Envío de mensajes}
+\begin{codeInvolved}
+\begin{files}
+\textbf{Service}: m2service, builtDataMessage(), getNextNodes(), send(), mHandler<controlador>, outgoingContentProgress()\\
+\textbf{DataMessageQueue}: add(), hashMessage(), changeStatus(), remove()
+\end{files}
+\end{codeInvolved}
+Para enviar datos a través del servicio cognitivo, la aplicación debe enviar un mensaje a través de la API con la siguiente estructura:
+
+\messageTableInit{\appToServ}{4 =\\ \scriptsize{OUTGOING\_CONTENT}}{\nc{}}{\nc{}}{\emph{payload}}{\messApp{}}
+\messageTableExtra{addressedNodes}{Una lista de \integer{}s con los identificadores de los nodos destinatarios del mensaje}
+\messageTableEnd{Mensaje para el envío de datos}{outgoingContent}
+
+Asumimos que el mensaje que se quiere enviar es un contenido que se puede codificar como una \String{}, por tanto este es el tipo de dato que se espera en el campo \emph{obj} del mensaje (\emph{payload}). Una vez entregado el mensaje al servicio se empieza a procesar. En primer lugar se comprueba que todos los valores de la lista son nodos de la red y están activos, también comprobamos que estamos en una CWSN //TODO TODO TODO en el código y manejar el error de casting. o un campo adicional para selecionar tipo contenido // Si no se superase alguna de estás validaciones se entregaría a la aplicación un mensaje de error con el código y descripción pertinentes y se abortaría el proceso. Si no hay ningun problema, confeccionamos el mensaje que se va a enviar a la red cuyo formato vemos en la tabla~\ref{itm:dataMessage}.
+
+\protobufTableInit{Estructura mensaje datos}
+  \item[Tipo] Valor ``DATA'' del enumerado ``MessageType''
+  \item[Desde] Una \String{} con la dirección MAC de \bt{} del nodo
+	\item[Lista destinatarios] Una lista de \String{} con la lista con las direcciones MAC de \bt{} de los nodos destinatarios
+	\item[Código de aplicación] Una \String{} con el código de aplicación para filtrar el mensaje en destino 
+	\item[Marca de tiempo] Un \emph{long} con la representación del momento en el cual la aplicación entregó el mensaje al servicio
+	\item[Mensaje de datos] Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Tipo''
+	\begin{description}
+		\item[Payload] Una \String{} con el contenido del mensaje 
+	\end{description}
+\protobufTableEnd{Campos del mensaje de datos}{dataMessage}
+
+Una vez tenemos el mensaje lo guardamos en una cola, lo que nos ayuda a calcular el tiempo de llegada de los mensajes de datos por parte de las aplicaciones y es necesario para ofrecer a la aplicación una confirmación positiva o negativa sobre la entrega a los nodos destinararios para cada mensaje. Como esta confirmación puede no ser inmediata, necesitamos almacenar de alguna manera el mensaje para poder recuperarlo cuando nos llegue ésta. Para guardarlo y rescatarlo cuando llegue el momento nos ayudamos de una clave, un \emph{hash} calculado en base a la marca de tiempos, el contenido del mensaje y la MAC de \bt{} del nodo que envía el mensaje. 
+
+El siguiente punto es ver si podemos enviar el mensaje por la red, para ello debemos estar registrados en una CWSN y no estar en una situación de cambio de contexto, si se da esta situación marcamos el mensaje como ``pendiente de envío'' en la cola. Si podemos enviarlo lo marcamos como ``en envío'' y se procede al envío. Para ello necesitamos saber quién o quienes son los siguientes nodos en la cadena de envío, esto depende del tipo de nodo y del mapa de red. Aunque gracias a que cada nodo tiene información sobre cómo alcanzar a otros nodos, nuestra red está centralizada en la figura del coordinador por lo que la comunicación entre nodos no es posible siendo precisa una comunicación de saltos en los que el coordinador juega el papel central. Hay casos en que esta comunicación de saltos viene forzada por la interfaz de comunicación de uso, estamos hablando de \bt{} cuya única tipología posible es la de estrella (esclavo/maestro)
+
+\paragraph{Normal} El siguiente eslabón de la cadena siempre es nuestro nodo coordinador, tanto si el mensaje es dirigido a él, como si lo es a otros nodos. 
+
+\paragraph{Coordinador} El coordinador tiene comunicación directa con todos los nodos, en \wifi{} ocurre siempre y en \bt{} tenemos la restricción de hasta 7 nodos, si no introducimos la figura del ``coordinador intermedio'', nodo que se comporta como concentrador de mensajes en su piconet y que a su vez está en otra piconet donde se encuentra el coordinador. En nuestro caso como sólo hay un salto, tenemos contacto directo con cualquier nodo no importando la interfaz en la que nos encontremos. Por tanto los siguientes eslabones de la cadena de entrega son los mismos nodos que están en el campo ``Lista Destinatarios'' del mensaje a enviar.\\
+
+Una vez tenemos éste y a quién se lo vamos a enviar, procedemos al envío (en la siguente sección veremos que necesitamos un parámetro más pero que por el momento podemos obviar). Enviar es basicamente pasar como parámetros el mensaje al método \emph{write()} del controlador traduciendo los nodos a la dirección de comunicación de la interfaz, es decir si tenemos que enviar un mensaje a una serie de nodos de los cuales tenemos sus identificadores, tendremos que traducir estos identificadores a las direcciones IP en el caso de \wifi{} o a las direcciones MAC en \bt{}. Una vez que el mensaje ha sido escrito en la red por el controlador, este mismo informa al servicio a través de un mensaje del tipo {\small(MESSAGE\_WRITE)} con resultado del envío, enviándonos el propio mensaje de vuelta más una lista de las direcciones de comunicación a las cuales no ha podido entregar el mensaje.
+
+\messageTableInit{\controllerToServ}{3 =\\ \scriptsize{MESSAGE\_WRITE}}{número mensajes escritos OK}{número mensajes escritos NOK}{\emph{bytes} enviados a través de la red}{\nc{}}
+\messageTableExtra{requester}{Una \String{} que representa el \emph{messenger} de la aplicación que origina el mensaje}
+\messageTableExtraAddrow{addressNotDelivered}{Una lista de \String{} con las MAC de \bt{} o direcciones IP de los nodos a los cuales el envío del mensaje ha resultado fallido, según el controlador que nos envíe el mensaje}
+\messageTableEnd{Mensaje resultado envío de datos desde el controlador al servicio}{MessageWriteController}
+TODO TODO TODO
+
+Dependiendo de quienes sean los destinatarios del mensaje, el mensaje habrá llegado a su destino (no hay saltos de por medio) y por tanto no necesitamos más confirmación de entrega que la que ya nos da TCP de por si. Si no tuviesesemos contacto directo con los nodos a los que queremos enviar el mensaje necesitamos esperar a que nos confirmen el resultado de la entrega de éste.
+
+\paragraph{No es necesario recibir mensaje ACK} En este primer caso, al ser una entrega directa, si somos un nodo normal el mensaje tiene como único destinatario nuestro coordinador. Si somos un nodo coordinador el mensaje ha sido entregado en mano a todos los nodos. Como ya se ha terminado el flujo de envío del mensaje, procedemos a borrarlo de nuestra cola de mensajes gracias al \emph{hash} y a entregar un mensaje a la aplicación con información sobre la entrega.
+
+\paragraph{Es necesario mensaje ACK} En el segundo caso, el mensaje envíado requiere de un salto en la red, requiere de un reenvío. La casuística de cómo se producen este tipo de mensajes será explicada en la siguiente sección, en ésta nos limitamos a ver el proceso de recepción del ACK vista desde un nodo normal. En este caso al recibir por parte del controlador el mensaje (ver tabla~\ref{tab:MessageWriteController}) procedemos a su marcaje en la cola como ``pendiente de ack'' quedando a la espera de recibir la confirmación del envío del siguiente salto. Este mensaje de señalización tiene la composición descrita en la tabla~\ref{itm:ackMessage}.
+
+\protobufTableInit{Estructura mensaje ACK}
+  \item[Tipo] Valor ``RESPONSE'' del enumerado ``MessageType''
+  \item[Mensaje de respuesta]  Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Tipo''
+	\begin{description}
+		\item[What] Valor ``ACK'' del enumerado ``AskType''
+		\item[Mensaje de ACK] Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``What''
+			\begin{description}
+				\item[Hash] Un \emph{long} con el identificador único de mensaje
+				\item[Número mensajes escritos OK] Un \integer{} con el número de mensajes que han sido correctamente entregados
+				\item[Lista de direcciones MAC NOK] Una lista de \String{} con las direcciones MAC de \bt{} de los nodos a los cuales no se ha podido entregar el mensaje
+			\end{description}
+	\end{description}
+\protobufTableEnd{Campos del mensaje ACK}{ackMessage}
+  
+Al recibir la confirmación procedemos a borrar de la cola el mensaje de datos utilizando el \emph{hash} leído de la señalización y a comunicar a la aplicación el resultado del proceso de envío. (El detalle puede verse en la tabla~\ref{tab:outgoingContentResultApp})
+TODO TODO TODO camviar outgoinf content progress...\\ \\
+\messageTableInit{\servToApp}{9 =\\ \scriptsize{OUTGOING\_CONTENT \_PROGRESS}}{número mensajes escritos OK}{número mensajes escritos NOK}{\emph{payload}}{\nc{}}
+\messageTableExtra{IdsNotDelivered}{Un array de \integer{}s con los identificadores de los nodos a los cuales no les ha llegado el mensaje}
+\messageTableExtraAddrow{NamesNotDelivered}{Un array de \String{} con los nombres de los nodos a los cuales no les ha llegado el mensaje}
+\messageTableEnd{Mensaje resultado envío de datos presentado a la aplicación}{outgoingContentResultApp}
+
+
+ 
+%\newpage
+\subsubsection{Forward de mensajes}
+\label{forwardProcess}
+\begin{codeInvolved}
+\begin{files}
+\textbf{Service}: mHandler<controlador>, incomingContentCoordinator(), outgoingContentProgressCoordinator()\\
+\end{files}
+\end{codeInvolved}
+
+Esta sección es una mezcla de una recepción y un envío de mensajes, reservada al papel de coordinador. Este proceso comienza con la recepción de un mensaje originario en un nodo normal cuya lista de nodos destinatarios atañe a más nodos de los dos implicados en esta comunicación. En esta lista puede estar o no incluido el coordinador, si está incluido como paso inicial presentaremos el mensaje a la aplicación como hemos descrito en la recepción de mensajes. Acto seguido procederemos al re-envío de éste, para ello como vimos en la sección anterior tenemos que conocer cuáles son los siguientes nodos a los que enviar el mensaje (prestando especial atención a que si es un mensaje dirigido a todos, no volver a enviarlo al nodo originario), el mensaje a enviar que es el mismo que acabamos de recibir (sin hacerle ningún cambio) y por último el parámetro que antes obviamos.
+
+Esta elusión tiene como motivación haber facilitado la lectura de secciones anteriores al no añadir otra pieza más al rompecabezas. Nuestro flujo de trabajo necesita transmitir a través de todas las capas (servicio, controlador y capas inferiores, si intervienen) qué aplicación es la originaria del mensaje para poder ofrecerle una respuesta cada vez que envie datos a través del servicio. No se puede utilizar el ``Código de aplicación'' grabado en el mensaje de datos ya que puede haber dos o más aplicaciones registradas con el mismo código. El parámetro por tanto es una simple \String{} que representa el \emph{messenger} de la aplicación, que gracias a una serie de \emph{HashMap} nos relaciona ambos datos. De esta manera evitamos por tanto serializar un objeto complejo o ubicarlo en un sitio que no está pensado para ello, debido a que al estar en capas diferentes el campo (\emph{msg.replyTo}) se usaría con otro propósito lo que hace poco claro el código. Es necesario transmitir este parámetro a través de todo el flujo de envío ya que son procesos sin memoria que pueden ser disparados por distintas aplicaciones en cualquier momento donde además el preservamiento del orden entre distintos procesos de envío no está garantizado.\\
+
+Cuando el mensaje requiere de un re-envío, no existe una aplicación para rellenar este parámetro, elegimos dos \String{} reservadas que son ``forward-me'' y ``forward-not-me'' para referirse a la situación en la que el coordinador forma parte de la lista del mensaje que se reenvía y cuando no. Nuestro flujo al reconocer estas \String{} se da cuenta que se trata de un reenvío.
+
+Al igual que en un envío normal, almacenamos el mensaje en la cola y lo enviamos. Al recibir por parte del controlador el mensaje descrito en la tabla~\ref{tab:MessageWriteController} pero es aquí dónde en vez de trasladar el mensaje a la aplicación (dado que no existe) es dónde confeccionamos el mensaje de confirmación (ver tabla~\ref{itm:ackMessage}) que enviaremos al originario del mensaje de datos, en vez de informar a la aplicación como se hace en el envío.
+%------------------------------
 \subsection{Sensado del entorno}
 
 \subsection{Cambios de contexto}

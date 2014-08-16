@@ -34,6 +34,7 @@
 \def\btToServ{desde el controlador de \bt al servicio}
 \def\servToWifi{desde el servicio al controlador de \wifi}
 \def\wifiToServ{desde el controlador de \wifi al servicio}
+\def\controllerToServ{desde un controlador (\bt{} o \wifi{}) al servicio}
 %---------------from---to-----------------------
 \providecommand{\messageTableInit}[6]{%
 \begin{table}[h]%
@@ -52,7 +53,7 @@
 	\hline%
 	\emph{key} & \multicolumn{4}{l|}{\emph{value}}\\%
 	\hline
-     	#1 & \multicolumn{4}{p{10.2cm}|}{#2}\\%
+     	{#1} & \multicolumn{4}{p{10.2cm}|}{#2}\\%
 	\hline%
 }
 \providecommand{\messageTableExtraAddrow}[2]{
@@ -65,4 +66,39 @@
 \end{center} 
 \end{table}%
 }
+
+\providecommand{\messageTableExtraControllerSpecified}[3]{%
+	\noalign{\vskip 0.15cm} 
+	\multicolumn{5}{l}{Extras, controlador: {#1}}\\%
+	\hline%
+	\emph{key} & \multicolumn{4}{l|}{\emph{value}}\\%
+	\hline
+     	{#2} & \multicolumn{4}{p{10.2cm}|}{#3}\\%
+	\hline%
+}
 %-------------------------
+%-------------------------
+% Tabla: estructura mensaje protocol buffer
+%	_init: iniciliza tabla e incluye el título del mensaje
+%	_end: finaliza la tabla y e introduce caption y label
+%-------------------------
+\providecommand{\protobufTableInit}[1]{%
+\begin{table}[h]%
+	\begin{center}%
+		\begin{tabular}{c}%
+			\textbf{#1}\\ \hline%
+		\end{tabular}%
+	\end{center}%
+%\begin{center}
+%Texto encima línea\\
+%\noindent\rule{8cm}{0.4pt}
+%\line(1,0){450}
+%\end{center}
+\begin{description}%
+}
+\providecommand{\protobufTableEnd}[2]{%
+\end{description}%
+\caption{#1} \label{itm:#2}%
+\end{table}%
+}
+
