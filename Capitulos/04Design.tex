@@ -155,6 +155,7 @@ Encendemos la interfaz \bt{} si no estuviese encendida ya, mediante una petición
 
  
 \subsection{Registro de un nodo en la red}
+\label{subsec:enterInNetwork}
 
 Según la interfaz en la que nos encontremos se alterna el papel de quién da el primer paso. Así en \bt{} el nodo normal espera una conexión entrante y en \wifi{} es el coordinador quién espera un paquete UDP enviado desde un nodo normal.
 \subsubsection{WiFi}
@@ -408,11 +409,142 @@ Cuando el mensaje requiere de un re-envío, no existe una aplicación para rellena
 Al igual que en un envío normal, almacenamos el mensaje en la cola y lo enviamos. Al recibir por parte del controlador el mensaje descrito en la tabla~\ref{tab:MessageWriteController} pero es aquí dónde en vez de trasladar el mensaje a la aplicación (dado que no existe) es dónde confeccionamos el mensaje de confirmación (ver tabla~\ref{itm:ackMessage}) que enviaremos al originario del mensaje de datos, en vez de informar a la aplicación como se hace en el envío.
 %------------------------------
 \subsection{Sensado del entorno}
+Los parámetros del entorno que son de nuestro interés son el \emph{Received Signal Strength Indication} (RSSI) de la red \wifi{} a la cual estamos conectados y la tasa de envío de mensajes de datos. El sensado del entorno se realiza en varios puntos de la arquitectura y son compartidos mediante señalización (ver tabla~\ref{itm:scanMessage}) con el coordinador de forma periódica. Éste al recibirlos dependiendo de la prioridad con la que vengan marcados se limita a guardarlos en su base de datos o a hacer un análisis rápido de la situación que desemboque en la toma de ciertas decisiones.
 
+\protobufTableInit{Estructura mensaje SCAN}
+  \item[Tipo] Valor ``RESPONSE'' del enumerado ``MessageType''
+  \item[Mensaje de respuesta]  Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Tipo''
+	\begin{description}
+		\item[What] Valor ``SCAN'' del enumerado ``AskType''
+		\item[Mensaje de SCAN] Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``What''
+			\begin{description}
+				\item[Prioridad] Un enumerado (Priority) con la urgencia del sensado, toma dos valores {\small Priority.TASK} para sensados normales y {\small Priority.URGENT} para marcar que la información del entorno es sensible.  
+				\item[RSSI] Un \integer{} con el nivel de señal de la red \wifi{} a la que estamos conectados (-9999 si no estamos en ninguna)
+				\item[Intervalo promedio envío de mensajes] Un \double{} con el resultado promedio móvil del intervalo medido en segundos entre la llegada de mensajes de datos por parte de las aplicaciones  
+			\end{description}
+	\end{description}
+\protobufTableEnd{Campos del mensaje SCAN}{scanMessage}
+
+
+\subsubsection{Parámetro del entorno: RSSI}
+\begin{codeInvolved}
+\begin{files}
+\textbf{Service}: normalCognitiveTask(), mWifiAdapter.getConnectionInfo()\\
+\end{files}
+\end{codeInvolved}
+
+Para medir la intensidad de señal podemos utilizar de manera activa la API de \android{} que nos facilita a través del adaptador de \wifi{} (WifiManager) el objeto ``WifiInfo'', el método getRssi() nos devuelve el valor de la fuerza de la señal medida en dBm. También de una manera indirecta, aprovechamos los mensajes que lanza el sistema \android{} con información acerca de este parámetro, para ello suscribimos nuestro \emph{broadcastReceiver} de \wifi{} a los mensajes de cambio del RSSI. 
+
+En nuestra arquitectura tenemos dos puntos de medida de este parámetro, el primero está localizado en la tarea cognitiva dónde activamente obtenemos este valor, que guardamos en la base de datos para usos futuros. El otro punto reside en las notificaciones sobre cambios del parámetro gracias a que estamos registrados a mensajes del tipo {\small RSSI\_CHANGED\_ACTION}, estas notificaciones nos ayudan a actuar con el menor tiempo de respuesta, ya que si detectamos una situación que entrañe riesgo podemos compartir esta información sin esperar a la tarea cognitiva donde realizamos entre otras cosas el sensado del entorno.
+
+\subsubsection{Parámetro del entorno: Intervalo promedio envío de mensajes}
+\begin{codeInvolved}
+\begin{files}
+\textbf{Service}: normalCognitiveTask()\\
+\textbf{DataMessageQueue}: getAvgArrivalRateUpdateTillNow()
+\end{files}
+\end{codeInvolved}
+
+En este caso la medición se va confeccionado cada vez que una aplicación entrega un mensaje de datos al servicio para su envío, al añadirlo a la cola registramos el tiempo que ha pasado desde la última vez, si tenemos suficientes registros olvidamos el último antes de añadir este nuevo, esto nos permite realizar promedios móviles que se centren en una situación cercana al momento actual para extraer información reciente y no condicionada excesivamente por eventos pasados.\\
+
+En la tarea cognitiva (que recordamos que es periódica) calculamos la media de estos valores. Se da la situación de que el promedio sólo cambia al incluir nuevos mensajes en la cola, desembocando en que si no se producen nuevas inclusiones se obtiene el mismo valor del intervalo de envío de mensajes en ejecuciones consecutivas de la tarea cognitiva, desvirtuando este valor. Necesitamos algún mecanismo que sin desfigurar los datos, refleje esta situación de no envío y por tanto evidenciar un aumento del promedio.
+
+Para ello en el momento de la transmisión de los parámetros del entorno al cooridnador, obtenemos el promedio y registramos de nuevo el tiempo así podemos re-calculamos el intervalo tal y como si hicieramos un falso envío pero sin incluir a éste en los datos para no desfigurar el resultado en sucesivos envíos (que se hayan producido realmente).
+%---------------------------
 \subsection{Cambios de contexto}
+Con la información recogida del entorno tanto por el mismo nodo como por sus compañeros podemos tomar decisiones sobre la estabilidad de la red y conforme a experiencias pasadas colocar a ésta en el lugar que mejor se adapte. Necesitamos una serie de protocolos que mantengan la integridad de la red y marquen los pasos a seguir cuando hay un cambio de interfaz.
+
 \subsubsection{Cambio de contexto con interfaz destino WiFi}
+\begin{codeInvolved}
+\begin{files}
+\textbf{Service}: coordinatorCognitiveTask(), mayTakeAdvantageOfWiFi(), contextChangeToWiFi(), SetupWifiInterface (asyncTask), mHandlerWF, scheduleTaskWifi(), sendEndSwitchMessage(), endContextualChange()
+\end{files}
+\end{codeInvolved}
+
+Cuando el coordinador ejecuta su tarea cognitiva va rescatando de su base de datos para cada nodo los últimos escaneos de éste obteniendo un promedio y una tendencia de los datos de sensado. Evalúa estos datos y decide si es necesario un cambio de interfaz. En caso positivo, obtenemos una lista de los nodos activos en la red, los marcamos como inactivos e informamos a las aplciaciones sobre el nuevo evento (ver mensaje en la API) y configuramos la interfaz de \wifi{}. Para ello utilizamos el mismo prodecimiento usado en~\ref{subsec:configInterface} con unos pasos extras: una vez nos hemos conectado a la red enviamos un mensaje de señalización (a través de la interfaz actual, aún \wifi{} no es efectiva) a la lista de nodos que sacamos informandoles del cambio y de la información necesaria para llevarla a cabo:
+
+\protobufTableInit{Estructura mensaje SWITCH hacia \wifi{}}   
+	\item[Tipo] Valor ``SIGNALING'' del enumerado ``MessageType''
+	\item[Desde] Una \String{} con la direción MAC de \bt{} del nodo
+  \item[Mensaje de señalizacion]  Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Tipo''
+	\begin{description}
+		\item[Señal] Valor ``SWITCH'' del enumerado ``SignalType''
+		\item[Mensaje de SWITCH] Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Señal''
+			\begin{description}
+				\item[Interfaz destino] Valor ``TO\_WIFI'' del enumerado ``ToInterface''  
+				\item[SSID] Una \String{} con el nombre de la red \wifi{} a la que se va a realizar el cambio
+				\item[BSSID] Una \String{} con la MAC del punto de acceso para evitar cualquier equívoco
+				\item[Dirección IP coordinador] Una \String{} con la dirección IP del nodo 
+			\end{description}
+	\end{description}
+\protobufTableEnd{Campos del mensaje SWITCH hacia \wifi{}}{switchToWifi}
+ 
+Al terminar de configurar la interfaz (siendo ésta ya efectiva), dejamos programado un \emph{timeout} que dispare el fin de cambio contextual para evitar bloqueos porque algún no responda. A partir de ahora esperamos a que los nodos normales configuren su interfaz de \wifi{} (antes apagarán su interfaz en curso, en este caso \bt{}) y vayan entrando en la nueva red tal y como se contó en las secciones~\ref{subsec:configInterface} y~\ref{subsec:enterInNetwork}. 
+
+El coordinador al recibir los ``HelloPackets'' en vez de seguir el flujo normal que consiste informar a todos los nodos de la nueva entrada y al nuevo nodo informarle sobre el mapa de red, nos limitamos a enviarle un mensaje de confirmación indicándole que hemos recibido el ``HelloPacket'' para que éste pare su envío, así evitamos enviar muchos mensajes de señalización de una situación que es probable que cambie. Estos paquetes están enviados directamente a la IP del coordinador (recogida del mensaje de señalización de cambio) para que haya más posibilidades de recepción. Si por algún casual el nodo normal terminase su ráfaga y no obtuviese respuesta el mismo entendería que el proceso de cambio de contexto ha acabado de manera insatisfactoria. El detalle de este mensaje de confirmación de entrada en la red en situación de cambio es:
+
+\protobufTableInit{Estructura mensaje confirmación cambio de contexto}   
+	\item[Tipo] Valor ``RESPONSE'' del enumerado ``MessageType''
+  \item[Mensaje de respuesta]  Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Tipo''
+	\begin{description}
+		\item[What] Valor ``SWITCH'' del enumerado ``AskType''
+	\end{description}
+\protobufTableEnd{Campos del mensaje de confirmación entrada (\wifi{}) / interfaz lista (\bt{})}{okSwitch}
+
+Si antes de que salte el \emph{timeout} programado, hemos recibido todos los ``HelloPackets'' de todos los nodos que estaban formando la red, procedemos a finalizar el cambio de contexto, si no esperamos a que finalice el \emph{timeout}, situación en la que habremos perdido algún nodo.
+
+\paragraph{Coordinador} Apagamos la interfaz \bt{} y liberamos todos los recursos. Hemos mantenido la interfaz arriba hasta el último momento para no perder mensajes de datos si algún nodo actúa de manera incorrecta y envía estos mensajes en pleno cambio de conexto. Acto seguido se envía el mapa de red por medio de señalización a todos los nodos que formen ahora la red (idealmente todo los que la formaban antes del cambio).
+
+\protobufTableInit{Estructura mensaje fin cambio de contexto}   
+	\item[Tipo] Valor ``SIGNALING'' del enumerado ``MessageType''
+	\item[Desde] Una \String{} con la direción MAC de \bt{} del nodo (coordinador)
+  \item[Mensaje de señalizacion]  Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Tipo''
+	\begin{description}
+		\item[Señal] Valor ``TOPOLOGY'' del enumerado ``SignalType''
+		\item[Mensaje de mapa de red] Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Señal''
+			\begin{description}
+				\item[Cambio] Valor ``ALL\_END\_SWITCH'' del enumerado ``TopologyChange''  			
+					\begin{description}
+						\item[Representación de un nodo] Mensaje con los cambios que sirven para representar a nodo (ver tabla~\ref{itm:infoNode}). Tendremos tantas representaciones como nodos haya en la red.
+					\end{description}				
+			\end{description}
+	\end{description}
+\protobufTableEnd{Campos del mensaje finalización cambio de contexto}{endSwitch}
+
+Notar que este mensaje es diferente para cada nodo ya que lista de nodos vista desde cada nodo difiere en que él mismo no se encuentra en ésta pero el resto sí. Los últimos pasos para finalizar el cambio de contexto es intentar enviar los mensajes encolados (los mensajes que hayan entregado las aplicaciones mientras que el proceso de cambio de contexto esté vigente) y publicar hacia las aplicaciones registradas en el servicio el evento del fin de cambio de contexto que incluye la nueva interfaz, el estado de ésta y la lista de nodos que forman la red en este momento.
+
+
+\paragraph{Normal} Al recibir el mensaje de señalización de cambio de contexto, procedemos a cancelar el envío de ``HelloPackets'' por si no hubiesemos recibido el mensaje visto en la tabla~\ref{itm:okSwitch}, informar a las aplicaciones el evento de fin de cambio de contexto con el nuevo mapa de red leído del mensaje de señalización y proceder al envío de los mensajes encolados mientras haya durado este proceso.
+
 \subsubsection{Cambio de contexto con interfaz destino Bluetooth}
-%-------------------------------------------------------------------
+\begin{codeInvolved}
+\begin{files}
+\textbf{Service}: coordinatorCognitiveTask(), mayTakeAdvantageOfBT(), contextChangeToBT(), SetupBTinterface (asyncTask), mHandlerBt,  tellBTisUP(), scheduleEndSwitchBTRunnable (future) scheduleSetupBTRunnable (future) , sendEndSwitchMessage(), endContextualChange()
+\end{files}
+\end{codeInvolved}
+
+Cuando se produce un cambio de interfaz a \bt{} el coordinador como antes obtiene una lista de quién está en la red y se marcan como inactivos, comunicamos hacia las aplicaciones el nuevo estado de la red y procedemos a enviar un mensaje de señalización que marque a los demás nodos el evento de cambio de contexto hacia \bt{} este mensaje tiene esta disposición:\\
+
+\protobufTableInit{Estructura mensaje SWITCH hacia \bt{}}   
+	\item[Tipo] Valor ``SIGNALING'' del enumerado ``MessageType''
+	\item[Desde] Una \String{} con la direción MAC de \bt{} del nodo
+  \item[Mensaje de señalizacion]  Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Tipo''
+	\begin{description}
+		\item[Señal] Valor ``SWITCH'' del enumerado ``SignalType''
+		\item[Mensaje de SWITCH] Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Señal''
+			\begin{description}
+				\item[Interfaz destino] Valor ``TO\_BT'' del enumerado ``ToInterface''   
+			\end{description}
+	\end{description}
+\protobufTableEnd{Campos del mensaje SWITCH hacia \bt{}}{switchToBT}
+
+Una vez enviado, programamos la tarea de configurar la interfaz de \bt{} en el coordinador con un margen de tiempo suficiente para obtener las respuesta de los nodos normales, que al recibir la señalización configuran su interfaz \bt{} e informan a sus aplicaciones del nuevo estado. Una vez levantada, comunican al coordinador través de la interfaz en curso (\bt{} aún no es efectiva para envíar mensajes, ya que entre otras cosas no hemos establecido ninguna conexión con el coordinador) que la interfaz destino está lista para aceptar conexiones, para ello utilizamos el mensaje ya visto en la tabla~\ref{itm:okSwitch}, reutilizamos este mensaje de confirmación que no lleva ninguna información especial y que por el contexto le damos el significado de estar preparado (en la otra ocasión el contexto le daba el significado de confirmación de entrada en la red).\\
+
+Este mensaje le sirve al coordinador para saber que el nodo ya está listo y cuando recibe todas las confirmaciones (o salta el timeout programado anteriormente) procede a configurar su interfaz de \bt{} pasándole la lista de nodos que obtuvimos. Procede por tanto a configurar la interfaz y disparar una ronda de conexiónes a los nodos que formaban la red antes del cambio, que es pasada como parámetro. Una vez terminado ejecuta los mismos pasos descritos en la sección anterior para terminar el cambio de contexto. Salvo que en el mensaje de señalización de fin de cambio de contexto (ver tabla~\ref{itm:endSwitch}) la representación de cada nodo no incluye el campo ``Dirección IP''.
+
+Por su parte el nodo normal al configurar su interfaz \bt{} y después de enviar la confirmación al coordinador de que está listo, programa una tarea (implementada gracias al esquema de programación basado en \emph{Runnables} alojados en la interfaz \emph{Future} y ejecutados en hebras gestionadas por el objeto \emph{Executor}) para salir de la situación de cambio de contexto por si no recibe ninguna conexión entrante o por si no recibe el mensaje de señalización de fin de cambio de contexto. Así se garantiza que ningún nodo se quede en \emph{deadlock} y el flujo siempre se ejecuta de principio a fin.
+
+ %-------------------------------------------------------------------
 %\section*{\NotasBibliograficas}
 %-------------------------------------------------------------------
 %\TocNotasBibliograficas
