@@ -104,7 +104,7 @@ Puede darse el caso que en este punto del proceso, ya haya aplicaciones montadas
 
 \begin{description}
   \item[Cógigo de la aplicación] Un \String{} que representa el código de la aplicación
-	\item[Lista nodos] TODO TODO TODO en el código
+	\item[Lista nodos] Un conjunto de dos \emph{arrays} ligados, uno con los identificadores de los nodos y otro con los nombres de éstos. De tal forma que el par (identificador, nombre) comparta la misma posición en ambos \emph{arrays}
 \end{description}
 
 El detalle del mensaje queda \footnote{Notar que el campo del mensaje \emph{obj} viene informado con el valor booleano \emph{True} lo que nos ayuda a distinguir si previamente el servicio ya cooperaba en una red, a parte que esta respuesta es casi inmediata, a diferencia de la anterior.}:
@@ -301,7 +301,7 @@ La transmisión y recepción de datos se realizan a través del intercambio de mens
 \textbf{Service}: m2service, mHandler<controlador>, incomingContentNormal(), incomingDataMessageToApp()\\
 \end{files}
 \end{codeInvolved}
-Empezamos explicando este proceso por ser el más fácil. Cuando la hebra del controlador (no importando cual) sale de su bloqueo al recibir datos, se genera el evento de recepción de datos que es manejado en el servicio. Cuando ha terminado de recibir todo el mensaje, el controlador proporciona nuevamente al servicio esta información que dependiendo del controlador, incluirá {\small EXTRAS} distintos.
+Empezamos explicando este proceso por ser el más fácil. Cuando la hebra del controlador (no importando cual) sale de su bloqueo al recibir datos, se genera el evento de recepción de datos que es manejado en el servicio. Cuando ha terminado de recibir todo el mensaje, el controlador proporciona nuevamente al servicio esta información que dependiendo del controlador, incluirá {\small EXTRAS} distintos (ver tabla~\ref{tab:messageReadController})
 
 \messageTableInit{\controllerToServ}{2 =\\ \scriptsize{MESSAGE\_READ}}{Número de \emph{bytes} leídos}{\nc{}}{\emph{bytes} leídos de la red}{\nc{}}
 
@@ -310,9 +310,9 @@ Empezamos explicando este proceso por ser el más fácil. Cuando la hebra del cont
 \messageTableExtraControllerSpecified{\bt{}}{device\_name}{Una \String{} con el nombre proporcionado por los servicios de \bt{} de \android{} (no es relevante)}
 \messageTableExtraAddrow{device\_address}{Una \String{} con la dirección MAC de \bt{} del nodo que nos envía los datos}
 
-\messageTableEnd{Mensaje recibido por la red entregado por ambos controladores al servicio}{MessageReadController}
+\messageTableEnd{Mensaje recibido por la red entregado por ambos controladores al servicio}{messageReadController}
 
-Una vez tenemos los \emph{bytes} leídos en el servicio los procesamos. Este procesamiento puede ser tan simple como entregar el contenido del mensaje a la aplicación correspondiente o reenviar el mensaje al siguiente eslabón de la cadena (sección explicada en la página~\pageref{forwardProcess}). El tratamiento del mensaje depende del tipo de nodo. Sin embargo, la presentación del mensaje hacia la aplicación si éste está dirigido hacia nosotros es común. Para ello necesitamos obtener el ``Código de aplicación'' (ver tabla~\ref{itm:dataMessage}) que nos permite recuperar el \emph{messenger} de la aplicación. Así filtramos y entregamos a cada aplicación los mensajes que le interesan. También, gracias al campo ``Desde'' sabemos quién es el originador del mensaje. Una vez hemos recuperado la aplicación destinataria y el nodo que envío el mensaje, podemos trasladar esta información a la aplicación correspondiente. 
+Una vez tenemos los \emph{bytes} leídos en el servicio los procesamos. Este procesamiento puede ser tan simple como entregar el contenido del mensaje a la aplicación correspondiente o reenviar el mensaje al siguiente eslabón de la cadena (sección explicada en la página~\pageref{forwardProcess}). El tratamiento del mensaje depende del tipo de nodo. Sin embargo, la presentación del mensaje hacia la aplicación si éste está dirigido hacia nosotros es común. Para ello necesitamos obtener el ``Código de aplicación'' (ver tabla~\ref{itm:dataMessage}) que nos permite recuperar el \emph{messenger} de la aplicación. Así filtramos y entregamos a cada aplicación los mensajes que le interesan. También, gracias al campo ``Desde'' sabemos quién es el originador del mensaje. Una vez hemos recuperado la aplicación destinataria y el nodo que envío el mensaje, podemos trasladar esta información a la aplicación correspondiente. (ver tabla~\ref{tab:incomingContent})
 
 \messageTableInit{\servToApp}{8 =\\ \scriptsize{INCOMING\_CONTENT \_PROGRESS}}{\nc{}}{\nc{}}{\emph{payload}}{\nc{}}
 \messageTableExtra{device\_id}{Un \integer{} que identifica al nodo que ha enviado el mensaje}
@@ -326,13 +326,13 @@ Una vez tenemos los \emph{bytes} leídos en el servicio los procesamos. Este proc
 \textbf{DataMessageQueue}: add(), hashMessage(), changeStatus(), remove()
 \end{files}
 \end{codeInvolved}
-Para enviar datos a través del servicio cognitivo, la aplicación debe enviar un mensaje a través de la API con la siguiente estructura:
+Para enviar datos a través del servicio cognitivo, la aplicación debe enviar un mensaje a través de la API con la siguiente estructura (ver tabla~\ref{tab:outgoingContent})
 
 \messageTableInit{\appToServ}{4 =\\ \scriptsize{OUTGOING\_CONTENT}}{\nc{}}{\nc{}}{\emph{payload}}{\messApp{}}
 \messageTableExtra{addressedNodes}{Una lista de \integer{}s con los identificadores de los nodos destinatarios del mensaje}
 \messageTableEnd{Mensaje para el envío de datos}{outgoingContent}
 
-Asumimos que el mensaje que se quiere enviar es un contenido que se puede codificar como una \String{}, por tanto este es el tipo de dato que se espera en el campo \emph{obj} del mensaje (\emph{payload}). Una vez entregado el mensaje al servicio se empieza a procesar. En primer lugar se comprueba que todos los valores de la lista son nodos de la red y están activos, también comprobamos que estamos en una CWSN //TODO TODO TODO en el código y manejar el error de casting. o un campo adicional para selecionar tipo contenido // Si no se superase alguna de estás validaciones se entregaría a la aplicación un mensaje de error con el código y descripción pertinentes y se abortaría el proceso. Si no hay ningun problema, confeccionamos el mensaje que se va a enviar a la red cuyo formato vemos en la tabla~\ref{itm:dataMessage}.
+Una vez entregado el mensaje al servicio se empieza a procesar. Asumimos que el mensaje que se quiere enviar es de un contenido que se puede codificar como una \String{}, por tanto este es el tipo de dato que se espera en el campo \emph{obj} del mensaje (\emph{payload}), si no el servicio devolvera un mensaje de error a la aplicación explicando que el contenido no puede manejarlo. En segundo lugar se comprueba que todos los valores de la lista son nodos de la red y están activos, también comprobamos que estamos en una CWSN. Si no se superase alguna de estas otras validaciones se entregaría al igual que antes un mensaje de error a la aplicación con el código y descripción pertinentes abortándose el proceso en curso. Si no hay ningun problema, confeccionamos el mensaje que se va a enviar a la red cuyo formato vemos en la tabla~\ref{itm:dataMessage}.
 
 \protobufTableInit{Estructura mensaje datos}
   \item[Tipo] Valor ``DATA'' del enumerado ``MessageType''
@@ -346,7 +346,7 @@ Asumimos que el mensaje que se quiere enviar es un contenido que se puede codifi
 	\end{description}
 \protobufTableEnd{Campos del mensaje de datos}{dataMessage}
 
-Una vez tenemos el mensaje lo guardamos en una cola, lo que nos ayuda a calcular el tiempo de llegada de los mensajes de datos por parte de las aplicaciones y es necesario para ofrecer a la aplicación una confirmación positiva o negativa sobre la entrega a los nodos destinararios para cada mensaje. Como esta confirmación puede no ser inmediata, necesitamos almacenar de alguna manera el mensaje para poder recuperarlo cuando nos llegue ésta. Para guardarlo y rescatarlo cuando llegue el momento nos ayudamos de una clave, un \emph{hash} calculado en base a la marca de tiempos, el contenido del mensaje y la MAC de \bt{} del nodo que envía el mensaje. 
+Una vez tenemos el mensaje lo guardamos en una cola, lo que nos ayuda a calcular el tiempo de llegada de los mensajes de datos por parte de las aplicaciones y es necesario para ofrecer a la aplicación una confirmación positiva o negativa sobre la entrega a los nodos destinararios para cada mensaje. Como esta confirmación puede no ser inmediata, necesitamos almacenar de alguna manera el mensaje para poder recuperarlo cuando nos llegue ésta. Para guardarlo y rescatarlo cuando llegue el momento nos ayudamos de una clave, un \emph{hash} calculado en base a la marca de tiempo, el contenido del mensaje y la MAC de \bt{} del nodo que envía el mensaje. 
 
 El siguiente punto es ver si podemos enviar el mensaje por la red, para ello debemos estar registrados en una CWSN y no estar en una situación de cambio de contexto, si se da esta situación marcamos el mensaje como ``pendiente de envío'' en la cola. Si podemos enviarlo lo marcamos como ``en envío'' y se procede al envío. Para ello necesitamos saber quién o quienes son los siguientes nodos en la cadena de envío, esto depende del tipo de nodo y del mapa de red. Aunque gracias a que cada nodo tiene información sobre cómo alcanzar a otros nodos, nuestra red está centralizada en la figura del coordinador por lo que la comunicación entre nodos no es posible siendo precisa una comunicación de saltos en los que el coordinador juega el papel central. Hay casos en que esta comunicación de saltos viene forzada por la interfaz de comunicación de uso, estamos hablando de \bt{} cuya única tipología posible es la de estrella (esclavo/maestro)
 
@@ -354,13 +354,12 @@ El siguiente punto es ver si podemos enviar el mensaje por la red, para ello deb
 
 \paragraph{Coordinador} El coordinador tiene comunicación directa con todos los nodos, en \wifi{} ocurre siempre y en \bt{} tenemos la restricción de hasta 7 nodos, si no introducimos la figura del ``coordinador intermedio'', nodo que se comporta como concentrador de mensajes en su piconet y que a su vez está en otra piconet donde se encuentra el coordinador. En nuestro caso como sólo hay un salto, tenemos contacto directo con cualquier nodo no importando la interfaz en la que nos encontremos. Por tanto los siguientes eslabones de la cadena de entrega son los mismos nodos que están en el campo ``Lista Destinatarios'' del mensaje a enviar.\\
 
-Una vez tenemos éste y a quién se lo vamos a enviar, procedemos al envío (en la siguente sección veremos que necesitamos un parámetro más pero que por el momento podemos obviar). Enviar es basicamente pasar como parámetros el mensaje al método \emph{write()} del controlador traduciendo los nodos a la dirección de comunicación de la interfaz, es decir si tenemos que enviar un mensaje a una serie de nodos de los cuales tenemos sus identificadores, tendremos que traducir estos identificadores a las direcciones IP en el caso de \wifi{} o a las direcciones MAC en \bt{}. Una vez que el mensaje ha sido escrito en la red por el controlador, este mismo informa al servicio a través de un mensaje del tipo {\small(MESSAGE\_WRITE)} con resultado del envío, enviándonos el propio mensaje de vuelta más una lista de las direcciones de comunicación a las cuales no ha podido entregar el mensaje.
+Una vez tenemos éste y a quién se lo vamos a enviar, procedemos al envío (en la siguente sección veremos que necesitamos un parámetro más pero que por el momento podemos obviar). Enviar es basicamente pasar como parámetros el mensaje al método \emph{write()} del controlador traduciendo los nodos a la dirección de comunicación de la interfaz, es decir si tenemos que enviar un mensaje a una serie de nodos de los cuales tenemos sus identificadores, tendremos que traducir estos identificadores a las direcciones IP en el caso de \wifi{} o a las direcciones MAC en \bt{}. Una vez que el mensaje ha sido escrito en la red por el controlador, este mismo informa al servicio a través de un mensaje del tipo {\small(MESSAGE\_WRITE)} con resultado del envío, enviándonos el propio mensaje de vuelta más una lista de las direcciones de comunicación a las cuales no ha podido entregar el mensaje (ver tabla~\ref{tab:messageWriteController}).
 
 \messageTableInit{\controllerToServ}{3 =\\ \scriptsize{MESSAGE\_WRITE}}{número mensajes escritos OK}{número mensajes escritos NOK}{\emph{bytes} enviados a través de la red}{\nc{}}
 \messageTableExtra{requester}{Una \String{} que representa el \emph{messenger} de la aplicación que origina el mensaje}
 \messageTableExtraAddrow{addressNotDelivered}{Una lista de \String{} con las MAC de \bt{} o direcciones IP de los nodos a los cuales el envío del mensaje ha resultado fallido, según el controlador que nos envíe el mensaje}
-\messageTableEnd{Mensaje resultado envío de datos desde el controlador al servicio}{MessageWriteController}
-TODO TODO TODO
+\messageTableEnd{Mensaje resultado envío de datos desde el controlador al servicio}{messageWriteController}
 
 Dependiendo de quienes sean los destinatarios del mensaje, el mensaje habrá llegado a su destino (no hay saltos de por medio) y por tanto no necesitamos más confirmación de entrega que la que ya nos da TCP de por si. Si no tuviesesemos contacto directo con los nodos a los que queremos enviar el mensaje necesitamos esperar a que nos confirmen el resultado de la entrega de éste.
 
@@ -383,8 +382,7 @@ Dependiendo de quienes sean los destinatarios del mensaje, el mensaje habrá lleg
 \protobufTableEnd{Campos del mensaje ACK}{ackMessage}
   
 Al recibir la confirmación procedemos a borrar de la cola el mensaje de datos utilizando el \emph{hash} leído de la señalización y a comunicar a la aplicación el resultado del proceso de envío. (El detalle puede verse en la tabla~\ref{tab:outgoingContentResultApp})
-TODO TODO TODO camviar outgoinf content progress...\\ \\
-\messageTableInit{\servToApp}{9 =\\ \scriptsize{OUTGOING\_CONTENT \_PROGRESS}}{número mensajes escritos OK}{número mensajes escritos NOK}{\emph{payload}}{\nc{}}
+\messageTableInit{\servToApp}{6 =\\ \scriptsize{OUTGOING\_CONTENT \_RESULT}}{número mensajes escritos OK}{número mensajes escritos NOK}{\emph{payload}}{\nc{}}
 \messageTableExtra{IdsNotDelivered}{Un array de \integer{}s con los identificadores de los nodos a los cuales no les ha llegado el mensaje}
 \messageTableExtraAddrow{NamesNotDelivered}{Un array de \String{} con los nombres de los nodos a los cuales no les ha llegado el mensaje}
 \messageTableEnd{Mensaje resultado envío de datos presentado a la aplicación}{outgoingContentResultApp}
@@ -461,7 +459,7 @@ Con la información recogida del entorno tanto por el mismo nodo como por sus com
 \end{files}
 \end{codeInvolved}
 
-Cuando el coordinador ejecuta su tarea cognitiva va rescatando de su base de datos para cada nodo los últimos escaneos de éste obteniendo un promedio y una tendencia de los datos de sensado. Evalúa estos datos y decide si es necesario un cambio de interfaz. En caso positivo, obtenemos una lista de los nodos activos en la red, los marcamos como inactivos e informamos a las aplciaciones sobre el nuevo evento (ver mensaje en la API) y configuramos la interfaz de \wifi{}. Para ello utilizamos el mismo prodecimiento usado en~\ref{subsec:configInterface} con unos pasos extras: una vez nos hemos conectado a la red enviamos un mensaje de señalización (a través de la interfaz actual, aún \wifi{} no es efectiva) a la lista de nodos que sacamos informandoles del cambio y de la información necesaria para llevarla a cabo:
+Cuando el coordinador ejecuta su tarea cognitiva va rescatando de su base de datos para cada nodo los últimos escaneos de éste obteniendo un promedio y una tendencia de los datos de sensado. Evalúa estos datos y decide si es necesario un cambio de interfaz. En caso positivo, obtenemos una lista de los nodos activos en la red, los marcamos como inactivos e informamos a las aplciaciones sobre el nuevo evento (ver mensaje en la API) y configuramos la interfaz de \wifi{}. Para ello utilizamos el mismo prodecimiento usado en~\ref{subsec:configInterface} con unos pasos extras: una vez nos hemos conectado a la red enviamos un mensaje de señalización (a través de la interfaz actual, aún \wifi{} no es efectiva) a la lista de nodos que sacamos informandoles del cambio y de la información necesaria para llevarla a cabo, (ver tabla~\ref{itm:switchToWifi})
 
 \protobufTableInit{Estructura mensaje SWITCH hacia \wifi{}}   
 	\item[Tipo] Valor ``SIGNALING'' del enumerado ``MessageType''
@@ -481,7 +479,7 @@ Cuando el coordinador ejecuta su tarea cognitiva va rescatando de su base de dat
  
 Al terminar de configurar la interfaz (siendo ésta ya efectiva), dejamos programado un \emph{timeout} que dispare el fin de cambio contextual para evitar bloqueos porque algún no responda. A partir de ahora esperamos a que los nodos normales configuren su interfaz de \wifi{} (antes apagarán su interfaz en curso, en este caso \bt{}) y vayan entrando en la nueva red tal y como se contó en las secciones~\ref{subsec:configInterface} y~\ref{subsec:enterInNetwork}. 
 
-El coordinador al recibir los ``HelloPackets'' en vez de seguir el flujo normal que consiste informar a todos los nodos de la nueva entrada y al nuevo nodo informarle sobre el mapa de red, nos limitamos a enviarle un mensaje de confirmación indicándole que hemos recibido el ``HelloPacket'' para que éste pare su envío, así evitamos enviar muchos mensajes de señalización de una situación que es probable que cambie. Estos paquetes están enviados directamente a la IP del coordinador (recogida del mensaje de señalización de cambio) para que haya más posibilidades de recepción. Si por algún casual el nodo normal terminase su ráfaga y no obtuviese respuesta el mismo entendería que el proceso de cambio de contexto ha acabado de manera insatisfactoria. El detalle de este mensaje de confirmación de entrada en la red en situación de cambio es:
+El coordinador al recibir los ``HelloPackets'' en vez de seguir el flujo normal que consiste informar a todos los nodos de la nueva entrada y al nuevo nodo informarle sobre el mapa de red, nos limitamos a enviarle un mensaje de confirmación indicándole que hemos recibido el ``HelloPacket'' para que éste pare su envío, así evitamos enviar muchos mensajes de señalización de una situación que es probable que cambie. Estos paquetes están enviados directamente a la IP del coordinador (recogida del mensaje de señalización de cambio) para que haya más posibilidades de recepción. Si por algún casual el nodo normal terminase su ráfaga y no obtuviese respuesta el mismo entendería que el proceso de cambio de contexto ha acabado de manera insatisfactoria. El detalle de este mensaje de confirmación de entrada en la red en situación de cambio se ve en la tabla~\ref{itm:okSwitch}
 
 \protobufTableInit{Estructura mensaje confirmación cambio de contexto}   
 	\item[Tipo] Valor ``RESPONSE'' del enumerado ``MessageType''
@@ -493,7 +491,7 @@ El coordinador al recibir los ``HelloPackets'' en vez de seguir el flujo normal 
 
 Si antes de que salte el \emph{timeout} programado, hemos recibido todos los ``HelloPackets'' de todos los nodos que estaban formando la red, procedemos a finalizar el cambio de contexto, si no esperamos a que finalice el \emph{timeout}, situación en la que habremos perdido algún nodo.
 
-\paragraph{Coordinador} Apagamos la interfaz \bt{} y liberamos todos los recursos. Hemos mantenido la interfaz arriba hasta el último momento para no perder mensajes de datos si algún nodo actúa de manera incorrecta y envía estos mensajes en pleno cambio de conexto. Acto seguido se envía el mapa de red por medio de señalización a todos los nodos que formen ahora la red (idealmente todo los que la formaban antes del cambio).
+\paragraph{Coordinador} Apagamos la interfaz \bt{} y liberamos todos los recursos. Hemos mantenido la interfaz arriba hasta el último momento para no perder mensajes de datos si algún nodo actúa de manera incorrecta y envía estos mensajes en pleno cambio de conexto. Acto seguido se envía el mapa de red por medio de señalización a todos los nodos que formen ahora la red (idealmente todo los que la formaban antes del cambio), cuyo detalle se aprecia en la tabla~\ref{itm:endSwitch}
 
 \protobufTableInit{Estructura mensaje fin cambio de contexto}   
 	\item[Tipo] Valor ``SIGNALING'' del enumerado ``MessageType''
@@ -523,7 +521,7 @@ Notar que este mensaje es diferente para cada nodo ya que lista de nodos vista d
 \end{files}
 \end{codeInvolved}
 
-Cuando se produce un cambio de interfaz a \bt{} el coordinador como antes obtiene una lista de quién está en la red y se marcan como inactivos, comunicamos hacia las aplicaciones el nuevo estado de la red y procedemos a enviar un mensaje de señalización que marque a los demás nodos el evento de cambio de contexto hacia \bt{} este mensaje tiene esta disposición:\\
+Cuando se produce un cambio de interfaz a \bt{} el coordinador como antes obtiene una lista de quién está en la red y se marcan como inactivos, comunicamos hacia las aplicaciones el nuevo estado de la red y procedemos a enviar un mensaje de señalización que marque a los demás nodos el evento de cambio de contexto hacia \bt{}, este mensaje tiene la disposición mostrada en la tabla~\ref{itm:switchToBT}\\
 
 \protobufTableInit{Estructura mensaje SWITCH hacia \bt{}}   
 	\item[Tipo] Valor ``SIGNALING'' del enumerado ``MessageType''
