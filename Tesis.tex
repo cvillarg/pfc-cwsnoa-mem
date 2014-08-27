@@ -50,6 +50,18 @@
 %\pretolerance=10000
 %\tolerance=10000
 
+%subrayar con líneas de puntos
+\usepackage{ulem}
+\normalem
+
+%para líneas de puntos en tablas
+\usepackage{tabularx}
+\usepackage{arydshln} 
+%este paquete para pintar lineas discontinuas tiene que añadirse 
+%después de longtable y tabularx. Tabularx he tenido que añadirlo para
+%que reconozca el arydshln, desconozco su utilidad.
+
+
 % Definimos  el   comando  \compilaCapitulo,  que   luego  se  utiliza
 % (opcionalmente) en config.tex. Quedaría  mejor si también se definiera
 % en  ese fichero,  pero por  el modo  en el  que funciona  eso  no es
@@ -85,7 +97,29 @@ constantes,guionado,Cascaras/bibliografia,config,shortcuts%
 \newcommand{\compilaApendice}[1]{%
 \includeonly{\ficherosBasicosTeXiS,\ficherosBasicosTexto,Apendices/#1}%
 }
+%-------------
+%Para poner color a la letra en tablas
+%\newcommand*{\@rowstyle}{}
+\newcommand*{\rowstyle}[1]{% sets the style of the next row
+  \gdef\@rowstyle{#1}%
+  \@rowstyle\ignorespaces%
+}
 
+\newcolumntype{=}{% resets the row style
+  >{\gdef\@rowstyle{}}%
+}
+
+\newcolumntype{+}{% adds the current row style to the next column
+  >{\@rowstyle}%
+}
+%----------------
+
+%Para dibujar diagramas uml/network messages
+\usepackage{tikz}
+\usetikzlibrary{calc}
+\usepackage{pgf}
+\usepackage[underline=true,rounded corners=false]{pgf-umlsd}
+%--------------
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 %            Preámbulo del documento. Configuraciones varias
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -111,7 +145,7 @@ constantes,guionado,Cascaras/bibliografia,config,shortcuts%
 %
 \ifpdf\hypersetup{%
     pdftitle = {\titulo},
-    pdfsubject = {Final Thesis Report},
+    pdfsubject = {Proyecto fin de Carrera},
     pdfkeywords = {},
     pdfauthor = {\textcopyright\ \autor},
     pdfcreator = {\LaTeX\ con el paquete \flqq hyperref\frqq},
@@ -158,7 +192,7 @@ constantes,guionado,Cascaras/bibliografia,config,shortcuts%
 \mainmatter
 \restauraCabecera
 
-\include{Capitulos/01Introduction}
+%\include{Capitulos/01Introduction}
 %\include{Capitulos/02State}
 %\include{Capitulos/03Work}
 \include{Capitulos/04Design}

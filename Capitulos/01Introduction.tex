@@ -36,6 +36,35 @@ Publicaciones
 
 Introducción general a lo que es Cognitive Radio, la motivación de su
 aparición, características, estado actual en el mundo, etc.
+
+\begin{sequencediagram}
+  \newthread{t}{:Thread}
+  \newinst{a}{:A}
+  \newinst{b}{:B}
+
+  \begin{call}{t}{funcA()}{a}{return}
+    \begin{call}{a}{funcA()}{b}{return}
+    \end{call}
+  \end{call}
+\end{sequencediagram}
+
+\begin{sequencediagram}
+  \newthread{t}{:Thread}
+
+  \begin{call}{t}{function()}{t}{return value}
+  \end{call}
+\end{sequencediagram}
+
+\begin{sequencediagram} \newthread{t1}{:Thread1} \newthread[gray]{t2}{:Thread2}
+\begin{callself}{t1}{loop}{} \end{callself}
+\prelevel\prelevel
+\begin{callself}{t2}{loop}{} \end{callself} 
+\mess{t1}{hola}{t2}
+\begin{callself}{t2}{process}{that} \end{callself} 
+\mess{t2}{hola2}{t1}
+
+\end{sequencediagram}
+
                                                                                       
 %-------------------------------------------------------------------
 \section{The scenario: Cognitive Wireless Sensor Networks}

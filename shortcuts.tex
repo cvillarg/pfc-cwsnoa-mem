@@ -9,16 +9,30 @@
 %
 %---------------------------------------------------------------------
 
-\def\android{\emph{Android}}
+\def\android{\textit{Android}}
 \def\nc{\small{No usado/indiferente}}
 \def\messApp{Messenger de la aplicaci\'{o}n}
-\def\bt{\emph{Bluetooth}}
-\def\wifi{\emph{WiFi}}
+\def\bt{\textit{Bluetooth}}
+\def\wifi{\textit{WiFi}}
 \def\integer{entero}
-\def\double{\emph{double}}
-\def\String{\emph{cadena de caracteres}}
-\def\false{\emph{false}}
-\def\true{\emph{true}}
+\def\integers{enteros}
+\def\double{\textit{double}}
+\def\String{\textit{cadena de caracteres}}
+\def\false{\bsq{\textit{false}}}
+\def\true{\bsq{\textit{true}}}
+\def\bsq#1{\lq{#1}\rq}
+%---
+\def\ListaNodosNoDeliveredItem{
+\item[Lista de nodos a los cuales no se han entregado el mensaje] \ListaNodosDescription{}
+}
+\def\ListaNodosItem{
+\item [Lista de nodos] \ListaNodosDescription{}
+}
+\def\ListaNodosDescription{
+Un conjunto de dos \textit{arrays} ligados, uno con los identificadores de los nodos y otro con los nombres de \'{e}stos. De tal forma que el par (identificador, nombre) comparta la misma posici\'{o}n en ambos \textit{arrays}. Se recuperan con las claves ``nodeIdsList'' y ``nodeNamesList'' respectivamente.
+}
+
+%---
 %-------------------------
 % Tabla: estructura mensaje android
 %	_init: iniciliza tabla e incluye los campos del mensaje
@@ -43,7 +57,7 @@
 	\hline%
 	\multicolumn{5}{c}{\textbf{Campos mensaje #1}} \\%
 	\hline%
-	\emph{What} & \emph{arg1} & \emph{arg2} & \emph{obj} & \emph{replyTo} \\%
+	\textit{What} & \textit{arg1} & \textit{arg2} & \textit{obj} & \textit{replyTo} \\%
 	\hline%
 	\parbox[t]{3.4cm}{#2} & #3 & #4 & #5 & #6 \\%
 	\hline%
@@ -51,7 +65,7 @@
 \providecommand{\messageTableExtra}[2]{
 	\multicolumn{5}{l}{Extras}\\%
 	\hline%
-	\emph{key} & \multicolumn{4}{l|}{\emph{value}}\\%
+	\textit{key} & \multicolumn{4}{l|}{\textit{value}}\\%
 	\hline
      	{#1} & \multicolumn{4}{p{10.2cm}|}{#2}\\%
 	\hline%
@@ -68,10 +82,10 @@
 }
 
 \providecommand{\messageTableExtraControllerSpecified}[3]{%
-	\noalign{\vskip 0.15cm} 
+	%\noalign{\vskip 0.17cm} %fails with news packets 
 	\multicolumn{5}{l}{Extras, controlador: {#1}}\\%
 	\hline%
-	\emph{key} & \multicolumn{4}{l|}{\emph{value}}\\%
+	\textit{key} & \multicolumn{4}{l|}{\textit{value}}\\%
 	\hline
      	{#2} & \multicolumn{4}{p{10.2cm}|}{#3}\\%
 	\hline%
@@ -101,4 +115,32 @@
 \caption{#1} \label{itm:#2}%
 \end{table}%
 }
+%-----------------------------
+% Tabla: 2 columnas API
+%      _init: inicializa la tabla
+%      _row: fila de la tabla
+%      _end: finaliza la tabla con caption y label
+%-----------------------------
+\providecommand{\apiTableInit}[1]{%
+\begin{table}[h]
+\begin{center}
+	\begin{tabular}{r @{\hskip 1cm} l}
+	\multicolumn{2}{c}{#1}\\ \hline
+	\noalign{\vskip 0.25cm} 
+	\dashuline{Constante usada en el c\'{o}digo} & \dashuline{Representaci\'{o}n en forma de \integer{}} \\  %\cdashline{2-2}
+	\noalign{\vskip 0.17cm} %\hdashline
+}%
+\providecommand{\apiTableRow}[2]{%
+	\MakeUppercase{\small #1} &  #2 \\
+}%
+\providecommand{\apiTableEnd}[2]{%
+	\end{tabular}
+	\caption{#1} \label{tab:#2}
+\end{center}
+\end{table}
+}%
+\definecolor{notImplemented}{gray}{0.7}
+\providecommand{\apiTableRowNotImplemented}[2]{%
+	\rowstyle{\color{notImplemented} \MakeUppercase{{\small #1}}} & \rowstyle{\color[gray]{0.7}}	 #2 \\
+}%
 
