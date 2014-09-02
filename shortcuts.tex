@@ -82,7 +82,7 @@ Un conjunto de dos \textit{arrays} ligados, uno con los identificadores de los n
 }
 
 \providecommand{\messageTableExtraControllerSpecified}[3]{%
-	%\noalign{\vskip 0.17cm} %fails with news packets 
+	\noalign{\vskip 0.17cm} %fails with arydshln packet
 	\multicolumn{5}{l}{Extras, controlador: {#1}}\\%
 	\hline%
 	\textit{key} & \multicolumn{4}{l|}{\textit{value}}\\%
@@ -127,7 +127,8 @@ Un conjunto de dos \textit{arrays} ligados, uno con los identificadores de los n
 	\begin{tabular}{r @{\hskip 1cm} l}
 	\multicolumn{2}{c}{#1}\\ \hline
 	\noalign{\vskip 0.25cm} 
-	\dashuline{Constante usada en el c\'{o}digo} & \dashuline{Representaci\'{o}n en forma de \integer{}} \\  %\cdashline{2-2}
+	%\dashuline{Constante usada en el c\'{o}digo} & \dashuline{Representaci\'{o}n en forma de \integer{}} \\  %\cdashline{2-2}
+	\uwave{\texttt{Constante usada en el c\'{o}digo}} & \uwave{\texttt{Representaci\'{o}n en forma de \integer{}}} \\  %\cdashline{2-2}
 	\noalign{\vskip 0.17cm} %\hdashline
 }%
 \providecommand{\apiTableRow}[2]{%
@@ -141,6 +142,39 @@ Un conjunto de dos \textit{arrays} ligados, uno con los identificadores de los n
 }%
 \definecolor{notImplemented}{gray}{0.7}
 \providecommand{\apiTableRowNotImplemented}[2]{%
-	\rowstyle{\color{notImplemented} \MakeUppercase{{\small #1}}} & \rowstyle{\color[gray]{0.7}}	 #2 \\
+	\rowstyle{\color{notImplemented} \MakeUppercase{{\small #1}}} & \rowstyle{\color[gray]{0.7}}	 #2 | no implementado\\
 }%
+%-----------------------------
+%	Figura: procesos / mensajes
+%				_init: inicializa la figura
+%				_initTitle: inicializa la figura e incluye un titulo en la parte superior
+%				_end: cierra la figura e incluye caption
+%-----------------------------
+\providecommand{\umlsdInit}[1][h]{%
+\begin{figure}[#1]%
+	\begin{center}%
+		\begin{sequencediagram}%
+}%
+\providecommand{\umlsdInitTitle}[2][h]{%
+\begin{figure}[#1]%
+	\begin{center}%
+		\begin{tabular}{c}%
+			\textbf{#2}\\ \hline%
+			\noalign{\vskip 0.17cm}
+		\end{tabular}%
+		\begin{sequencediagram}%
+}%
+
+\providecommand{\callSelf}[2]{%
+\begin{callself}{#1}{\texttt{#2}}{} \end{callself}%
+}%
+
+\providecommand{\umlsdEnd}[2]{%
+		\end{sequencediagram}
+	\end{center}
+\caption{#1} \label{fig:#2}
+\end{figure}
+}%
+
+
 

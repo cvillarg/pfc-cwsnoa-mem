@@ -51,12 +51,27 @@
 %\tolerance=10000
 
 %subrayar con líneas de puntos
-\usepackage{ulem}
-\normalem
+\usepackage[normalem]{ulem}
+%\normalem
 
-%para líneas de puntos en tablas
-\usepackage{tabularx}
-\usepackage{arydshln} 
+%para enriquecer las tablas
+\usepackage{tabularx} %row style
+%Para poner color a la letra en tablas
+%\newcommand*{\@rowstyle}{}
+\newcommand*{\rowstyle}[1]{% sets the style of the next row
+  \gdef\@rowstyle{#1}%
+  \@rowstyle\ignorespaces%
+}
+
+\newcolumntype{=}{% resets the row style
+  >{\gdef\@rowstyle{}}%
+}
+
+\newcolumntype{+}{% adds the current row style to the next column
+  >{\@rowstyle}%
+}
+%----------------
+%\usepackage{array, arydshln} %problemas en linux, no en mac. Como causa además otros problemas queda fuera. 
 %este paquete para pintar lineas discontinuas tiene que añadirse 
 %después de longtable y tabularx. Tabularx he tenido que añadirlo para
 %que reconozca el arydshln, desconozco su utilidad.
@@ -98,25 +113,10 @@ constantes,guionado,Cascaras/bibliografia,config,shortcuts%
 \includeonly{\ficherosBasicosTeXiS,\ficherosBasicosTexto,Apendices/#1}%
 }
 %-------------
-%Para poner color a la letra en tablas
-%\newcommand*{\@rowstyle}{}
-\newcommand*{\rowstyle}[1]{% sets the style of the next row
-  \gdef\@rowstyle{#1}%
-  \@rowstyle\ignorespaces%
-}
-
-\newcolumntype{=}{% resets the row style
-  >{\gdef\@rowstyle{}}%
-}
-
-\newcolumntype{+}{% adds the current row style to the next column
-  >{\@rowstyle}%
-}
-%----------------
 
 %Para dibujar diagramas uml/network messages
 \usepackage{tikz}
-\usetikzlibrary{calc}
+\usetikzlibrary{babel,calc}
 \usepackage{pgf}
 \usepackage[underline=true,rounded corners=false]{pgf-umlsd}
 %--------------

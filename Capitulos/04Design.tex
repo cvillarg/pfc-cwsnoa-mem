@@ -36,12 +36,12 @@ Clasificar nuestros metodos en los bloques de una arquitectura cognitiva.
 Servicio vs activity.... multi app...
 
 %-------------------------------------------------------------------
-\section{Cómo montar una aplicación sobre el servicio cognitivo, definición de la API}
+\section{API: Definición, Cómo montar una aplicación sobre el servicio cognitivo}
 %-------------------------------------------------------------------
 \label{sec:api}
 La forma de interactuar con el servicio cognitivo se basa en, como se ha visto en \ref{sec:detallesImplementacion}, el intercambio de mensajes a través de los objetos \textit{Messenger} y \textit{Handler} provistos por \android{}. Estos mensajes provocan el disparo de ciertos procesos en el servicio que responderá, si procede, en cuanto el resultado esté listo. Son llamadas por tanto asíncronas, de igual modo el servicio entregará mensajes a las aplicaciones en cualquier momento sin que estás hayan solicitado nada.\\
 
-La aplicación que se monte por tanto no necesita cumplir más requisitos que la de manejar los distintos mensajes que le entrege el servicio en cualquier instante de tiempo y la de almacenar la lista de nodos formada por el par (identificador, nombre) entregada por el servicio y modificada en cada evento que lo requiera. Es necesario su almacenaje ya que es necesaria para la confección de algunos mensajes de la API y a que no hay una manera activa de pedir la lista de nodos al servicio.
+La aplicación que se monte por tanto no necesita cumplir más requisitos que la de manejar los distintos mensajes que le entrege el servicio en cualquier instante de tiempo y la de almacenar la lista de nodos formada por el par (identificador, nombre) entregada por el servicio y modificada en cada evento que lo requiera. Es necesario su almacenaje ya que se requiere para la confección de algunos mensajes de la \ac{API} ya que no hay una manera activa de pedir la lista de nodos al servicio.
 
 Los mensajes que se intercambian tienen un campo \textit{what} que resume el proposito de éste, más una serie de añadidos experesados en forma de parámetros y extras que conforman y describen el proceso que está ocurriendo.
 Este campo \textit{what} es un \integer{} único que define el número diferente de mensajes tipo que se intercambian, entre éstos habrá algunos que sólo existan en un sentido de la comunicación y otros que aparezcan en ambos sentidos.
@@ -75,7 +75,7 @@ Para poder entregar y recibir mensajes necesitamos una referencia al \textit{Mes
 es.upm.die.lsi.pfc.CWSNoA.CognitiveLayer_specific_Service.class
 \end{verbatim}
 En la petición de \textit{bind} también se pasa como parámetro un objeto de la clase \textit{ServiceConnection} que el sistema \android{} llama cuando ha establecido la conexión. \android{} arrancará el servicio si éste no lo estaba ya y nos devolverá como objeto \textit{IBinder} una instancia del \textit{Messenger} del servicio. 
-Una vez recuperada la referencia procedemos al registro de la aplicación en el servicio, para ello iniciamos un proceso de \textit{handshaking}. El primer mensaje no lleva ningún dato adicional, dicta de esta forma (ver tabla~\ref{tab:registerClientMessage}):
+Una vez recuperada la referencia procedemos al registro de la aplicación en el servicio, para ello iniciamos un proceso de \textit{handshaking}. El primer mensaje no lleva ningún dato adicional, dicta de esta forma (ver tabla~\ref{tab:registerClientMessage}).
 
 \messageTableInit{\appToServ}{1 =\\ \footnotesize{REGISTER\_CLIENT}}{\nc{}}{\nc{}}{\nc{}}{\messApp{}}
 \messageTableEnd{Mensaje registro cliente}{registerClientMessage}
@@ -85,7 +85,7 @@ Acto seguido debemos informar sobre parámetros de nuestra aplicación al servicio
 \item[Papel de nodo] En el campo \textit{arg1} del mensaje. \bsq{0} para indicar que somos un nodo secundario y \bsq 1 para indicar que nuestro papel es primario.
 \item[Código de aplicación] Como extra del mensaje incluimos una \String{} con la clave ``appCode'' indicando qué aplicación somos, para intercambiar mensajes cuyo código de aplicación coincida.
 \end{description}
-A través de este mensaje (ver tabla~\ref{tab:registerExchangeMessage}):
+A través de este mensaje (ver tabla~\ref{tab:registerExchangeMessage}).
 
 \messageTableInit{\appToServ}{3 =\\ \scriptsize{REGISTER\_EXCHANGE}}{0=secundario / 1=primario}{\nc}{\textit{null}}{\messApp{}}
 \messageTableExtra{appCode}{Una string con el código de aplicación}
@@ -93,7 +93,7 @@ A través de este mensaje (ver tabla~\ref{tab:registerExchangeMessage}):
 
 Tras esto el servicio nos responderá con un mensaje igual tipo {\small REGISTER\_EXCHANGE}, pero del que puede haber dos variantes dependiendo de cuál fuera la situación del servicio. La forma fácil de identificar el tipo de respuesta es con la información devuelta en el campo \textit{obj} del mensaje. 
 
-Se trata de un valor booleano, si obtenemos un \false{} corresponde al caso de que no estabamos cooperando en una \ac{CWSN} cuando nos registramos en el servicio. Es probable que nos hayan llegado entre tanto otros mensajes del tipo {\small SERVICE\_INFORMATION} debido a procesos internos del servicio relacionados con la configuración y la entrada en la red. El detalle de éste es (ver tabla~\ref{tab:endHandshakingNotCWSNMessage}):
+Se trata de un valor booleano, si obtenemos un \false{} corresponde al caso de que no estabamos cooperando en una \ac{CWSN} cuando nos registramos en el servicio. Es probable que nos hayan llegado entre tanto otros mensajes del tipo {\small SERVICE\_INFORMATION} debido a procesos internos del servicio relacionados con la configuración y la entrada en la red. El detalle de éste es (ver tabla~\ref{tab:endHandshakingNotCWSNMessage}).
 
 \messageTableInit{\servToApps}{3 =\\ \scriptsize{REGISTER\_EXCHANGE}}{Estado de la interfaz}{Interfaz}{\textbf{False}}{\nc{}}
 \messageTableExtra{nodeRole}{Papel del nodo}
@@ -109,51 +109,51 @@ La información de cada campo:
 	\item[Arg1: Estado de la interfaz] Un entero cuyos valores corresponden a:
 	\begin{enumerate}
 	 \setcounter{enumi}{-1}
-		\item {\small INTERFACE\_STATE\_DOWN}, la interfaz de comunicación no está configurada
+		\item {\small INTERFACE\_STATE\_DOWN}, la interfaz de comunicación no está configurada.
 		\item {\small INTERFACE\_STATE\_IDLE}, la interfaz está configurada pero no estamos cooperando en red.
-		\item {\small INTERFACE\_STATE\_IDLE\_NETWORKING}, situación de reposo cooperando en \ac{CWSN}
-		\item {\small INTERFACE\_STATE\_CONNECTING}, nos estamos conectando a otro nodo (sólo en \bt{})
+		\item {\small INTERFACE\_STATE\_IDLE\_NETWORKING}, situación de reposo cooperando en \ac{CWSN}.
+		\item {\small INTERFACE\_STATE\_CONNECTING}, nos estamos conectando a otro nodo (sólo en \bt{}).
 		\item {\small INTERFACE\_STATE\_SENDING}, estamos enviado datos a través de la interfaz.
 		\item {\small INTERFACE\_STATE\_RECEIVING}, estamos reciviendo datos.
 	\end{enumerate}
 	\item[Arg2: Interfaz] Un entero cuyos valores corresponden a:
 	\begin{enumerate}
 		\setcounter{enumi}{-1}
-		\item \bt{}
-		\item \wifi{}
-		\item \textcolor{notImplemented}{\textit{Mobile}, no implementado}
+		\item \bt{}.
+		\item \wifi{}.
+		\item \textcolor{notImplemented}{\textit{Mobile}, no implementado.}
 		\setcounter{enumi}{-2}
-		\item Desconocido, devuelto en el transcurso de cambio de contexto
+		\item Desconocido, devuelto en el transcurso de cambio de contexto o \textit{handover}.
 	\end{enumerate}
-	\item[Obj: \false{}] Un valor booleano cuyo valor nos indica que no estabamos cooperando con otros nodos tras la recepción del mensaje {\small REGISTER\_EXCHANGE} por lo tanto el servicio ha configurado de nuevo la interfaz para disparar los procesos de entrada en la red (ver sección~\ref{subsec:configInterface})
+	\item[Obj: \false{}] Un valor booleano cuyo valor nos indica que no estabamos cooperando con otros nodos tras la recepción del mensaje {\small REGISTER\_EXCHANGE} por lo tanto el servicio ha configurado de nuevo la interfaz para disparar los procesos de entrada en la red (ver sección~\ref{subsec:configInterface}).
 	\item [EXTRAS] Campos \textit{extra} con el resto de parametros cuando el valor \textit{obj} es \false{}:
 	\begin{description}
-		\item[Papel del nodo] Un \integer{} que representa el papel del nodo en la red, se recupera con la clave ``nodeRole''
+		\item[Papel del nodo] Un \integer{} que representa el papel del nodo en la red, se recupera con la clave ``nodeRole'':
 		\begin{enumerate}
 			\setcounter{enumi}{-1}
-			\item Secundario
-			\item Primario
+			\item Secundario.
+			\item Primario.
 		\end{enumerate}
-		\item[Tipo de nodo] Un \integer{} que representa el tipo de nodo, se recupera con la clave ``nodeType''
+		\item[Tipo de nodo] Un \integer{} que representa el tipo de nodo, se recupera con la clave ``nodeType'':
 		\begin{enumerate}
 			\setcounter{enumi}{-1}
-			\item Normal
-			\item Coordinador
-			\item \textcolor{notImplemented}{Coordinador temporal en \bt{}, no implementado. En todo caso este valor no es selecionable nunca por el usuario/servicio}
+			\item Normal.
+			\item Coordinador.
+			\item \textcolor{notImplemented}{Coordinador temporal en \bt{}, no implementado. En todo caso este valor no es selecionable nunca por el usuario/servicio.}
 			\setcounter{enumi}{-2}
-			\item Desconocido, valor por defecto (si obtenemos este valor nos encontramos en situación de error)
+			\item Desconocido, valor por defecto (si obtenemos este valor nos encontramos en situación de error).
 		\end{enumerate}
-		\item[Periodo tarea cognitiva] Un \double{} con el que se nos informa cada cuánto el servicio realiza la tarea cognitiva (sensado, toma de decisiones...). Se recupera con la clave ``periodTask''
-		\item[Nombre del nodo en la red] Una \String{} con la que el servicio nos informa de cómo nos conocen los otros nodos en la red. Se recupera con la clave ``nodeName''
+		\item[Periodo tarea cognitiva] Un \double{} con el que se nos informa cada cuánto el servicio realiza la tarea cognitiva (sensado, toma de decisiones...). Se recupera con la clave ``periodTask''.
+		\item[Nombre del nodo en la red] Una \String{} con la que el servicio nos informa de cómo nos conocen los otros nodos en la red. Se recupera con la clave ``nodeName''.
 		\item[Resultado configuración interfaz] Un valor booleano cuya clave para obtenerlo es ``errorSetupInterface'' cuyo valor significa:
 		\begin{itemize}
-			\item \true{} se ha producido un error mientras la configuración de la interfaz
-			\item \false{} todo ha ido OK en el proceso de configuración
+			\item \true{} se ha producido un error mientras la configuración de la interfaz.
+			\item \false{} todo ha ido OK en el proceso de configuración.
 		\end{itemize}
 	\end{description}
 \end{description}
 
-Si por el contrario el valor obtenido en el campo \textit{obj} es \true{} significa que el servicio ya se encontraba cooperando en una \ac{CWSN} cuando registramos nuestra aplicación por lo que no es necesario ninguna configuración y recibimos una respuesta casi inmediata (a diferencia del caso anterior) con la siguente disposición (ver tabla~\ref{tab:endHandshakingInCWSNMessage}):
+Si por el contrario el valor obtenido en el campo \textit{obj} es \true{} significa que el servicio ya se encontraba cooperando en una \ac{CWSN} cuando registramos nuestra aplicación por lo que no es necesario ninguna configuración y recibimos una respuesta casi inmediata (a diferencia del caso anterior) con la siguente disposición (ver tabla~\ref{tab:endHandshakingInCWSNMessage}).
 
 \messageTableInit{\servToApp}{3 =\\ \scriptsize{REGISTER\_EXCHANGE}}{Estado de la interfaz}{Interfaz}{\textbf{True}}{\nc{}}
 \messageTableExtra{nodeRole}{Papel del nodo}
@@ -168,7 +168,7 @@ Si por el contrario el valor obtenido en el campo \textit{obj} es \true{} signif
 La información recibida es prácticamente igual salvo el campo \textit{obj} que nos devuelve el valor \true{} lo que provoca que este mensaje sólo lo reciba esta aplicación en exlcusiva y un cambio en los extras, que dejan de inlcuir el \bsq{Resultado configuración interfaz} pero incluyen dos nuevos:
 
 \begin{description}
-	\item[Código de la aplicación] Un \String{} que representa el código de la aplicación. El servicio nos hace un \bsq{eco} de este valor para saber que se ha configurado bien. Se recupera con la clave ``appCode''
+	\item[Código de la aplicación] Un \String{} que representa el código de la aplicación. El servicio nos hace un \bsq{eco} de este valor para saber que se ha configurado bien. Se recupera con la clave ``appCode''.
 	\ListaNodosItem{}
 \end{description}
 %------------
@@ -179,10 +179,10 @@ El envío de datos a través de la red cognitiva consiste en la entrega al servici
 	\item[Payload] El contenido del mensaje lo adjuntamos en el campo \textit{obj} del mensaje, debe ser o poder codificarse como una \String{}.
 	\item[Lista nodos] Los nodos a quién va dirigido el mensaje se codifican como una lista de identificadores, instancia de un \textit{ArrayList<Integer>} y debe ir como un extra guardado con la clave ``addressedNodes''. El identificador del nodo nos los devuelve el propio servicio en mensajes tipo {\small REGISTER\_EXCHANGE} en situación de \textit{networking} y en mensajes tipo {\small SERVICE\_INFORMATION}. Como convención, el identificador es un número natural. El valor \bsq 0 puede ser utilizado por el programador de aplicaciones como ausencia de nodos (útil para rellenar \textit{listviews} o \textit{spinners}), el \bsq1 es un valor reservado por el servicio que sirve para enviar el mensaje a todos los nodos. Los demás números corresponden cada uno a un nodo distinto. 
 
-Aunque no hay restricciones la manera correcta de enviar el mensaje a todos es rellenar la lista sólo con el identificador \bsq 1
+Aunque no hay restricciones la manera correcta de enviar el mensaje a todos es rellenar la lista sólo con el identificador \bsq{1}.
 \end{description}
 
-El detalle del mensaje enviado al servicio es (ver tabla~\ref{tab:outgoingContent}):
+El detalle del mensaje enviado al servicio es (ver tabla~\ref{tab:outgoingContent}).
 
 \messageTableInit{\appToServ}{4 =\\ \scriptsize{OUTGOING\_CONTENT}}{\nc{}}{\nc{}}{\textit{payload}}{\messApp{}}
 \messageTableExtra{addressedNodes}{Una lista de \integer{}s con los identificadores de los nodos destinatarios del mensaje}
@@ -190,7 +190,7 @@ El detalle del mensaje enviado al servicio es (ver tabla~\ref{tab:outgoingConten
 %-------------
 \subsection{Confirmación envío de datos}
 \label{subsec:apiAck}
-Cuando hemos enviado datos a través del servicio, la forma que tiene éste de informarnos que el proceso de envío ha terminado es con la entrega del siguiente mensaje, del que podremos obtener las estadísticas de envío (ver tabla~\ref{tab:outgoingContentResultApp})
+Cuando hemos enviado datos a través del servicio, la forma que tiene éste de informarnos que el proceso de envío ha terminado es con la entrega del siguiente mensaje, del que podremos obtener las estadísticas de envío (ver tabla~\ref{tab:outgoingContentResultApp}).
 
 \messageTableInit{\servToApp}{6 =\\ \scriptsize{OUTGOING\_CONTENT \_RESULT}}{número mensajes escritos OK}{número mensajes escritos NOK}{\textit{payload}}{\nc{}}
 \messageTableExtra{IdsNotDelivered}{Un array de \integer{}s con los identificadores de los nodos a los cuales no les ha llegado el mensaje}
@@ -200,7 +200,7 @@ Cuando hemos enviado datos a través del servicio, la forma que tiene éste de inf
 La información que podemos leer de este mensaje es:
 \begin{description}
 	\item[Arg1: número mensajes escritos OK] Un \integer{} que nos indica en cuántos nodos se ha entregado el mensaje correctamente.
-	\item[Arg2: número mensajes escritos NOK] Un \integer{} con el número de nodos los cuales no han recibido el mensaje
+	\item[Arg2: número mensajes escritos NOK] Un \integer{} con el número de nodos los cuales no han recibido el mensaje.
 	\item[Obj: payload] El contenido que se ha enviado por la red, esto sirve a la aplicación para relacionar el envío con la contestación. 
 	\item[EXTRAS] Si el campo \textit{arg2} es distinto de cero incluimos los siguientes extras:
 	\begin{description}
@@ -215,7 +215,7 @@ El tiempo de entrega de esta confirmación no está acotado, depende de la complej
 
 %----------
 \subsection{Recibiendo datos}
-En cuanto el servicio haya recibido datos que le interesen a nuestra aplicación (es decir el código de aplcación sea el mismo con el que va marcado el mensaje de datos) nos enviará un mensaje con el contenido (en el campo \textit{obj} del mensaje) y el identificador del nodo que lo envió, un extra que se recupera con la clave ``device\_id'' (ver tabla~\ref{tab:incomingContent}):
+En cuanto el servicio haya recibido datos que le interesen a nuestra aplicación (es decir el código de aplcación sea el mismo con el que va marcado el mensaje de datos) nos enviará un mensaje con el contenido (en el campo \textit{obj} del mensaje) y el identificador del nodo que lo envió, un extra que se recupera con la clave ``device\_id'' (ver tabla~\ref{tab:incomingContent}).
 
 \messageTableInit{\servToApp}{8 =\\ \scriptsize{INCOMING\_CONTENT}}{\nc{}}{\nc{}}{\textit{payload}}{\nc{}}
 \messageTableExtra{device\_id}{Un \integer{} que identifica al nodo que ha enviado el mensaje}
@@ -225,7 +225,7 @@ En cuanto el servicio haya recibido datos que le interesen a nuestra aplicación 
 \label{subsec:serviceInformation}
 El servicio utiliza esta vía como principal para informar acerca de la evolución de sus procesos internos. Gracias a su gestor de estados entre los controladores de las interfaces y éste, los eventos y estados se codifican y aglutinan para informar a todas las aplicaciones registradas acerca de éstos y cuándo se producen. 
 
-Aunque parte de esta información (estado de la interfaz y lista de nodos) se distribuya también en otros mensajes, es aquí dónde se plasma todos los cambios de estado que haya a lo largo de un proceso completo. En otros mensajes enviados por el servicio que aportan parte de esta información, ésta corresponde tan sólo al momento final del proceso.
+Aunque parte de esta información (estado de la interfaz y lista de nodos) se distribuya también en otros mensajes, es aquí dónde se plasman todos los cambios de estado que haya a lo largo de un proceso completo. En otros mensajes enviados por el servicio la información aportada tan sólo corresponde al momento final del proceso.
 
 \apiTableInit{Diferentes estados en los que se pueden encontrar las interfaces}
 	\apiTableRow{INTERFACE\_STATE\_DOWN}{0}	
@@ -236,7 +236,7 @@ Aunque parte de esta información (estado de la interfaz y lista de nodos) se dis
 	\apiTableRow{INTERFACE\_STATE\_RECEIVING}{5}
 \apiTableEnd{Estados de la interfaz de comunicación}{states}
 
-Los eventos se producen entre dos nodos con contacto directo, es decir, la inclusión de un nuevo nodo produce un evento en los controladores de la interfaz de los dos nodos implicados, el resto de nodos se enteran del evento con mensajes de señalización (que veremos en la sección \ref{sec:procesosRed}) que para los controladores son tratados de la misma manera que otros mensajes de red.
+Los eventos se producen entre los dos nodos invulcrados directamente en el proceso. Por ejemplo, la inclusión de un nuevo nodo produce un evento en los controladores de la interfaz de los dos nodos implicados, el resto de nodos se enteran del evento con mensajes de señalización (que veremos en la sección \ref{sec:procesosRed}) que para los controladores son tratados de la misma manera que otros mensajes de red. La mayoría de eventos surgen del propio controlador de la interfaz, otros sin embargo son fruto de la interpretación de mensajes de señalización como son los cambios de contexto.
 
 \apiTableInit{Eventos producidos en la red}
 	\apiTableRow{EVENT\_INTERFACE\_NO\_CHANGES}{0}	
@@ -252,15 +252,15 @@ Los eventos se producen entre dos nodos con contacto directo, es decir, la inclu
 \apiTableEnd{Eventos que se pueden producir en la red}{events}
 
 
-  Estos mensajes son puramente informativos, no requieren de ningún procesamiento por parte de las aplicaciones y se presentan con esta estructura (ver tabla~\ref{tab:serviceInformation}):
+  Estos mensajes son puramente informativos, no requieren de ningún procesamiento por parte de las aplicaciones y se presentan con esta estructura (ver tabla~\ref{tab:serviceInformation}).
 
 \messageTableInit{\servToApps}{9 = \scriptsize{SERVICE\\\_INFORMATION}}{interfaz}{\nc{}}{modificación lista nodos}{\nc{}}
 \messageTableExtra{coordinator}{Una \String{} con el nombre del nodo que es nuestro coordinador. Si somos el cooridnador este campo viene informado a \textit{null}}
 \messageTableExtraAddrow{triggerNodeName}{Una \String{} con el nombre del nodo que ha disparado el evento. Si no existe tal nodo no se incluye este campo en el mensaje}
 \messageTableExtraAddrow{state}{Una \integer{} con el estado de la interfaz}
 \messageTableExtraAddrow{event}{Una \integer{} con el evento producido en la red}
-\messageTableExtraAddrow{nodeIdList}{Un array de \integers{} con los identificadores de los nodos a los cuales no les ha llegado el mensaje}
-\messageTableExtraAddrow{nodeNameList}{Un array de \String{} con los nombres de los nodos a los cuales no les ha llegado el mensaje}
+\messageTableExtraAddrow{nodeIdList}{Un array de \integers{} con los identificadores de los nodos que forman la red en estos momentos}
+\messageTableExtraAddrow{nodeNameList}{Un array de \String{} con los nombres de los nodos que forman la población actual}
 \messageTableEnd{Mensaje información evento/estado por parte del servicio}{serviceInformation}
 
 El detalle de cada uno de los campos es:
@@ -269,11 +269,11 @@ El detalle de cada uno de los campos es:
 	\item[Arg1: Interfaz] Un \integer{} cuyos valores corresponden a:
 	\begin{enumerate}
 		\setcounter{enumi}{-1}
-		\item \bt{}
-		\item \wifi{}
-		\item \textcolor{notImplemented}{\textit{Mobile}, no implementado}
+		\item \bt{}.
+		\item \wifi{}.
+		\item \textcolor{notImplemented}{\textit{Mobile}, no implementado.}
 		\setcounter{enumi}{-2}
-		\item Desconocido, devuelto en el transcurso de cambio de contexto
+		\item Desconocido, devuelto en el transcurso de cambio de contexto o \textit{handover}.
 	\end{enumerate}
 	\item[Obj: modificación lista nodos] Un valor booleano que nos indica si ha habido un cambio en la lista de nodos.
 	\item [EXTRAS] Campos \textit{extra} con el resto de parámetros:
@@ -298,10 +298,10 @@ El detalle de cada uno de los campos es:
 				\item {\small EVENT\_INTERFACE\_LOST\_NODE}, se genera al perder la comunicación con un nodo (entre coordinador y normal, aparece este evento al igual que el anterior en ambos extremos).
 				\item {\small EVENT\_INTERFACE\_CANT\_CONNECT}, surge en el nodo que ha intentado conectarse a otro y no ha podido.
 				\item {\small EVENT\_INTERFACE\_ALREADY\_CONNECTED}, surge cuando el coordinador intenta conectarse a un nodo al cual ya está conectado (sólo en \bt{}). 
-				\item {\small EVENT\_INTERFACE\_SWITCH\_TO\_BT}, evento que surge cuando recibimos o disparamos (coordinador) el cambio de contexto hacia \bt{}
-				\item {\small EVENT\_INTERFACE\_SWITCH\_TO\_WIFI}, evento que surge cuando recibimos o disparamos (coordinador) el cambio de contexto hacia \wifi{}
+				\item {\small EVENT\_INTERFACE\_SWITCH\_TO\_BT}, evento que surge cuando recibimos o disparamos (coordinador) el cambio de contexto hacia \bt{}.
+				\item {\small EVENT\_INTERFACE\_SWITCH\_TO\_WIFI}, evento que surge cuando recibimos o disparamos (coordinador) el cambio de contexto hacia \wifi{}.
 				\item \textcolor{notImplemented}{{\small EVENT\_INTERFACE\_SWITCH\_TO\_MOBILE}, no implementado, de manera análoga cuando la interfaz de destino es la móvil.}
-				\item {\small EVENT\_INTERFACE\_END\_SWITCHING}, se genera al terminar el cambio de contexto
+				\item {\small EVENT\_INTERFACE\_END\_SWITCHING}, se genera al terminar el cambio de contexto.
 				\item {\small EVENT\_UPDATE\_LIST\_NODES}, cuando es necesaria una actualización de la lista de nodos que no haya sido provocada por algún evento anterior.
 			\end{enumerate}
 			\ListaNodosItem{}
@@ -310,9 +310,9 @@ El detalle de cada uno de los campos es:
 
 %---------
 \subsection{No cumplimiento de la API: mensajes de error}
-El servicio tiene una manera de avisar a las aplicaciones cuando éstas no cumplen con la API o internamente surge un error cuyo resultado es conveniente comunicar para poner en conocimiento que el proceso actual se ha detenido. Este aviso se reliza mediante el envío de mensajes de error que están dirigidos a quién lo ha provocado, o puesto en conocimiento de todos según interese.
+El servicio tiene una manera de avisar a las aplicaciones cuando éstas no cumplen con la \ac{API} o internamente surge un error cuyo resultado es conveniente comunicar para poner en conocimiento que el proceso actual se ha detenido. Este aviso se realiza mediante el envío de mensajes de error que están dirigidos a quién lo ha provocado, o puesto en conocimiento de todos según interese.
 
-Es una sección experimental que sólo recoge los errores más importantes. No se ha hecho un estudio exhaustivo sobre el comportamiento maligno de las aplicaciones para intentar manejar y sanitizar todos los valores entregados por estas. Algunos de los errores de los que son manejados por el servicio se listan en la tabla~\ref{tab:errors}.
+Es una sección experimental que sólo recoge los errores más importantes. No se ha hecho un estudio exhaustivo sobre el comportamiento maligno de las aplicaciones para intentar manejar y sanitizar todos los valores entregados por éstas. Algunos de los errores de los que son manejados por el servicio se listan en la tabla~\ref{tab:errors}
 
 \apiTableInit{Mensajes de error devueltos por el servicio}
 	\apiTableRow{CODE\_ERROR\_ILLEGAL\_ARGUMENT}{1}	
@@ -323,34 +323,34 @@ Es una sección experimental que sólo recoge los errores más importantes. No se h
 	\apiTableRow{CODE\_ERROR\_ILLEGAL\_PAYLOAD}{6}
 \apiTableEnd{Mensajes de error por el no cumplimiento de la API}{errors}
 
-Que son transmitidos a la aplicación o las apliaciones por medio de este mensaje (ver tabla~\ref{tab:errorMessage}):
+Los errores son transmitidos a la aplicación o las apliaciones por medio de este tipo de mensaje (ver tabla~\ref{tab:errorMessage}), en él se amplia la descripción del error mediante una \String{} en el campo \textit{obj}.
 
 \messageTableInit{\servToApp}{10 =\\ \scriptsize{ERROR\_MESSAGE}}{código de error}{\nc{}}{Descripción del error}{\nc{}}
 \messageTableEnd{Mensaje de error recibido del servicio}{errorMessage}
 
 %---------
 \subsection{Mensajes encolados}
-Puede darse la circustancia de que al realizar el envío de datos al servicio, éste no puede enviarlo por la red ya que se encontra en un cambio de contexto. En estas ocasiones los mensajes recibidos por parte de las aplicaciones son encolados. 
+Puede darse la circustancia de que al realizar el envío de datos al servicio, éste no pueda enviarlo por la red debido a que se encuentre en un cambio de contexto. En estas ocasiones los mensajes recibidos por parte de las aplicaciones son encolados siguiendo el modelo \ac{FIFO}, esto quiere decir que se respeta el orden de llegada y serán entregados en el mismo orden cuando se proceda su salida. 
 
-Cuando el servicio retoma el envío de estos mensajes encolados, envíamos a la aplicación dueña del mensaje un informe previo a su envío indicando cuáles de los nodos destinatarios siguen en la red y cuáles no. En el caso de haber enviado el mensaje a todos, este informe nos devuelve la lista completa de nodos a los cuales le hemos enviado el mensaje, ya que puede haber cambios entre el momento en el cual se envío y el momento en el que el servicio le da salida. El detalle del mensaje recibido en la aplicación es (ver tabla~\ref{tab:queuedMessage}):
+Cuando el servicio retoma el envío de estos mensajes encolados, envíamos a la aplicación dueña del mensaje un informe previo a su envío, indicando cuáles de los nodos destinatarios siguen en la red y cuáles no. En el caso de haber enviado el mensaje a todos, este informe nos devuelve la lista completa de nodos a los cuales le hemos intentado enviar el mensaje, ya que puede haber cambios en la población entre el momento en el cual se envío y el momento en el que el servicio le da salida. El detalle del mensaje recibido en la aplicación es (ver tabla~\ref{tab:queuedMessage}).
 
 \messageTableInit{\servToApp}{11= \scriptsize{QUEUED\_MESSAGE}}{número enviados}{número no enviados}{\textit{payload}}{\nc{}}
 \messageTableExtra{IdsTriedToSend}{Un \textit{array} de \integers{} con los identificadores de los nodos los cuales siguen en red}
 \messageTableExtraAddrow{NamesTriedToSend}{Un \textit{array} de \String{} con los nombres de los nodos siguen en red}
 \messageTableExtraAddrow{IdsNotDelivered}{Un \textit{array} de \integers{} con los identificadores de los nodos que no hemos enviado el mensaje por no encontrarse en la red}
 \messageTableExtraAddrow{NamesNotDelivered}{Un \textit{array} de \String{} con los nombres de los nodos que no hemos enviado el mensaje por no encontrarse en la red}
-\messageTableEnd{Mensaje salida de mensaje encolado}{queuedMessage}
+\messageTableEnd{Mensaje informe previo a la salida de mensaje encolado}{queuedMessage}
 
-Los campos \textit{extra} son dos pares de \textit{arrays} ligados por la posición al igual que ocurre con la lista de nodos de otros mensajes. Los dos primeros nos informan de cúales son los nodos a los cuales estamos intentando enviar el mensaje y los dos últimos están rellenos de los nodos que al no encontrarse ahora en situación de red hemos obviado su envío para evitar envíos fallidos innecesarios.
+Los campos \textit{extra} son dos pares de \textit{arrays} ligados por la posición al igual que ocurre con la lista de nodos de otros mensajes. Los dos primeros nos informan de cúales son los nodos a los cuales se va a proceder al envío del mensaje y los dos últimos están rellenos de los nodos que al no encontrarse en este momento en situación de red hemos obviado su envío para evitar envíos fallidos innecesarios.
 
 Al recibir este mensaje quedamos a la recepción del mensaje de confirmación de envío explicado en~\ref{subsec:apiAck}
 %---------
 \subsection{Actualización de parámetros}
 \label{subsec:apiUpdateParams}
-Si en algún momento queremos cambiar nuestro papel en la red o recibir la información de otras aplicaciones de la red cognitiva tan sólo necesitamos cumplir cierta parte del flujo del \textit{handshaking} para conectarse al servicio (ver~\ref{subsec:apiStart}). Empezaremos enviando directamente el segundo mensaje, con nuestos nuevos parámetros al servicio con el mensaje ya visto en la tabla~\ref{tab:registerExchangeMessage}. Tras esto esperaremos la respuesta dónde veremos si realmente se han podido actualizar los valores que les entregamos. Si cuando decidimos actualizar estabamos en situación de \textit{networking} es posible que los valores no hayan podido actualizarse debido a que penalizan o entran en conflicto con las necesidades de las otras aplicaciones ya registradas. En este caso sólo se permite un cambio de papel \bsq{secundario} a \bsq{primario}, pero no al revés. El \bsq{código de aplicación} se actualiza siempre no importando la situación.
+Si en algún momento queremos cambiar nuestro papel en la red o recibir la información de otras aplicaciones de la red cognitiva tan sólo necesitamos cumplir cierta parte del flujo del \textit{handshaking} para conectarse al servicio (ver~\ref{subsec:apiStart}). Empezaremos enviando directamente el segundo mensaje, con nuestos nuevos parámetros al servicio con el mensaje ya visto en la tabla~\ref{tab:registerExchangeMessage}, tras esto esperaremos la respuesta dónde veremos si realmente se han podido actualizar los valores que les entregamos. Si cuando decidimos actualizar estabamos en situación de \textit{networking} es posible que los valores no hayan podido actualizarse debido a que penalizan o entran en conflicto con las necesidades de las otras aplicaciones ya registradas. En este caso sólo se permite un cambio de papel \bsq{secundario} a \bsq{primario}, pero no al revés. El \bsq{código de aplicación} se actualiza siempre no importando la situación.
 %----------
 \subsection{Desconectarse del servicio}
-Llegado el momento de desconectarnos de la red deberemos enviar al servicio un mensaje del tipo \textit{unregister client} para que el servicio sea informado de forma directa, ya que la sola petición de \textit{unbind} no garantiza que éste se entere y si se entera es para su propia destrucción por parte de \android{}. La composición de este mensaje es:
+Llegado el momento de desconectarnos de la red deberemos enviar al servicio un mensaje del tipo \textit{unregister client} para que el servicio sea informado de forma directa, ya que la mera petición de \textit{unbind} no garantiza que éste se entere y si se entera, es para su propia destrucción por parte de \android{}. La composición de este mensaje es lo podemos ver en la tabla~\ref{tab:unregisterClientMenssage}
 
 \messageTableInit{\appToServ}{2 =\\ \footnotesize{UNREGISTER \_CLIENT}}{\nc{}}{\nc{}}{\nc{}}{\messApp{}}
 \messageTableEnd{Mensaje desregistro cliente}{unregisterClientMenssage}
@@ -358,8 +358,7 @@ Llegado el momento de desconectarnos de la red deberemos enviar al servicio un m
 Tras este envío ya podemos deshacer el enlace entre aplicación y servicio de manera segura.
 %---------
 \subsection{Entrada de nodos en la red cuando la interfaz es \bt{}}
-Por motivos de implementación, si queremos introducir un nuevo nodo en la red cuando la interfaz de comunicación es \bt{}, debe ser el coordinador quién de el primer paso. Para ello en el nodo coordinador enviamos el siguente mensaje (ver tabla~\ref{tab:connectToBT}):
-
+Por motivos de implementación, si queremos introducir un nuevo nodo en la red cuando la interfaz de comunicación es \bt{}, debe ser el coordinador quién de el primer paso. Para ello en el nodo coordinador enviamos el siguente mensaje (ver tabla~\ref{tab:connectToBT}).
 
 \messageTableInit{\appToServ}{12 = \footnotesize{CONNECT\_TO\\\_VIA\_BT}}{\nc{}}{\nc{}}{dirección MAC / identificador nodo}{\messApp{}}
 \messageTableEnd{Mensaje contectar a nodo en \bt{} }{connectToBT}
@@ -367,7 +366,7 @@ Por motivos de implementación, si queremos introducir un nuevo nodo en la red cu
 El campo \textit{obj} puede recibir dos tipos de argumentos:
 \begin{itemize}
  \item Una \String{} con la dirección MAC de \bt{} del nodo.
- \item Un \integer{} con el identificador el nodo, si éste no está en la base de datos enviamos un mensaje de error a la aplicación.
+ \item Un \integer{} con el identificador el nodo, si éste no está en la base de datos enviaremos un mensaje de error a la aplicación.
 \end{itemize}
 
 Acto seguido el servicio intentará si la interfaz de comunicación actual es \bt{} conectarse al citado nodo bien por medio de su dirección MAC o porque hemos podido recuperar ésta de la base de datos. Si la interfaz no es \bt{} devolveremos un error del tipo {\small CODE\_ERROR\_ILLEGAL\_ARGUMENT}
@@ -384,10 +383,10 @@ Acto seguido el servicio intentará si la interfaz de comunicación actual es \bt{
 \subsection{La API oculta: workarounds, test\ldots}
 %----------
 \subsubsection{Actualización de parámetros avanzada}
-Un nodo cognitivo tiene mas parámetros (como se puede ver en~\ref{subsec:updateSettings}) que los expuestos en la API, un nodo cognitivo en nuestra aplicación, se define además por:
+Un nodo cognitivo tiene mas parámetros (como se puede ver en~\ref{subsec:updateSettings}) que los expuestos en la \ac{API}, un nodo cognitivo en nuestra aplicación, se define además por:
 \begin{itemize}
-	\item Nombre: con el que nos conocen los demas nodos
-	\item Tipo: si somos coordinador o normal	
+	\item Nombre: con el que nos conocen los demas nodos.
+	\item Tipo: si somos coordinador o normal.
 	\item Periodo de la tarea cognitiva: el intervalo de tiempo que transcurre entre sensados del entorno y/o toma de decisiones.
 \end{itemize}
 Como vemos son parámetros que no son propios de la aplicación o aplicaciones que en ese momento estén registradas. Estos valores son devueltos cuando finaliza el \textit{handshaking} para que las aplicaciones conozcan al nodo cognitivo aunque para éstas debe ser transparente. 
@@ -404,12 +403,12 @@ Sin embargo para poder configurar el nodo para que pueda cooperar en cualquier \
 \subsubsection{Mensaje de petición y respuesta}
 Un flujo interesante en redes de sensores cognitivas es la de habilitar una vía para que el coordinador pida de forma activa información a otro nodo. Aunque en nuestra arquitectura este flujo está implementado la primera vez que incluimos un nodo nuevo en \bt{} para preguntarle acerca de su nombre y su papel. Hemos preferido dejar montado, lo que en principio se montó con finalidad de \textit{test}.
 
-La aplicación desarrollada sobre el servicio incluye una interfaz de test que, entre sus funciones provee este flujo. El proceso tiene dos actores: por un lado los nodos normales que pueden guardar una respuesta (la información que posteriormente nos pedirá el coordinador), para ello enviamos un mensaje al servicio con la respues a enviar en el campo \textit{obj} del mensaje (ver tabla~\ref{tab:wa_reply}):
+La aplicación desarrollada junto al servicio incluye una interfaz de test que, entre sus funciones provee este flujo. El proceso tiene dos actores: por un lado los nodos normales que pueden guardar una respuesta (la información que posteriormente nos pedirá el coordinador) para ello enviamos un mensaje al servicio con la respuesta a enviar en el campo \textit{obj} del mensaje (ver tabla~\ref{tab:wa_reply}).
 
 \messageTableInit{\appToServ}{20 = \footnotesize{WORKAROUND\\ \_WHAT\_TO\_REPLY}}{\nc{}}{\nc{}}{\textit{reply}}{\messApp{}}
 \messageTableEnd{Mensaje \textit{workaround} salvado de respuesta}{wa_reply}
 
-El otro agente, el nodo coordinador, enviando este mensaje al servicio, recupera la información del otro actor (ver tabla~\ref{tab:wa_ask}):
+El otro agente, el nodo coordinador, enviando este mensaje al servicio recupera la información del otro actor (ver tabla~\ref{tab:wa_ask}).
 
 \messageTableInit{\appToServ}{21 = \footnotesize{WORKAROUND\\ \_ASK\_RESPONSE}}{\nc{}}{\nc{}}{Identificador nodo}{\messApp{}}
 \messageTableEnd{Mensaje \textit{workaround} petición de respuesta}{wa_ask}
@@ -421,7 +420,7 @@ Una vez enviada esta petición la respuesta nos vendrá encapsulada en un mensaje 
 
 
 \subsubsection{Cambio de contexto forzado}
-Otra función de \textit{test} es la de forzar un cambio de interfaz de comunicación en la red. Para ello si somos el coordinador podemos enviar este mensaje al servicio
+Otra función de \textit{test} es la de forzar un cambio de interfaz de comunicación en la red. Para ello si somos el coordinador podemos enviar este mensaje al servicio. No necesitamos comunicarle la interfaz destino debido a que, en estos momentos, sólo hay dos interfaces de comunicación.
 
 \messageTableInit{\appToServ}{22=\footnotesize{WORKAROUND\_\\ CONTEXT\_CHANGE}}{\nc{}}{\nc{}}{\nc{}}{\messApp{}}
 \messageTableEnd{Mensaje \textit{workaround} cambio de interfaz de comunicación}{wa_switch}
@@ -429,13 +428,13 @@ Otra función de \textit{test} es la de forzar un cambio de interfaz de comunicac
 \subsubsection{Encolar mensajes y forzar su entrega en cualquier momento}
 Para probar el encolamiento de mensajes y su entrega en momentos que no corresponden pueden enviarse estos mensajes al servcio que alterará el flujo normal para producir el resultado buscado.
 
-Para encolar un mensaje de datos entregaremos al servicio un mensaje con esta estructura (ver tabla~\ref{tab:wa_queue}):
+Para encolar un mensaje de datos entregaremos al servicio un mensaje con esta estructura (ver tabla~\ref{tab:wa_queue}).
 
 \messageTableInit{\appToServ}{23=\scriptsize{WORKAROUND\_ PENDINGMESSAGE \_INJECTION}}{\nc{}}{\nc{}}{\textit{payload}}{\messApp{}}
 \messageTableExtra{addressedNodes}{Una lista de \integer{}s con los identificadores de los nodos destinatarios del mensaje}
 \messageTableEnd{Mensaje \textit{workaround} encolamiento de mensaje de datos}{wa_queue}
 
-Y para vaciar la cola de mensajes en cualquier momento deberemos enviar este otro (ver tabla~\ref{tab:wa_disposalqueue}):
+Y para vaciar la cola de mensajes en cualquier momento deberemos enviar este otro (ver tabla~\ref{tab:wa_disposalqueue}).
 
 \messageTableInit{\appToServ}{24=\scriptsize{WORKAROUND\_ PENDINGMESSAGE \_DISPOSAL}}{\nc{}}{\nc{}}{\nc{}}{\messApp{}}
 \messageTableEnd{Mensaje \textit{workaround} vaciado cola de mensajes}{wa_disposalqueue}
@@ -445,7 +444,7 @@ Y para vaciar la cola de mensajes en cualquier momento deberemos enviar este otr
 \section{Procesos de red}
 %-------------------------------------------------------------------
 \label{sec:procesosRed}
-Cuando ocurren eventos en la red estos son manejados por los distintos nodos según sea su tipo, propagando la información necesaria para que toda la red pueda reconstruir la misma perspectiva sobre la actual situación. Veremos quién dispara y el por qué de estos eventos, cómo se informa y en qué casos a las aplicaciones montadas sobre el servicio del nodo cognitivo. Esta sección viene muy relacionada con la sección \ref{sec:api} ya que dónde empieza o finaliza la acción es con mensajes intercambiados de la API. 
+Cuando ocurren eventos en la red estos son manejados por los distintos nodos según sea su tipo, propagando la información necesaria para que toda la red pueda reconstruir la misma perspectiva sobre la actual situación. Veremos quién dispara y el por qué de estos eventos, cómo se informa y en qué casos a las aplicaciones montadas sobre el servicio del nodo cognitivo. Esta sección viene muy relacionada con la sección \ref{sec:api} ya que dónde empieza o finaliza la acción es con mensajes intercambiados de la \ac{API}. 
 
 \comp{Relatar los diferentes procesos que ocurren en el servicio, quién los dispara y como se transmiten al resto de nodos y las apps que estén montadas}
 %------------------------------
@@ -458,19 +457,41 @@ Cuando ocurren eventos en la red estos son manejados por los distintos nodos seg
 \end{codeInvolved}
 Para que una aplicación pueda registrarse de forma correcta en el servicio debe cumplir un cierto \textit{handshaking} consistente en el intercambio de tres mensajes, el primero servirá para que el servicio incluya a la aplicación en su base de clientes. El segundo para que la aplicación le informe de sus parámetros y el tercero será una confirmación por parte del servicio hacia la aplicación o aplicaciones informando de todos los parámetros de éste tras la inclusión de la nueva aplicación.
 
-Como hemos visto ya en la API (ver sección \ref{sec:api}), tras la petición de \textit{bind}, que inicializará el servicio si no estuviese arracando ya, obtendremos el \textit{Messenger} del servicio, indispensable para poder comunicarnos con él. A continuación debemos mandar un primer mensaje para registrar nuestra aplicación en el servicio, donde éste, registrará nuestro messenger para habilitar la comunicación en sentido contrario y nos incluirá en su lista de aplicaciones registradas. Los detalles de este mensaje pueden verse en la tabla~\ref{tab:registerClientMessage}
+Como hemos visto ya en la \ac{API} (ver sección \ref{sec:api}), tras la petición de \textit{bind}, que inicializará el servicio si no estuviese arracando ya, obtendremos el \textit{Messenger} del servicio, indispensable para poder comunicarnos con él. A continuación debemos mandar un primer mensaje para registrar nuestra aplicación en el servicio, donde éste, registrará nuestro messenger para habilitar la comunicación en sentido contrario y nos incluirá en su lista de aplicaciones registradas. Los detalles de este mensaje pueden verse en la tabla~\ref{tab:registerClientMessage}
 
 El siguiente mensaje (ver tabla~\ref{tab:registerExchangeMessage}) que debemos enviar, informaremos acerca de nuestros parámetros de aplicación como son: nuestro papel, un entero cuyo valor \bsq 0 corresponde a papel secundario y el valor \bsq 1 corresponde al papel primario y nuestro código de aplicación, útil para que el servicio nos entregue sólo los mensajes que nos atañen.
 
 Este mensaje ha sido separado del anterior para poder reutilizarlo e introducirlo en el flujo descrito en~\ref{subsec:apiUpdateParams} o~\ref{subsec:updateSettings}. Con esta información el servicio dependiendo del punto en que se encuentre actuará de una forma u otra.
 
 \subsubsection{Punto de partida inicial, CWSN no establecida}
-Esta situación, (la más común) es cuando nuestra petición de \textit{bind} ha arrancado el servicio y por lo tanto estamos en una situación inicial o ya hay aplicaciones montadas sobre el servicio pero no hay conectividad con otros nodos, en otras palabras, estamos solos en la red. 
+\umlsdInit
+	\newthread[gray]{srv}{Servicio} \newinst[2]{app}{Aplicación}
+	\callSelf{app}{Aplicación.init()}	
+	\begin{call}{app}{bind()}{srv}{messenger}
+		\callSelf{srv}{Servicio.init()}
+	\end{call}
+	\mess{app}{Register client}{srv}
+	\mess{app}{Register exchange}{srv}
+	\callSelf{srv}{Configuración interfaz}
+	\mess{srv}{Register exchange}{app}
+\umlsdEnd{Handshake CWSN no configurada y servicio no inicilizado}{endHandshakingNotInCWSN}
 
-En esta situación, configuraremos de nuevo la interfaz, actualizaremos los parámetros pasados en el anterior mensaje y lanzaremos nuevamente los procesos de registro en la red para intentar establecer una \ac{CWSN}. Al finalizar éstos, el servicio devolverá (a todas las aplicaciones montadas) la información acerca de todos los parámetros y el estado actual de la red ya vista en las listas de la sección~\ref{subsec:apiStart}. Puede verse el detalle de este mensaje en la tabla~\ref{tab:endHandshakingNotCWSNMessage}
+Esta situación, (la más común) es cuando nuestra petición de \textit{bind} ha arrancado el servicio y por lo tanto estamos en una situación inicial o ya hay aplicaciones montadas sobre éste pero no hay conectividad con otros nodos, en otras palabras, estamos solos en la red. Un ejemplo cuando el servicio no está arrancado podemos verlo en la figura~\ref{fig:endHandshakingNotInCWSN}
+
+En esta situación, configuraremos de nuevo la interfaz, actualizaremos los parámetros pasados en el anterior mensaje y lanzaremos nuevamente los procesos de registro en la red para intentar establecer una \ac{CWSN}. Al finalizar éstos, el servicio devolverá (a todas las aplicaciones montadas) la información acerca de todos los parámetros y el estado actual de la red (ver listas de la sección~\ref{subsec:apiStart}). Puede verse el detalle de este mensaje en la tabla~\ref{tab:endHandshakingNotCWSNMessage}
 
 \subsubsection{Punto de partida, CWSN previamente configurada}
-Puede darse el caso que en este punto del proceso, ya haya aplicaciones montadas sobre el servicio y estén cooperando en una \ac{CWSN}, en este caso el servicio no tiene que configurar nada y se limita a ver si puede satisfacer las necesidades que le acaba de transmitir la nueva aplicación que acaba de registrar, es decir, cambiará el papel del nodo a primario si este era secundario, un cambio en sentido contrario será ignorado. Una vez hecho esto devolverá en exclusiva a la aplicación solicitante los parámetros del servicio (ver tabla~\ref{tab:serviceSettings}) y el estado de la interfaz. La estructura del mensaje devuelto puede apreciarse en la tabla~\ref{tab:endHandshakingInCWSNMessage}).
+\umlsdInit[h!]
+	\newthread[gray]{srv}{Servicio} \newinst[2]{app}{Aplicación}
+	\callSelf{app}{Aplicación.init()}		
+	\begin{call}{app}{bind()}{srv}{messenger}
+	\end{call}
+	\mess{app}{Register client}{srv}
+	\mess{app}{Register exchange}{srv}
+	\mess{srv}{Register exchange}{app}
+\umlsdEnd{Handshake CWSN configurada}{endHandshakingInCWSN}
+
+Puede darse el caso que, en este punto del proceso, ya haya aplicaciones montadas sobre el servicio y estén cooperando en una \ac{CWSN}. En este caso el servicio no tiene que configurar nada y se limita a ver si puede satisfacer las necesidades que le acaba de transmitir la nueva aplicación que acaba de registrar, es decir, cambiará el papel del nodo a primario si este era secundario, un cambio en sentido contrario será ignorado. Una vez hecho esto devolverá en exclusiva a la aplicación solicitante los parámetros del servicio (ver tabla~\ref{tab:serviceSettings}) y el estado de la interfaz. La estructura del mensaje devuelto puede apreciarse en la tabla~\ref{tab:endHandshakingInCWSNMessage}
 
 %------------------------------
 \subsection{Configuración de la interfaz de comunicación}
@@ -484,8 +505,8 @@ Tras recibir el \textit{handshaking} de registro de la aplicación, el servicio s
 \end{files}
 \end{codeInvolved}
 
-La interfaz \wifi{} permite configurarse en varias modalidades como: Infraestructura, Tethering o Ad-hoc. En la actualidad sólo está implementado el modo infraestructura por los problemas descritos en \ref{sec:analisisWifi}. Una vez lanzada la tarea en segundo plano, lo primero que hacemos es intentar parar las hebras asociadas a la interfaz \wifi{} que cerrarán los \textit{serverSockets} y el \textit{broadcastReceiver} útil para registrarse a eventos de información relativa a la interfaz \wifi{} como son RSSI y los eventos de conexión/desconexión a un punto de acceso. Partiendo de una situación en que todos los recursos están liberados, encendemos la interfaz si no lo estuviese ya, esperamos a que se encienda mediante una espera de consulta a una variable que es modificada por  \textit{StatusReceiver\_wifi.java}, nuestro \textit{broadcastReceiver} para la interfaz \wifi{}. Si nos han pasado como parámetro el SSID, intentamos conectarnos a él desconectándonos del punto de acceso acutual si no fuese el mismo. Esperamos mediante \textit{polling} con límite de tiempo seleccionable desde las preferencias en la sección de \textit{test}. Si agotamos el tiempo y no hemos sido capaces de conectarnos, devolvemos un valor \false{} que provoca el envío de mensaje a todas las aplicaciones del tipo {\small REGISTER\_EXCHANGE} con el campo EXTRA ``errorSetupInterface'' a \true{}. Si por el contrario nuestro \textit{broadcastReceiver} ha podido capturar la acción de conexión al citado punto de acceso o ya estamos conectados a éste continuamos arrancando las hebras del controlador dependiendo del tipo de nodo que seamos:
-\paragraph{Normal} Arrancamos una hebra que escuche gracias a un \textit{serverSocket} para que acepte conexiones TCP, una vez estemos escuchando en el puerto indicado, enviamos el mensaje de tipo {\small REGISTER\_EXCHANGE} con el campo {\small EXTRA} ``errorSetupInterface'' a \false{} y el resto de campos descritos en la tabla~\ref{tab:endHandshakingNotCWSNMessage} y lanzamos el proceso de registro en la red.
+La interfaz \wifi{} permite configurarse en varias modalidades como: Infraestructura, Tethering o Ad-hoc. En la actualidad sólo está implementado el modo infraestructura por los problemas descritos en \ref{sec:analisisWifi}. Una vez lanzada la tarea en segundo plano, lo primero que hacemos es intentar parar las hebras asociadas a la interfaz \wifi{} que cerrarán los \textit{serverSockets} y el \textit{broadcastReceiver} útil para registrarse a eventos de información relativa a la interfaz \wifi{} como son \ac{RSSI} y los eventos de conexión/desconexión a un punto de acceso. Partiendo de una situación en que todos los recursos están liberados, encendemos la interfaz si no lo estuviese ya, esperamos a que se encienda mediante una espera de consulta a una variable que es modificada por  \textit{StatusReceiver\_wifi.java}, nuestro \textit{broadcastReceiver} para la interfaz \wifi{}. Si nos han pasado como parámetro el SSID, intentamos conectarnos a él desconectándonos del punto de acceso acutual si no fuese el mismo. Esperamos mediante \textit{polling} con límite de tiempo seleccionable desde las preferencias en la sección de \textit{test}. Si agotamos el tiempo y no hemos sido capaces de conectarnos, devolvemos un valor \false{} que provoca el envío de mensaje a todas las aplicaciones del tipo {\small REGISTER\_EXCHANGE} con el campo EXTRA ``errorSetupInterface'' a \true{}. Si por el contrario nuestro \textit{broadcastReceiver} ha podido capturar la acción de conexión al citado punto de acceso o ya estamos conectados a éste continuamos arrancando las hebras del controlador dependiendo del tipo de nodo que seamos:
+\paragraph{Normal} Arrancamos una hebra que escuche gracias a un \textit{serverSocket} para que acepte conexiones TCP, una vez estemos escuchando en el puerto indicado, enviamos el mensaje de tipo {\small REGISTER\_EXCHANGE} con el campo {\small EXTRA} ``errorSetupInterface'' a \false{} y el resto de campos descritos en la tabla~\ref{tab:endHandshakingNotCWSNMessage} y lanzamos el proceso de registro en la red (sección~\ref{subsec:enterInNetwork}).
 
 \paragraph{Coordinador} Arrancamos un par de hebras, una para tráfico TCP que admita conexiones fiables y otra para el tráfico UDP que escuche y capture paquetes, si todo se ha configurado bien enviamos un mensaje análogo al párrafo anterior y quedamos a la espera de capturar paquetes.
 
@@ -498,13 +519,13 @@ La interfaz \wifi{} permite configurarse en varias modalidades como: Infraestruc
 \end{files}
 \end{codeInvolved}
 
-Como en el controlador de \wifi{} empezamos (en segundo plano) liberando si no estuviesen ya cada uno de los recursos, en \bt{} coexisten dependiendo del tipo de nodo 3 tipos de hebras, la que acepta conexiones (\textit{AcceptThread}), la que lanza la conexión (\textit{ConnectThread}) y la que mantiene la conexión entre el esclavo y el maestro (\textit{ConnectedThread}), de este tipo podemos tener más de una.
+Como en el controlador de \wifi{} empezamos (en segundo plano) liberando si no estuviesen ya cada uno de los recursos, en \bt{} coexisten, dependiendo del tipo de nodo, tres tipos de hebras: la que acepta conexiones (\textit{AcceptThread}), la que lanza la conexión (\textit{ConnectThread}) y la que mantiene la conexión entre el esclavo y el maestro (\textit{ConnectedThread}), de este tipo podemos tener más de una.
 Encendemos la interfaz \bt{} si no estuviese encendida ya, mediante una petición al sistema \android{} y esperando mediante \textit{polling} a que \textit{StatusReceiver\_bt.java}, el \textit{broadcastReceiver} para la interfaz \bt{} modifique la variable de control de esta espera. Una vez finalizada, procedemos a configurar las hebras del controlador según el tipo de nodo.
 \paragraph{Normal} Este tipo de nodo se comporta como esclavo en la comunicación \bt{} por lo que necesita arrancar una hebra para aceptar conexiones, como sólo esperamos un maestro cuando consigue una conexión (disparada sobre el mismo UUID por el que hemos registrado el socket) liberamos este recurso. Como ya hemos configurado la interfaz enviamos el mensaje final del \textit{handshaking} (ver tabla~\ref{tab:endHandshakingNotCWSNMessage}) con las instrucciones que hemos visto ya.
 
 \paragraph{Coordinador} Este tipo de nodo se comporta como maestro en la comunicación \bt{}, no necesita aceptar conexiones, pero si disparar éstas. Para ello, recogemos de la base de datos los nodos inactivos y para cada uno de ellos lanzamos una conexión gracias al método connect() que se ejecuta en su propia hebra para asegurarnos que no se ejecuta en la hebra de la interfaz de usuario, en este caso no hace falta ya que la estamos llamando desde el segundo plano, pero como veremos este método se llama también directamente desde la UI-thread. Este método coge como parámetros la dirección MAC con la cual queremos establecer una conexión y el número de intentos que vamos a intentar establecer esta conexión (a parte de otras constantes como el UIID), como en \bt{} es fácil que falle el establecimiento intentamos minimizar este riesgo reintentando la conexión. En el momento que conseguimos establecer la conexión, liberamos esta hebra que se volverá a crear con el siguiente intento de conexión a otro nodo y manejamos la conexión con una nueva hebra del tipo \textit{connectedThread}, al final tendremos tantas hebras como nodos activos en la red. La forma en la que sabemos cuando podemos pasar al siguiente nodo radica en 2 flags que son modificadas gracias al sistema de estados: setState(), que tienen los controladores. En esencia, cuando disparamos una conexión y ésta falla propagamos un estado de conexión fallida al servicio que aumentara el flag de conexiones fallidas (\textit{numFailConnection}), si la conexión se produce con éxito se propaga análogamente un estado de nuevo nodo en la red y modificaremos el flag de nuevo dispositivo (\textit{flagNewDevice}) saliendo de la espera en la que nos encontramos, por establecimiento de la conexión o por llegar al máximo de intentos.
 
- Una vez hemos acabado con la lista de nodos inactivos habremos terminado de configurar la interfaz y procederemos al envío del último mensaje del \textit{handshaking} con el formato visto en la tabla~\ref{tab:endHandshakingNotCWSNMessage}.
+ Una vez hemos acabado con la lista de nodos inactivos habremos terminado de configurar la interfaz y procederemos al envío del último mensaje del \textit{handshaking} con el formato visto en la tabla~\ref{tab:endHandshakingNotCWSNMessage}
 
 %------------------------------
 \subsection{Registro de un nodo en la red}
@@ -519,7 +540,7 @@ Según la interfaz en la que nos encontremos se alterna el papel de quién da el p
 \textbf{Database}: eventNewDeviceIPCoordinator(), newDeviceEventNormal(), modifyNode()
 \end{files}
 \end{codeInvolved}
-Tras la configuración de la interfaz por parte de un nodo normal, éste inicia otra \textit{AsynTask} que comienza a enviar paquetes cada 800 milisegundos hasta llegar a un máximo de 20. La razón de enviar una ráfaga de paquetes radica en que al ser trafico broadcast/multicast los puntos de acceso pueden menospreciarlo (incluso bloquearlo) y el mismo dispositivo \android{} puede que no esté escuchando siempre en este tipo de direcciones. De hecho cuando se apaga la pantalla, el driver de \wifi{} se reconfigura automáticamente para dejar de escuchar a la dirección de broadcast, por ello una ráfaga de 20 paquetes espaciados en el tiempo aumenta las posibilidades de recepción e interpretación de estos paquetes por parte del coordinador. Si al finalizar el envío de la ráfaga no consiguiésemos ninguna respuesta el proceso de registro terminará enviando hacia el servicio el estado {\small (EVENT\_HELLO\_NOT\_REACHED)} que será interpretado por el éste quien informará a todas las aplicaciones registradas del fallo del proceso indicando que no ha sido posible establecer una \ac{CWSN} {\small (EVENT\_INTERFACE\_CANT\_CONNECT)}.\\
+Tras la configuración de la interfaz por parte de un nodo normal, éste inicia otra \textit{AsynTask} que comienza a enviar paquetes cada 800 milisegundos hasta llegar a un máximo de 20. La razón de enviar una ráfaga de paquetes radica en que al ser trafico broadcast/multicast los puntos de acceso pueden menospreciarlo (incluso bloquearlo) y el mismo dispositivo \android{} puede que no esté escuchando siempre en este tipo de direcciones. De hecho cuando se apaga la pantalla, el driver de \wifi{} se reconfigura automáticamente para dejar de escuchar a la dirección de broadcast, por ello una ráfaga de 20 paquetes espaciados en el tiempo aumenta las posibilidades de recepción e interpretación de estos paquetes por parte del coordinador. Si al finalizar el envío de la ráfaga no consiguiésemos ninguna respuesta el proceso de registro terminará enviando hacia el servicio el estado {\small (EVENT\_HELLO\_NOT\_REACHED)} que será interpretado por éste informando a todas las aplicaciones registradas del fallo del proceso indicando que no ha sido posible establecer una \ac{CWSN} {\small (EVENT\_INTERFACE\_CANT\_CONNECT)}.\\
 
 Este tipo de paquetes lo denominamos \textit{``HelloPacket''} y su contenido es:
 
@@ -529,25 +550,28 @@ Este tipo de paquetes lo denominamos \textit{``HelloPacket''} y su contenido es:
 	\begin{description}
 		\item[Nombre del nodo en la red] Una \String{}  con el nombre del nodo en la red
 		\item[Papel del nodo] Una \String{} cuyo valor ``p'' es interpretado como primario y ``s'' como secundario (``u'' para valor desconido)
-		\item[Tipo de nodo] Una \String{} cuyos valores pueden ser: ``n'' normal, ``c'' coordinador  (``t'' coordinador temporal en \bt{} [sin implementar], ``u'' para valor desconocido)
+		\item[Tipo de nodo] Una \String{} cuyos valores pueden ser: ``n'' normal, ``c'' coordinador (``t'' coordinador temporal en \bt{} [sin implementar], ``u'' para valor desconocido)
 		\item[Dirección MAC] Una \String{} cuyo valor es la dirección MAC de \bt{}, clave que identifica al nodo de manera unívoca
 	\end{description}
 \protobufTableEnd{Campos del paquete ``HelloPacket''}{helloPacket}
 
 
 Si por el contrario uno de los paquetes llega a destino y es manejado por el coordinador, éste interpretará el contenido dentro del mismo controlador, así evitamos propagar información al servicio de paquetes que no encajen con la estructura y campos requeridos desechando otros paquetes. Si capturamos un \textit{``HelloPacket''} generaremos un evento de nuevo nodo en la red {\small (EVENT\_ENTERED\_IN\_NETWORK)} con la información leída del paquete. 
+
+\figura{Vectorial/design/entradaRed-wf-coord}{width=.7\textwidth}{fig:entradaRed-wf-coord}{Flujograma de los procesos desencadenados en el coordinador al introducir un nodo en \wifi{}}
+
 Este evento llega al \textit{handler} de \wifi{} en el servicio, dónde lo primero que hacemos es ver si el nodo ya está registrado en la red (este paso es necesario ya que tenemos varios envíos del mismo paquete por parte del mismo nodo), si ya está registrado ignoramos este evento, pues es una copia de otro anterior durante una guarda de tiempo. La motivación de esta guarda recae en que en \wifi{} no se detecta inmediatamente que un nodo se ha caído de la red, sólo nos podemos dar cuenta cuando intentamos enviarle algo y obtenemos un error. Puede darse la situación de que un nodo se registre, se caiga e intente registrarse de nuevo. Si en este lapsus nadie ha intentado ponerse en contacto con él, el resto de nodos seguirán creyendo que el nodo está en la red, si ignorasemos este evento el nodo que está intentado cerrar su registro en la red no tiene manera de saber que en realidad a ojos de los demás nodos él ya está registrado en la red, creyendo que su \textit{``HelloPacket''} no ha llegado a destino resultando una situación de falso fallo. Si no estaba activo en la red, lo marcamos como activo (insertándolo, si no estuviese ya, en la base de datos con la información facilitada por el controlador)
 Acto seguido el coordinador informará a éste nodo del resto de nodos que ya hay en la red y al resto de nodos de la red se les informará del nuevo nodo. Por su parte el coordinador informará a las aplicaciones registradas que ha habido un nuevo nuevo nodo en la red y facilitará la lista de nodos.
 
-La información de señalización que se envía y que representa\footnote{Notar que el campo \bsq{Dirección IP} puede no ser informado porque no este disponible en ese momento o sea inecesario} al nodo es:
+La información de señalización que se envía y que representa\footnote{Notar que el campo ``Dirección IP'' puede no ser informado por no estar disponible en ese momento o ser inecesario} al nodo la podemos ver en la tabla~\ref{itm:infoNode}
 
 \protobufTableInit{Estructura mensaje representación de un Nodo (serialización)}
-	\item[Nombre del nodo en la red] Una \String{}  con el nombre del nodo en la red
-	\item[Papel del nodo] Una \String{} cuyo valor ``p'' es interpretado como primario y ``s'' como secundario (``u'' para valor desconido)
-	\item[Tipo de nodo] Una \String{} cuyos valores pueden ser: ``n'' normal, ``c'' coordinador  (``u'' para valor desconocido)
-	\item[Dirección MAC] Un \String{} cuyo valor es la dirección MAC en \bt{} del nodo, clave que identifica al nodo de manera unívoca	
-	\item[Dirección IP] Una \String{} cuyo valor representa la dirección IP (formato IP4) del nodo
-	\item[Dirección MAC del coordinador] Una \String{} que contiene la dirección MAC de \bt{} del coordinador del nodo que estamos 	enviando la información
+	\item[Nombre del nodo en la red] Una \String{}  con el nombre del nodo en la red.
+	\item[Papel del nodo] Una \String{} cuyo valor ``p'' es interpretado como primario y ``s'' como secundario (``u'' para valor desconocido).
+	\item[Tipo de nodo] Una \String{} cuyos valores pueden ser: ``n'' normal, ``c'' coordinador  (``t'' coordinador temporal en Bluetooth [sin implementar], ``u'' para valor desconocido).
+	\item[Dirección MAC] Un \String{} cuyo valor es la dirección MAC en \bt{} del nodo, clave que identifica al nodo de manera unívoca.	
+	\item[Dirección IP] Una \String{} cuyo valor representa la dirección IP (formato IP4) del nodo.
+	\item[Dirección MAC del coordinador] Una \String{} que contiene la dirección MAC de \bt{} del coordinador del nodo que estamos enviando la información.
 \protobufTableEnd{Representación de un nodo necesaria para recrear el mapa de red, contenido del mensaje de señalización}{infoNode}
 
 Al recibir esta información el nodo normal, su controlador ya le habrá informado al servicio que está recibiendo datos, este evento le sirve al servicio para ver que ha sido registrado en la red y genera el mismo un evento de entrada en la red {\small (EVENT\_ENTERED\_IN\_NETWORK)} que sirve para homogeneizar el flujo y que sea idéntico al de \bt{}, este evento sirve para parar el envío de ``HelloPacket''. Al terminar de recibir el mensaje de señalización antes de procesarlo, tendremos que comprobrar que el nodo coordinador ya está incluido en la base de datos y si no incluir su MAC para obtener el identificador de nodo. El esquema de base de datos nos exige conocer a priori el identificador del nodo para poder traducir las direcciones MAC de \bt{}. A medida que vamos procesando el mensaje vamos sustituyendo los valores anteriores (o de relleno si el nodo coordinador no estaba incluido en la base de datos) por los nuevos extraidos del mensajes de señalización. En este momento el nodo normal informará a las aplicaciones de que ha entrado en la red gracias a mensajes vistos en~\ref{subsec:serviceInformation} con el evento {\small EVENT\_INTERFACE\_NEW\_NODE} (visto en~\ref{tab:events}) y anunciará la lista de nodos quién es el coordinador. \comp{es oportuno decir que por motivos de eficiencia, solo hacemos una pasada por el mensaje} 
@@ -561,22 +585,29 @@ Al recibir esta información el nodo normal, su controlador ya le habrá informado
 \end{files}
 \end{codeInvolved}
 
-Como hemos explicado antes, es ahora el coordinador quien tiene que dar el primer paso, de hecho cuando se congifura la interfaz, está incluida una ronda de conexión a los nodos inactivos. Al producirse esta conexión, es decir al crear una hebra del tipo \textit{ConnectedThread}, tanto el nodo coordinador como el nodo normal informan a sus respectivos servicios que se ha producido un evento de nodo nuevo {\small(EVENT\_NEW\_DEVICE)}
+Como hemos explicado antes, es ahora el coordinador quien tiene que dar el primer paso, de hecho cuando se congifura la interfaz, está incluida una ronda de conexión a los nodos inactivos. Al producirse esta conexión, es decir al crear una hebra del tipo \textit{ConnectedThread}, tanto el nodo coordinador como el nodo normal informan a sus respectivos servicios que se ha producido un evento de nodo nuevo {\small(EVENT\_NEW\_DEVICE)}.
+
 \paragraph{Normal} Al recibir el evento conexión al coordinador vemos si éste está en la base de datos, si no lo estuviese, incluiríamos su MAC para obtener su identificador y pospondríamos el anuncio del nuevo nodo hacia las aplicaciones hasta que no obtengamos el mensaje de señalización donde se nos informa de las características del resto de nodos en la red. Si por el contrario ya habíamos cooperado antes con este nodo, anunciaremos de inmediato hacia las aplicaciones el evento de conexión al nodo coordinador. Notar que los parámetros del nodo coordinador (nombre y papel) pueden ser valores que no se correspondan con la situación actual, no es una cosa que nos deba preocupar pues en primer lugar son parámetros cuyo cambio suele ser puntual y en segundo lugar será solventado momentos después al recibir la señalización con información sobre la población en la red.
 
-\paragraph{Coordinador} El flujo también comienza preguntándonos si habíamos cooperado ya con el nodo al que acabamos de conectarnos. Si no estuviese en la base de datos, le enviamos un mensaje de petición de información para que nos informe de su nombre y papel, ya que su MAC y su tipo (normal) lo sabemos porque o nos lo facilita el controlador o porque es deducible por el contexto. El nodo normal al recibir este mensaje envía sus datos, que nosotros procesamos como si fuese una actualización de parámetros en la red más lo que conlleva modificar los datos del nodo que nos lo envía y la propagación de estos al resto de nodos. Además en este caso como el nodo no estaba en la red, se le envía información sobre la red cerrando el proceso de registro y se anuncia hacia las aplicaciones la entrada de un nuevo nodo, siguiendo la estructura de mensaje visto en la tabla~\ref{tab:serviceInformation}
+\figura{Vectorial/design/entradaRed-bt-coord}{width=.6\textwidth}{fig:entradaRed-bt-coord}{Flujograma de los procesos desencadenados en el coordinador al introducir un nodo en \bt{}}
+
+\paragraph{Coordinador} El flujo también comienza preguntándonos si habíamos cooperado ya con el nodo al que acabamos de conectarnos. Si no estuviese en la base de datos, le enviamos un mensaje de petición de información para que nos informe de su nombre y papel, ya que su MAC y su tipo (normal) lo sabemos porque o nos lo facilita el controlador o porque es deducible por el contexto. El nodo normal al recibir este mensaje envía sus datos, que nosotros procesamos como si fuese una actualización de parámetros en la red más, lo que conlleva modificar los datos del nodo que nos lo envía y la propagación de estos al resto de nodos. Además en este caso como el nodo no estaba en la red, se le envía información sobre la red cerrando el proceso de registro y se anuncia hacia las aplicaciones la entrada de un nuevo nodo, siguiendo la estructura de mensaje visto en la tabla~\ref{tab:serviceInformation}
+
 
 %------------------------------
 \subsection{Salida de un nodo de la red}
+
+\figura{Vectorial/design/salidaRed}{width=.6\textwidth}{fig:salidaRed}{Flujo salida red}
+
 La dificultad en el proceso de salida de un nodo de la red viene marcada tanto por la interfaz como por el tipo de nodo que se trate. Es un proceso que tiene dos lados, el nodo que se desregistra en la red y los nodos que se quedan.
 Un nodo se desregistra de la red cuando no quedan aplicaciones montadas sobre el servicio. Para que una aplicación se desregistre del servicio tiene que mandar una petición de \textit{unbind} precedida de un mensaje del tipo \textit{unregister client} (ver tabla~\ref{tab:unregisterClientMenssage}). Con el mensaje el servicio sabrá que tiene que borrar de su base de clientes a la aplicación y la petición liberará la conexión creada por \android{} entre ambos. 
 
-El flujo que relaciona aplicación y servicio destruye a éste cuando todas las peticiones de \textit{bind} son correspondidas con sus \textit{unbind} lo mismo pasa con las peticiones de \textit{start} y \textit{stop}, teniendo este tándem para decidir si un servicio debe seguir vivo o no. Como las peticiones de \textit{start} son disparadas por el propio servicio para realizar de forma periódica su tarea cognitiva, el flujo que provee \android{} ha sido modificado para que cuando el servicio deje de tener aplicaciones sobre él, el mismo se destruya. 
+El flujo que relaciona aplicación y servicio destruye a éste cuando todas las peticiones de \textit{bind} son correspondidas con sus \textit{unbind} lo mismo pasa con las peticiones de \textit{start} y \textit{stop}, teniendo este tándem para decidir si un servicio debe seguir vivo o no. Como las peticiones de \textit{start} son disparadas por el propio servicio para realizar de forma periódica su tarea cognitiva, el flujo que provee \android{} ha sido modificado para que cuando el servicio deje de tener aplicaciones sobre él, se destruya a si mismo. 
 
-Cuando ocurre esto, los pasos a seguir son la preparación de la base de datos para una nueva instancia del servicio. Estas acciones comprenden resetear las direcciones IP y el identificador del coordinador para cada nodo, así como el marcaje de éstos como inactivos. Por último una indicación de que el servicio ha sido parado de forma volunaria para darnos cuenta de posibles cierres forzados, de tal forma que al instanciar de nuevo el servicio siempre tengamos una situación de partida inicial. 
+Cuando ocurre esto, los pasos a seguir son la preparación de la base de datos para una nueva instancia del servicio. Estas acciones comprenden resetear las direcciones \ac{IP} y el identificador del coordinador para cada nodo, así como el marcaje de éstos como inactivos. Por último una indicación de que el servicio ha sido parado de forma volunaria para darnos cuenta de posibles cierres forzados, de tal forma que al instanciar de nuevo el servicio siempre tengamos una situación de partida inicial. 
 Estas acciones (incluidas en el método \textit{onDestroy()} del servicio) no son ejecutadas si la salida es forzosa, debido a un error no manejado que provoca el cierre o debido a la falta de memoría que provoca que el gestor de \android{} cierre la aplicación. En este caso como no se ha puesto la marca de cierre voluntario del servicio, al arrancar el servicio de nuevo podemos hacer estas acciones para desembocar en la misma situación inicial.\\
 
-Entre las acciones a ejecutar por el nodo para salir de la red tenemos que dependiendo de la interfaz la forma de avisar al resto de nodos que se quedan varia.
+Entre las acciones a ejecutar por el nodo que sale de la red tenemos que dependiendo de la interfaz la forma de avisar al resto de nodos que se quedan varia:
 \subsubsection{WiFi}
 \begin{codeInvolved}
 \begin{files}
@@ -585,21 +616,30 @@ Entre las acciones a ejecutar por el nodo para salir de la red tenemos que depen
 \textbf{Database}: lostNode()
 \end{files}
 \end{codeInvolved}
+
+
 En esta interfaz tenemos una conexión intermitente, que se desplega y se retrae en los momentos en los que hay comunicación. En esta situación ante eventualidades no tenemos el mismo tiempo de reacción como lo podemos tener en \bt{}. En el caso de salida voluntaria necesitamos un mecanismo que informe que un nodo va a abandonar la red.
 
-Este mecanismo consiste en el envío de un paquete llamado ``ByePacket'' que contiene la MAC del nodo que abandona la red. El envío de este paquete puede ser sobre TCP o UDP, en el caso de que el envío sea desde el nodo coordinador, solo podremos mandarlo sobre TCP ya que los nodos normales no escuchan sobre UDP como hemos visto en \ref{subsec:configInterface}. Este envío se realiza gracias a otra asynTask que al finalizar libera los recursos del controlador cerrando la vida de la aplicación por completo.
+Este mecanismo consiste en el envío de un paquete llamado ``ByePacket'' que contiene la MAC del nodo que abandona la red. El envío de este paquete puede ser sobre \ac{TCP} o \ac{UDP}, en el caso de que el envío sea desde el nodo coordinador, solo podremos mandarlo sobre \ac{TCP} ya que los nodos normales no escuchan sobre \ac{UDP} como hemos visto en \ref{subsec:configInterface}. Este envío se realiza gracias a otra asynTask que al finalizar libera los recursos del controlador cerrando la vida de la aplicación por completo.
 
 \protobufTableInit{Estructura mensaje desregistro en la red \wifi{}}
-  \item[Tipo de paquete] Valor ``BYE'' del enumerado ``packetType''
-	\item[Bye packet] Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Tipo de paquete''
+  \item[Tipo de paquete] Valor ``BYE'' del enumerado ``packetType''.
+	\item[Bye packet] Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Tipo de paquete'':
 	\begin{description}
-		\item[Dirección MAC] Una \String{} cuyo valor es la dirección MAC de \bt{}, clave que identifica al nodo de manera unívoca
+		\item[Dirección MAC] Una \String{} cuyo valor es la dirección MAC de \bt{}, clave que identifica al nodo de manera unívoca.
 	\end{description}
 \protobufTableEnd{Campos del paquete ``ByePacket''}{byePacket}
 
-\paragraph{Normal} Al recibir de manera fiable el mensaje por parte del coordinador, el controlador generará un evento de pérdida de nodo que llegará al servicio donde procederemos a marcar a todos los nodos como inactivos y demás información volátil de la \ac{CWSN}, por otra parte informamos a las aplicaciones registradas de la pérdida del nodo y de la salida de la red.
+Las acciones a ejecutar por los nodos que se quedan en la red son:
 
-\paragraph{Coordinador} Al recibir el mensaje se generará el evento de pérdida de nodo que se entregará al servicio. Marcaremos este nodo como inactivo y veremos si aún quedan nodos en la red, si la respuesta es afirmativa enviaremos un mensaje de señalización a cada nodo restante en la red informando de la pérdida, así ellos podrán recomponer el mapa de red e informar a sus aplicaciones, informamos también a nuestras aplicaciones registradas del evento y de la nueva lista de nodos. Si la respuesta es negativa, nos limitamos a informar a las aplicaciones registradas del evento de pérdida y del evento de salida de la red.
+\figura{Vectorial/design/salidaRed-event}{width=.7\textwidth}{fig:salidaRed-event}{Flujo evento pérdida de nodo manejado disparado por evento del controlador desde los nodos que se quedan en la red}
+
+
+\paragraph{Normal} Al recibir de manera fiable el paquete ``ByePacket'' por parte del coordinador, el controlador generará un evento de pérdida de nodo que llegará al servicio donde procederemos a marcar a todos los nodos como inactivos y demás información volátil de la \ac{CWSN}, por otra parte informamos a las aplicaciones registradas de la pérdida del nodo y de la salida de la red. Si recibimos mediante señalización la pérdida de un nodo, procedemos a marcarlo como inactivo y a informar a las aplicaciones registradas del nuevo mapa de red.
+
+\figura{Vectorial/design/salidaRed-signaling}{width=.7\textwidth}{fig:salidaRed-signaling}{Flujo evento pérdida de nodo disparado por señalización manejado desde un nodo normal}
+
+\paragraph{Coordinador} Al recibir el paquete ``ByePacket'' se generará el evento de pérdida de nodo que se entregará al servicio. Marcaremos este nodo como inactivo y veremos si aún quedan nodos en la red, si la respuesta es afirmativa enviaremos un mensaje de señalización a cada nodo restante en la red informando de la pérdida, así ellos podrán recomponer el mapa de red e informar a sus aplicaciones, informamos también a nuestras aplicaciones registradas del evento y de la nueva lista de nodos. Si la respuesta es negativa, nos limitamos a informar a las aplicaciones registradas del evento de pérdida y del evento de salida de la red.
 
 \subsubsection{Bluetooth}
 \begin{codeInvolved}
@@ -612,7 +652,10 @@ Este mecanismo consiste en el envío de un paquete llamado ``ByePacket'' que cont
 En este caso tenemos una conexión abierta en todo momento, por lo que ante cualquier eventualidad nos daremos cuenta inmediatamente de que se ha perdido la conexión, lo que hace innecesario el mecanismo descrito en la sección anterior.
 
 Tanto si se trata de una salida voluntaria como involuntaria, se destruye tanto la aplicación como el servicio, se liberan todos los recursos. Al cerrarse el controlador de \bt{}, las hebras que haya abiertas desaparecen lo que acarrea que el otro extremo de la comunicación se de cuenta de que el \textit{socket} usado en la comunicación ha sido cerrado, lo que supone que el controlador detecte el cierre de la conexión y lance el evento de pérdida de nodo.
-\paragraph{Normal} Si somos un nodo normal, significa que hemos perdido conexión con nuestro coordinador (que acaba de abandonar la red) y por tanto con toda la red, por lo tanto marcamos a todos los nodos como inactivos borrando además todos los datos relativos a la \ac{CWSN} que acabamos de abandonar. Informamos a las aplicaciones registradas que hemos dejado de formar parte de la \ac{CWSN}.
+
+Las acciones a ejecutar por los nodos que se quedan en la red son:
+
+\paragraph{Normal} Si somos un nodo normal, el evento elevado hasta el servicio por el controlador significa que hemos perdido conexión con nuestro coordinador (que acaba de abandonar la red) y por tanto con toda la red, por lo tanto marcamos a todos los nodos como inactivos borrando además todos los datos relativos a la \ac{CWSN} que acabamos de abandonar. Informamos a las aplicaciones registradas que hemos dejado de formar parte de la \ac{CWSN}. Por otro lado, al recibir la señalización que indica la pérdida de un nodo seguimos el flujo visto en la figura~\ref{fig:salidaRed-signaling}
 
 \paragraph {Coordinador} Si por el contrario somos un nodo coordinador, significa que hemos perdido la conexión con un nodo normal con el que teníamos comunicacion directa y debemos informar al resto de nodos de esta eventualidad enviando un mensaje de señalización con la MAC del nodo saliente para que ellos puedan rehacer el mapa de red. Marcamos también al nodo del que acabamos de perder la comunicación como inactivo e informamos a las aplicaciones registradas del evento y la nueva lista de nodos. Si todos los nodos de nuestra base de datos están marcados como inactivos, significa que acabamos de perder la comunicación con el último nodo y por tanto dejamos de estar en \ac{CWSN} situación que informamos a las aplicaciones registradas de manera análoga. 
 
@@ -626,39 +669,39 @@ Tanto si se trata de una salida voluntaria como involuntaria, se destruye tanto 
 \end{codeInvolved}
 
 
-Los parámetros del servicio se pueden dividir en dos grupos, los propios del servicio y los de las aplicaciones de los cuales uno de ellos es único y por tanto está compartido entre todas ellas.
+Los parámetros del servicio se pueden dividir en dos grupos, los propios del servicio y los de las aplicaciones de los cuales uno de ellos es único y por tanto está compartido entre todas ellas (ver tabla~\ref{tab:serviceSettings}).
 
 \begin{table}[h]
 \begin{center}
 	\begin{tabular}{r @{\hskip 1cm} p{7cm}}
 	\multicolumn{2}{c}{Parámetros exclusivos servicio}\\ \hline 
-	\textbf{Nombre del nodo} & Una \String{} que represente el nombre del nodo en la red \\
-	\textbf{Tipo de nodo} & Un \integer{} cuyo valor 0 se traduce por normal y cuyo valor 1 corresponde a coordinador \\
-	\textbf{Periodo tarea cognitiva} & Un \double{} que expresa el número de segundos que transcurren entre ejecuciones de la tarea cognitiva\\
+	\textbf{Nombre del nodo} & Una \String{} que represente el nombre del nodo en la red.\\
+	\textbf{Tipo de nodo} & Un \integer{} cuyo valor \bsq{0} se traduce por normal y cuyo valor \bsq{1} corresponde a coordinador.\\
+	\textbf{Periodo tarea cognitiva} & Un \double{} que expresa el número de segundos que transcurren entre ejecuciones de la tarea cognitiva.\\
 	\noalign{\vskip 0.25cm} 
 	\multicolumn{2}{c}{Parámetros aplicación}\\ \hline 
-	\textbf{Papel del nodo} & Un \integer{} para representar el papel que juega el nodo en la red, 0 = secundario mientras que 1 = primario \\
-	\textbf{Código de aplicación} & Una \String{} para discernir entre mensajes enviados por distinas aplicaciones \\
+	\textbf{Papel del nodo} & Un \integer{} para representar el papel que juega el nodo en la red, \bsq{0} = secundario mientras que \bsq{1} = primario.\\
+	\textbf{Código de aplicación} & Una \String{} para discernir entre mensajes enviados por distinas aplicaciones.\\
 	\end{tabular}
 	\caption{Parámetros del servicio} \label{tab:serviceSettings}
 \end{center}
 \end{table}
 
-Los primeros parámetros son ajustes del servicio que traspasan a cualquier aplicación, sin embargo los segundos si son propios de cada aplicación el primero expresa sus necesidades de comunicación y el segundo nos sirve para filtrar mensajes en el servicio y entregar el contenido que está dirigido a esa aplicación en concreto. El parámetro ``papel del nodo'' en realidad es un parámetro compartido, es decir si varias aplicaciones están registradas en el servicio cada una habrá aportado un valor distinto, como este valor es único, elegimos el que es más adecuado a las necesidades de comunicación de la aplicación mas restringida. En otras palabras si una aplicación pide ser ``nodo primario'' y otra aplicación pide ser ``nodo secundario'' el valor del parámetro será ``nodo primario''.
+Los primeros parámetros son ajustes del servicio que traspasan a cualquier aplicación, sin embargo los segundos si son propios de cada aplicación. El primero expresa las necesidades de comunicación y el segundo nos sirve para filtrar mensajes en el servicio y entregar el contenido que está dirigido a esa aplicación en concreto. El parámetro ``papel del nodo'' en realidad es un parámetro compartido, es decir si varias aplicaciones están registradas en el servicio cada una habrá aportado un valor distinto, como este valor es único, elegimos el que es más adecuado a las necesidades de comunicación de la aplicación más restrictiva. En otras palabras si una aplicación pide ser ``usuario primario'' y otra aplicación pide ser ``usuario secundario'' el valor del parámetro será ``usuario/nodo primario''.
 
 La primera forma de actualizar los parámetros de aplicación es con el registro de la aplicación en el servicio (ver sección~\ref{subsec:serviceRegisterProcess}) o en cualquier momento enviando un mensaje desde la aplicación al servicio del tipo {\small(REGISTER\_EXCHANGE)} (visto en la tabla~\ref{tab:registerExchangeMessage}) que desembocará en una contestación con todos los parámetros del servicio.
-Con respecto a los parámetros exclusivos del servicio, la forma de actualizarlos está un poco escondida en la API, ya que son ajustes propios del servicio y no de la aplicación y por tanto sometidos a cambios poco frecuentes. Normalmente estos parámetros están guardados en base de datos y se recuperan al recibir un mensaje del tipo {\small(REGISTER\_EXCHANGE)}, sin embargo si en este mensaje viene informado el campo \textit{obj} con un valor booleano a \true{} entonces en vez de coger los parámetros de la base de datos, los extraemos del mensaje. El detalle del mensaje ya se definió en la tabla~\ref{tab:updateAllParamsMessage}.
+Con respecto a los parámetros exclusivos del servicio, la forma de actualizarlos está un poco escondida en la \ac{API}, ya que son ajustes propios del servicio y no de la aplicación y por tanto sometidos a cambios poco frecuentes. Normalmente estos parámetros están guardados en base de datos y se recuperan al recibir un mensaje del tipo {\small(REGISTER\_EXCHANGE)}, sin embargo si en este mensaje viene informado el campo \textit{obj} con un valor booleano a \true{} entonces en vez de coger los parámetros de la base de datos, los extraemos del mensaje. El detalle del mensaje ya se definió en la tabla~\ref{tab:updateAllParamsMessage}.
 
  
 La actualización de estos parámetros (tanto cuando sólo actualizamos los de aplicación o todos) viene condicionada a si estamos cooperando ya en una red o no. Si no estamos en ninguna red los valores pasados sobreescribiran los existentes. En cambio si estamos en una situación de red, los parámetros ``papel del nodo'' y ``periodo tarea cognitiva'' pueden no ser actualizados, su actualización depende por tanto del valor actual, si es más restrictivo se podrán actualizar. Es decir para el ``papel del nodo'' sólo actualizaremos si el cambio pedido es a ``nodo primario'' y para ``periodo tarea cognitiva'' sólo actualizaremos si el periodo requerido es más pequeño que el actual.  Con respecto al parámetro ``tipo de nodo'' una vez se está en una \ac{CWSN} no se permiten cambios ya que dejaríamos a la red sin coordinador o añadiriamos otro coordinador, situaciones que no son de interés. Lo anterior no aplica, salvo el cambio de tipo de nodo, en la situación en que sólo hay una aplicación registrada, situación en la que actualizaremos los parámetros al no haber conflicto. \\
 
 Con respecto a la actualización de estos parámetros al resto de nodos, una vez validados y actualizados según las reglas descritas, si son de interés general (``nombre del nodo'', ``papel del nodo'') son enviados al coordinador para que este los distribuya como una actualización más del mapa de red.
 
-En \bt{} puede darse la situación de que si somos un nodo normal los demás nodos nos vean con parámetros antiguos, esto es debido a que si actualizamos nuestros parámetros fuera de una \ac{CWSN}, estos obviamente no son propagados a la red, al ser incluidos en la red por el coordinador, que ya nos conoce de veces anteriores, no tiene manera de saber que hemos actualizado los parámetros. Como impera la minimización del número de mensajes pasados por la red, no nos preguntará sino que saca una copia de su base de datos los parámetros, que son los mismos que tendrá el resto de la red, pues son la copia desactualizada de la base de datos del coordinador y no de los nuestros. Esta situación es muy poco frecuente por lo que teniendo en mente la minimización del tamaño de mensajes y el número de éstos, se ha preferido no implementar mecanismos que hagan mantener actualizados en todo momento los parámetros del nodo (``nombre del nodo'', ``papel del nodo'' y ``tipo de nodo'' aunque este último es deducible por el contexto) en favor de una mayor eficiencia de red. Esta situación no ocurre en \wifi{} ya que la forma de registro en la red conlleva el envío de un paquete para registrarse en el que enviamos toda la información del nodo, por lo que sobre \wifi{} se puede actualizar en cualquier momento y sobre \bt{} sólo en momentos de cooperación en red. No obstante la situación de desactualización se soluciona cuando hay un cambio de contexto con interfaz destino \wifi{}.
+En \bt{} puede darse la situación de que si somos un nodo normal los demás nodos nos vean con parámetros antiguos, esto es debido a que si actualizamos nuestros parámetros fuera de una \ac{CWSN}, estos obviamente no son propagados a la red, al ser incluidos en la red por el coordinador, que ya nos conoce de veces anteriores, no tiene manera de saber que hemos actualizado los parámetros. Como impera la minimización del número de mensajes pasados por la red, éste no nos preguntará, sino que sacará una copia de los parámetros de su base de datos, que serán los mismos que tendrá el resto de la red, pues son la copia desactualizada y distribuida del coordinador. Esta situación es muy poco frecuente por lo que teniendo en mente la minimización del tamaño de mensajes y el número de éstos, se ha preferido no implementar mecanismos que hagan mantener actualizados en todo momento los parámetros del nodo (``nombre del nodo'', ``papel del nodo'' y ``tipo de nodo'' aunque este último es deducible por el contexto) en favor de una mayor eficiencia de red. Esta situación no ocurre en \wifi{} ya que la forma de registro en la red conlleva el envío de un paquete para registrarse en el que enviamos toda la información del nodo, por lo que sobre \wifi{} se puede actualizar en cualquier momento y sobre \bt{} sólo en momentos de cooperación en red. No obstante la situación de desactualización se soluciona cuando hay un cambio de contexto con interfaz destino \wifi{}.
 
 %------------------------------
 \subsection{Intercambio de mensajes}
-La transmisión y recepción de datos se realizan a través del intercambio de mensajes definidos en la API. Podemos destacar tres acciones: el envío, la recepción y una mezcla de ambos reservada sólo al coordinador que es el re-envío o \textit{forward} de mensajes.
+La transmisión y recepción de datos se realizan a través del intercambio de mensajes definidos en la \ac{API}. Podemos destacar tres acciones: el envío, la recepción y una mezcla de ambos reservada sólo al coordinador que es el re-envío o \textit{forward} de mensajes.
 
 \subsubsection{Recepción de mensajes}
 \begin{codeInvolved}
@@ -677,7 +720,7 @@ Empezamos explicando este proceso por ser el más fácil. Cuando la hebra del cont
 
 \messageTableEnd{Mensaje recibido por la red entregado por ambos controladores al servicio}{messageReadController}
 
-Una vez tenemos los \textit{bytes} leídos en el servicio los procesamos. Este procesamiento puede ser tan simple como entregar el contenido del mensaje a la aplicación correspondiente o reenviar el mensaje al siguiente eslabón de la cadena (sección explicada en la página~\pageref{forwardProcess}). El tratamiento del mensaje depende del tipo de nodo. Sin embargo, la presentación del mensaje hacia la aplicación si éste está dirigido hacia nosotros es común. Para ello necesitamos obtener el ``Código de aplicación'' (ver tabla~\ref{itm:dataMessage}) que nos permite recuperar el \textit{messenger} de la aplicación. Así filtramos y entregamos a cada aplicación los mensajes que le interesan. También, gracias al campo ``Desde'' sabemos quién es el originador del mensaje. Una vez hemos recuperado la aplicación destinataria y el nodo que envío el mensaje, podemos trasladar esta información a la aplicación correspondiente (ver tabla~\ref{tab:incomingContent}). 
+Una vez tenemos los \textit{bytes} leídos en el servicio los procesamos. Este procesamiento puede ser tan simple como entregar el contenido del mensaje a la aplicación correspondiente o reenviar el mensaje al siguiente eslabón de la cadena (sección explicada en la página~\pageref{forwardProcess}). El tratamiento del mensaje depende del tipo de nodo. Sin embargo, la presentación del mensaje hacia la aplicación si éste está dirigido hacia nosotros es común. Para ello necesitamos obtener el ``Código de aplicación'' (ver tabla~\ref{itm:dataMessage}) que nos permite recuperar el \textit{messenger} de la aplicación. Así filtramos y entregamos a cada aplicación los mensajes que le interesan. También, gracias al campo ``Desde'' sabemos quién es el originador del mensaje. Una vez hemos recuperado la aplicación destinataria y el nodo que envío el mensaje, podemos trasladar esta información a la aplicación correspondiente (ver tabla~\ref{tab:incomingContent}).
 
 \subsubsection{Envío de mensajes}
 \begin{codeInvolved}
@@ -686,26 +729,26 @@ Una vez tenemos los \textit{bytes} leídos en el servicio los procesamos. Este pr
 \textbf{DataMessageQueue}: add(), hashMessage(), changeStatus(), remove()
 \end{files}
 \end{codeInvolved}
-Para enviar datos a través del servicio cognitivo, la aplicación debe enviar un mensaje a través de la API con la siguiente estructura (ver tabla~\ref{tab:outgoingContent})
+Para enviar datos a través del servicio cognitivo, la aplicación debe enviar un mensaje a través de la \ac{API} con la siguiente estructura (ver tabla~\ref{tab:outgoingContent}).
 
 
-Una vez entregado el mensaje al servicio se empieza a procesar. Asumimos que el mensaje que se quiere enviar es de un contenido que se puede codificar como una \String{}, por tanto este es el tipo de dato que se espera en el campo \textit{obj} del mensaje (\textit{payload}), si no el servicio devolvera un mensaje de error a la aplicación explicando que el contenido no puede manejarlo. En segundo lugar se comprueba que todos los valores de la lista son nodos de la red y están activos, también comprobamos que estamos en una \ac{CWSN}. Si no se superase alguna de estas otras validaciones se entregaría al igual que antes un mensaje de error a la aplicación con el código y descripción pertinentes abortándose el proceso en curso. Si no hay ningun problema, confeccionamos el mensaje que se va a enviar a la red cuyo formato vemos en la tabla~\ref{itm:dataMessage}.
+Una vez entregado el mensaje al servicio se empieza a procesar. Asumimos que el mensaje que se quiere enviar es de un contenido que se puede codificar como una \String{}, por tanto este es el tipo de dato que se espera en el campo \textit{obj} del mensaje (\textit{payload}), si no el servicio devolvera un mensaje de error a la aplicación explicando que el contenido no puede manejarlo. En segundo lugar se comprueba que todos los valores de la lista son nodos de la red y están activos, también comprobamos que estamos en una \ac{CWSN}. Si no se superase alguna de estas otras validaciones se entregaría al igual que antes un mensaje de error a la aplicación con el código y descripción pertinentes abortándose el proceso en curso. Si no hay ningun problema, confeccionamos el mensaje que se va a enviar a la red cuyo formato vemos en la tabla~\ref{itm:dataMessage}
 
 \protobufTableInit{Estructura mensaje datos}
-  \item[Tipo] Valor ``DATA'' del enumerado ``MessageType''
-  \item[Desde] Una \String{} con la dirección MAC de \bt{} del nodo
-	\item[Lista destinatarios] Una lista de \String{} con la lista con las direcciones MAC de \bt{} de los nodos destinatarios
-	\item[Código de aplicación] Una \String{} con el código de aplicación para filtrar el mensaje en destino 
-	\item[Marca de tiempo] Un \textit{long} con la representación del momento en el cual la aplicación entregó el mensaje al servicio
-	\item[Mensaje de datos] Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Tipo''
+  \item[Tipo] Valor ``DATA'' del enumerado ``MessageType''.
+  \item[Desde] Una \String{} con la dirección MAC de \bt{} del nodo.
+	\item[Lista destinatarios] Una lista de \String{} con la lista con las direcciones MAC de \bt{} de los nodos destinatarios.
+	\item[Código de aplicación] Una \String{} con el código de aplicación para filtrar el mensaje en destino. 
+	\item[Marca de tiempo] Un \textit{long} con la representación del momento en el cual la aplicación entregó el mensaje al servicio.
+	\item[Mensaje de datos] Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Tipo'':
 	\begin{description}
-		\item[Payload] Una \String{} con el contenido del mensaje 
+		\item[Payload] Una \String{} con el contenido del mensaje. 
 	\end{description}
 \protobufTableEnd{Campos del mensaje de datos}{dataMessage}
 
 Una vez tenemos el mensaje lo guardamos en una cola, lo que nos ayuda a calcular el tiempo de llegada de los mensajes de datos por parte de las aplicaciones y es necesario para ofrecer a la aplicación una confirmación positiva o negativa sobre la entrega a los nodos destinararios para cada mensaje. Como esta confirmación puede no ser inmediata, necesitamos almacenar de alguna manera el mensaje para poder recuperarlo cuando nos llegue ésta. Para guardarlo y rescatarlo cuando llegue el momento nos ayudamos de una clave, un \textit{hash} calculado en base a la marca de tiempo, el contenido del mensaje y la MAC de \bt{} del nodo que envía el mensaje. 
 
-El siguiente punto es ver si podemos enviar el mensaje por la red, para ello debemos estar registrados en una \ac{CWSN} y no estar en una situación de cambio de contexto, si se da esta situación marcamos el mensaje como ``pendiente de envío'' en la cola. Si podemos enviarlo lo marcamos como ``en envío'' y se procede al envío. Para ello necesitamos saber quién o quienes son los siguientes nodos en la cadena de envío, esto depende del tipo de nodo y del mapa de red. Aunque gracias a que cada nodo tiene información sobre cómo alcanzar a otros nodos, nuestra red está centralizada en la figura del coordinador por lo que la comunicación entre nodos no es posible siendo precisa una comunicación de saltos en los que el coordinador juega el papel central. Hay casos en que esta comunicación de saltos viene forzada por la interfaz de comunicación de uso, estamos hablando de \bt{} cuya única tipología posible es la de estrella (esclavo/maestro)
+El siguiente punto es ver si podemos enviar el mensaje por la red, para ello debemos estar registrados en una \ac{CWSN} y no estar en una situación de cambio de contexto, si se da esta situación marcamos el mensaje como ``pendiente de envío'' en la cola. Si podemos enviarlo lo marcamos como ``en envío'' y se procede al envío. Para ello necesitamos saber quién o quienes son los siguientes nodos en la cadena de envío, esto depende del tipo de nodo y del mapa de red. Aunque gracias a que cada nodo tiene información sobre cómo alcanzar a otros nodos, nuestra red está centralizada en la figura del coordinador por lo que la comunicación entre nodos no es posible siendo precisa una comunicación de saltos en los que el coordinador juega el papel central \textcolor{red}{citar algo de aumentar eficiencia con el Cognitive brokeage white paper?}. Hay casos en que esta comunicación de saltos viene forzada por la interfaz de comunicación de uso, estamos hablando de \bt{} cuya única tipología posible es la de estrella (esclavo/maestro)
 
 \paragraph{Normal} El siguiente eslabón de la cadena siempre es nuestro nodo coordinador, tanto si el mensaje es dirigido a él, como si lo es a otros nodos. 
 
@@ -722,24 +765,38 @@ Dependiendo de quienes sean los destinatarios del mensaje, el mensaje habrá lleg
 
 \paragraph{No es necesario recibir mensaje ACK} En este primer caso, al ser una entrega directa, si somos un nodo normal el mensaje tiene como único destinatario nuestro coordinador. Si somos un nodo coordinador el mensaje ha sido entregado en mano a todos los nodos. Como ya se ha terminado el flujo de envío del mensaje, procedemos a borrarlo de nuestra cola de mensajes gracias al \textit{hash} y a entregar un mensaje a la aplicación con información sobre la entrega (ver tabla~\ref{tab:outgoingContentResultApp}).
 
-\paragraph{Es necesario mensaje ACK} En el segundo caso, el mensaje envíado requiere de un salto en la red, requiere de un reenvío. La casuística de cómo se producen este tipo de mensajes será explicada en la siguiente sección, en ésta nos limitamos a ver el proceso de recepción del ACK vista desde un nodo normal. En este caso al recibir por parte del controlador el mensaje (ver tabla~\ref{tab:messageWriteController}) procedemos a su marcaje en la cola como ``pendiente de ack'' quedando a la espera de recibir la confirmación del envío del siguiente salto. Este mensaje de señalización tiene la composición descrita en la tabla~\ref{itm:ackMessage}.
+\paragraph{Es necesario mensaje ACK} En el segundo caso, el mensaje envíado requiere de un salto en la red, requiere de un reenvío. La casuística de cómo se producen este tipo de mensajes será explicada en la siguiente sección, en ésta nos limitamos a ver el proceso de recepción del \ac{ACK} vista desde un nodo normal. En este caso al recibir por parte del controlador el mensaje (ver tabla~\ref{tab:messageWriteController}) procedemos a su marcaje en la cola como ``pendiente de ack'' quedando a la espera de recibir la confirmación del envío del siguiente salto. Este mensaje de señalización tiene la composición descrita en la tabla~\ref{itm:ackMessage}
 
 \protobufTableInit{Estructura mensaje ACK}
-  \item[Tipo] Valor ``RESPONSE'' del enumerado ``MessageType''
-  \item[Mensaje de respuesta]  Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Tipo''
+  \item[Tipo] Valor ``RESPONSE'' del enumerado ``MessageType''.
+  \item[Mensaje de respuesta]  Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Tipo'':
 	\begin{description}
-		\item[What] Valor ``ACK'' del enumerado ``AskType''
-		\item[Mensaje de ACK] Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``What''
+		\item[What] Valor ``ACK'' del enumerado ``AskType''.
+		\item[Mensaje de ACK] Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``What'':
 			\begin{description}
-				\item[Hash] Un \textit{long} con el identificador único de mensaje
-				\item[Número mensajes escritos OK] Un \integer{} con el número de mensajes que han sido correctamente entregados
-				\item[Lista de direcciones MAC NOK] Una lista de \String{} con las direcciones MAC de \bt{} de los nodos a los cuales no se ha podido entregar el mensaje
+				\item[Hash] Un \textit{long} con el identificador único de mensaje.
+				\item[Número mensajes escritos OK] Un \integer{} con el número de mensajes que han sido correctamente entregados.
+				\item[Lista de direcciones MAC NOK] Una lista de \String{} con las direcciones MAC de \bt{} de los nodos a los cuales no se ha podido entregar el mensaje.
 			\end{description}
 	\end{description}
 \protobufTableEnd{Campos del mensaje ACK}{ackMessage}
   
-Al recibir la confirmación procedemos a borrar de la cola el mensaje de datos utilizando el \textit{hash} leído de la señalización y a comunicar a la aplicación el resultado del proceso de envío. (El detalle puede verse en la tabla~\ref{tab:outgoingContentResultApp})\\
+Al recibir la confirmación procedemos a borrar de la cola el mensaje de datos utilizando el \textit{hash} leído de la señalización y a comunicar a la aplicación el resultado del proceso de envío. (El detalle puede verse en la tabla~\ref{tab:outgoingContentResultApp})
 
+\umlsdInitTitle{Envío desde nodo A, a los nodos B y C}
+	\newinst{a}{nodo A} \newthread[black!30]{nc}{nodo Coordinador} \newinst[1]{b}{nodo B} \newinst{c}{nodo C}
+	\begin{call}{a}{Envío datos}{nc}{} \end{call}
+	\prelevel\callSelf{a}{Marcar mensaje en la cola como \bsq{pendiente de ACK}}
+	\begin{messcall}{nc}{Re-envío datos A}{b} \end{messcall}
+		\prelevel\prelevel\callSelf{b}{Entrega datos a la app} \postlevel
+	\begin{messcall}{nc}{Re-envío datos A}{c} \end{messcall}
+		\prelevel\prelevel\callSelf{c}{Entrega datos a la app}
+	%\mess{nc}{ACK}{a}
+	%\begin{messcall}{nc}{\shortstack {ACK\\ \texttt{(Entrega datos enviados} \\ \texttt{y estadísticas a la app)}}}{a} \end{messcall}
+	\begin{messcall}{nc}{ACK}{a} \end{messcall}
+	%\callSelf{a}{borrado mensaje de la cola}
+	\node[align=right,text width=5cm] at (0.9,-7.6){\texttt{Entrega datos enviados, borrado del mensaje en la cola y envío de estadísticas a la app}};
+\umlsdEnd{Ejemplo envío con necesidad de ACK}{sendNeededACK}
 
 \begin{codeInvolved}
 \begin{files}
@@ -748,7 +805,7 @@ Al recibir la confirmación procedemos a borrar de la cola el mensaje de datos ut
 \end{codeInvolved} 
 \paragraph{Detalle implementación envío en WiFi} Un comentario más acerca de la implementación de cómo enviamos el mensaje dependiendo de la interfaz, como se ha visto ya, enviar consiste en llamar al método \textit{write()} del controlador correspondiente y pasarle los datos adecuados. En el caso de \bt{} como la conexión o conexiones ya están establecidas, podemos permitirnos recuperar la hebra de conexión deseada y volcar los datos, esperando a devolver una respuesta en la misma petición. 
 
-Sin embago en el caso de \wifi{} esto nos haría esperar demasiado, pudiendo retrasar otras partes del flujo del programa causando problemas. En este caso dónde tenemos que levantar la conexión nos ayudamos de otra hebra en paralelo que haga esta misión (serviceIntent) y recogemos su resultado (cuando esté) gracias a un \textit{broadcastReceiver} hubicado en el propio controlador. Por tanto el método \textit{write()} del controlador \wifi{} no devuelve ningún resultado a su llamada a diferencia de su homólogo en \bt{} y es cuando detectamos que hemos terminado de enviar todos los mensajes correspondientes a un envío de un mensaje de datos cuando devolvemos una respuesta igual que haciamos en \bt{} uniformando de nuevo el flujo y ocultando detalles de implementación al servicio, reforanzo nuestro modelo de capas.
+Sin embargo en el caso de \wifi{} esto nos haría esperar demasiado, pudiendo retrasar otras partes del flujo del programa causando problemas. En este caso dónde tenemos que levantar la conexión nos ayudamos de otra hebra en paralelo que haga esta misión (serviceIntent) y recogemos su resultado (cuando esté) gracias a un \textit{broadcastReceiver} hubicado en el propio controlador. Por tanto el método \textit{write()} del controlador \wifi{} no devuelve ningún resultado a su llamada a diferencia de su homólogo en \bt{} y es cuando detectamos que hemos terminado de enviar todos los mensajes correspondientes a un envío de un mensaje de datos cuando devolvemos una respuesta igual que haciamos en \bt{} uniformando de nuevo el flujo y ocultando detalles de implementación al servicio, reforzando nuestro modelo de capas.
 
 
  
@@ -761,27 +818,27 @@ Sin embago en el caso de \wifi{} esto nos haría esperar demasiado, pudiendo retr
 \end{files}
 \end{codeInvolved}
 
-Esta sección es una mezcla de una recepción y un envío de mensajes, reservada al papel de coordinador. Este proceso comienza con la recepción de un mensaje originario en un nodo normal cuya lista de nodos destinatarios atañe a más nodos de los dos implicados en esta comunicación. En esta lista puede estar o no incluido el coordinador, si está incluido como paso inicial presentaremos el mensaje a la aplicación como hemos descrito en la recepción de mensajes. Acto seguido procederemos al re-envío de éste, para ello como vimos en la sección anterior tenemos que conocer cuáles son los siguientes nodos a los que enviar el mensaje (prestando especial atención a que si es un mensaje dirigido a todos, no volver a enviarlo al nodo originario), el mensaje a enviar que es el mismo que acabamos de recibir (sin hacerle ningún cambio) y por último el parámetro que antes obviamos.
+Este proceso es una mezcla de una recepción y un envío de mensajes, reservada al papel de coordinador. Este proceso comienza con la recepción (en el nodo coordinador) de un mensaje originario en un nodo normal cuya lista de nodos destinatarios atañe a más nodos de los dos implicados en esta comunicación. En esta lista puede estar o no incluido el coordinador, si está incluido como paso inicial presentaremos el mensaje a la aplicación como hemos descrito en la recepción de mensajes. Acto seguido procederemos al re-envío de éste, para ello como vimos en la sección anterior tenemos que conocer cuáles son los siguientes nodos a los que enviar el mensaje (prestando especial atención a que si es un mensaje dirigido a todos, no volver a enviarlo al nodo originario de la comunicación), el mensaje a enviar que es el mismo que acabamos de recibir (sin hacerle ningún cambio) y por último el parámetro que antes obviamos.
 
 Esta elusión tiene como motivación haber facilitado la lectura de secciones anteriores al no añadir otra pieza más al rompecabezas. Nuestro flujo de trabajo necesita transmitir a través de todas las capas (servicio, controlador y capas inferiores, si intervienen) qué aplicación es la originaria del mensaje para poder ofrecerle una respuesta cada vez que envie datos a través del servicio. No se puede utilizar el ``Código de aplicación'' grabado en el mensaje de datos ya que puede haber dos o más aplicaciones registradas con el mismo código. El parámetro por tanto es una simple \String{} que representa el \textit{messenger} de la aplicación, que gracias a una serie de \textit{HashMap} nos relaciona ambos datos. De esta manera evitamos por tanto serializar un objeto complejo o ubicarlo en un sitio que no está pensado para ello, debido a que al estar en capas diferentes el campo (\textit{msg.replyTo}) se usaría con otro propósito lo que hace poco claro el código. Es necesario transmitir este parámetro a través de todo el flujo de envío ya que son procesos que pueden no resolverse en la misma petición, además son sin memoria y pueden ser disparados por distintas aplicaciones en cualquier momento donde además el preservamiento del orden entre distintos procesos de envío no está garantizado.\\
 
 Cuando el mensaje requiere de un re-envío, no existe una aplicación para rellenar este parámetro, elegimos dos \String{} reservadas que son ``forward-me'' y ``forward-not-me'' para referirse a la situación en la que el coordinador forma parte de la lista del mensaje que se reenvía y cuando no. Nuestro flujo al reconocer estas \String{} se da cuenta que se trata de un reenvío.
 
-Al igual que en un envío normal, almacenamos el mensaje en la cola y lo enviamos. Al recibir por parte del controlador el mensaje descrito en la tabla~\ref{tab:messageWriteController} pero es aquí dónde en vez de trasladar el mensaje a la aplicación (dado que no existe) es dónde confeccionamos el mensaje de confirmación (ver tabla~\ref{itm:ackMessage}) que enviaremos al originario del mensaje de datos, en vez de informar a la aplicación como se hace en el envío.
+Al igual que en un envío normal, almacenamos el mensaje en la cola y lo enviamos. Al recibir por parte del controlador el mensaje descrito en la tabla~\ref{tab:messageWriteController} en vez de trasladar el mensaje a la aplicación (dado que no existe) como se hace en el envío, es aquí dónde confeccionamos el mensaje de confirmación (ver tabla~\ref{itm:ackMessage}) que enviaremos al nodo originario del mensaje de datos.
 %------------------------------
 \subsection{Sensado del entorno}
-Los parámetros del entorno que son de nuestro interés son el \textit{Received Signal Strength Indication} (RSSI) de la red \wifi{} a la cual estamos conectados y la tasa de envío de mensajes de datos. El sensado del entorno se realiza en varios puntos de la arquitectura y son compartidos mediante señalización (ver tabla~\ref{itm:scanMessage}) con el coordinador de forma periódica. Éste al recibirlos dependiendo de la prioridad con la que vengan marcados se limita a guardarlos en su base de datos o a hacer un análisis rápido de la situación que desemboque en la toma de ciertas decisiones.
+Los parámetros del entorno que son de nuestro interés son el  \ac{RSSI} (intensidad de señal) de la red \wifi{} a la cual estamos conectados y la tasa de envío de mensajes de datos. El sensado del entorno se realiza en varios puntos de la arquitectura y son compartidos mediante señalización (ver tabla~\ref{itm:scanMessage}) con el coordinador de forma periódica. Éste al recibirlos dependiendo de la prioridad con la que vengan marcados se limita a guardarlos en su base de datos o a hacer un análisis rápido de la situación que desemboque en la toma de ciertas decisiones.
 
 \protobufTableInit{Estructura mensaje SCAN}
-  \item[Tipo] Valor ``RESPONSE'' del enumerado ``MessageType''
-  \item[Mensaje de respuesta]  Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Tipo''
+  \item[Tipo] Valor ``RESPONSE'' del enumerado ``MessageType''.
+  \item[Mensaje de respuesta]  Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Tipo'':
 	\begin{description}
-		\item[What] Valor ``SCAN'' del enumerado ``AskType''
-		\item[Mensaje de SCAN] Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``What''
+		\item[What] Valor ``SCAN'' del enumerado ``AskType''.
+		\item[Mensaje de SCAN] Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``What'':
 			\begin{description}
 				\item[Prioridad] Un enumerado (Priority) con la urgencia del sensado, toma dos valores {\small Priority.TASK} para sensados normales y {\small Priority.URGENT} para marcar que la información del entorno es sensible.  
-				\item[RSSI] Un \integer{} con el nivel de señal de la red \wifi{} a la que estamos conectados (-9999 si no estamos en ninguna)
-				\item[Intervalo promedio envío de mensajes] Un \double{} con el resultado promedio móvil del intervalo medido en segundos entre la llegada de mensajes de datos por parte de las aplicaciones  
+				\item[RSSI] Un \integer{} con el nivel de señal de la red \wifi{} a la que estamos conectados (-9999 si no estamos en ninguna).
+				\item[Intervalo promedio envío de mensajes] Un \double{} con el resultado promedio móvil del intervalo medido en segundos entre la llegada de mensajes de datos por parte de las aplicaciones.  
 			\end{description}
 	\end{description}
 \protobufTableEnd{Campos del mensaje SCAN}{scanMessage}
@@ -794,7 +851,7 @@ Los parámetros del entorno que son de nuestro interés son el \textit{Received Si
 \end{files}
 \end{codeInvolved}
 
-Para medir la intensidad de señal podemos utilizar de manera activa la API de \android{} que nos facilita a través del adaptador de \wifi{} (WifiManager) el objeto ``WifiInfo'', el método getRssi() nos devuelve el valor de la fuerza de la señal medida en dBm. También de una manera indirecta, aprovechamos los mensajes que lanza el sistema \android{} con información acerca de este parámetro, para ello suscribimos nuestro \textit{broadcastReceiver} de \wifi{} a los mensajes de cambio del RSSI. 
+Para medir la intensidad de señal podemos utilizar de manera activa la \ac{API} de \android{} que nos facilita a través del adaptador de \wifi{} (WifiManager) el objeto ``WifiInfo'', el método getRssi() nos devuelve el valor de la fuerza de la señal medida en dBm. También de una manera indirecta, aprovechamos los mensajes que lanza el sistema \android{} con información acerca de este parámetro, para ello suscribimos nuestro \textit{broadcastReceiver} de \wifi{} a los mensajes de cambio del \ac{RSSI}. 
 
 En nuestra arquitectura tenemos dos puntos de medida de este parámetro, el primero está localizado en la tarea cognitiva dónde activamente obtenemos este valor, que guardamos en la base de datos para usos futuros. El otro punto reside en las notificaciones sobre cambios del parámetro gracias a que estamos registrados a mensajes del tipo {\small RSSI\_CHANGED\_ACTION}, estas notificaciones nos ayudan a actuar con el menor tiempo de respuesta, ya que si detectamos una situación que entrañe riesgo podemos compartir esta información sin esperar a la tarea cognitiva donde realizamos entre otras cosas el sensado del entorno.
 
@@ -822,49 +879,70 @@ Con la información recogida del entorno tanto por el mismo nodo como por sus com
 \end{files}
 \end{codeInvolved}
 
-Cuando el coordinador ejecuta su tarea cognitiva va rescatando de su base de datos para cada nodo los últimos escaneos de éste obteniendo un promedio y una tendencia de los datos de sensado. Evalúa estos datos y decide si es necesario un cambio de interfaz. En caso positivo, obtenemos una lista de los nodos activos en la red, los marcamos como inactivos e informamos a las aplciaciones sobre el nuevo evento (ver mensaje en la API) y configuramos la interfaz de \wifi{}. Para ello utilizamos el mismo prodecimiento usado en~\ref{subsec:configInterface} con unos pasos extras: una vez nos hemos conectado a la red enviamos un mensaje de señalización (a través de la interfaz actual, aún \wifi{} no es efectiva) a la lista de nodos que sacamos informandoles del cambio y de la información necesaria para llevarla a cabo, (ver tabla~\ref{itm:switchToWifi})
+\umlsdInit
+	\newthread{nc}{nodo Coordinador} \newinst[2]{a}{nodo A} \newinst[1]{b}{nodo B}
+	\callSelf{nc}{Configurar \wifi{} y obtener ip}
+	
+	\mess{nc}{Switch: ip, ssid}{a} 
+	\prelevel\mess{nc}{}{b}
+	\prelevel\callSelf{a}{}%\shortstack{Configurar\\ \wifi{}}}
+	\prelevel\prelevel\callSelf{b}{\shortstack{Configurar \wifi{}\\y apagar interfaz origen}}	
+
+	\mess{b}{\bsq{HelloPacket}}{nc}	
+	\mess{nc}{ACK \bsq{HelloPacket}}{b}
+	\prelevel\callSelf{b}{Parar envío \bsq{HelloPacket}}\prelevel	
+	\mess{a}{\bsq{HelloPacket}}{nc}
+	\mess{nc}{ACK \bsq{HelloPacket}}{a}
+	\prelevel\callSelf{a}{Parar envío \bsq{HelloPacket}}\prelevel
+	\postlevel
+	\callSelf{nc}{Apagar interfaz origen}
+	\prelevel\mess{nc}{End Switch}{a}	
+	\mess{nc}{End Switch}{b}
+\umlsdEnd{Ejemplo cambio de contexto hacia \wifi{}}{switchToWifi}
+
+Cuando el coordinador ejecuta su tarea cognitiva va rescatando de su base de datos para cada nodo los últimos escaneos de éste obteniendo un promedio y una tendencia de los datos de sensado. Evalúa estos datos y decide si es necesario un cambio de interfaz. En caso positivo, obtenemos una lista de los nodos activos en la red, los marcamos como inactivos e informamos a las aplciaciones sobre el nuevo evento (ver mensaje en la \ac{API}) y configuramos la interfaz de \wifi{}. Para ello utilizamos el mismo prodecimiento usado en~\ref{subsec:configInterface} con unos pasos extras: una vez nos hemos conectado a la red enviamos un mensaje de señalización (a través de la interfaz actual, aún \wifi{} no es efectiva) a la lista de nodos que sacamos informandoles del cambio y de la información necesaria para llevarla a cabo, (ver tabla~\ref{itm:switchToWifi})
 
 \protobufTableInit{Estructura mensaje SWITCH hacia \wifi{}}   
-	\item[Tipo] Valor ``SIGNALING'' del enumerado ``MessageType''
-	\item[Desde] Una \String{} con la direción MAC de \bt{} del nodo
-  \item[Mensaje de señalizacion]  Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Tipo''
+	\item[Tipo] Valor ``SIGNALING'' del enumerado ``MessageType''.
+	\item[Desde] Una \String{} con la direción MAC de \bt{} del nodo.
+  \item[Mensaje de señalizacion]  Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Tipo'':
 	\begin{description}
-		\item[Señal] Valor ``SWITCH'' del enumerado ``SignalType''
-		\item[Mensaje de SWITCH] Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Señal''
+		\item[Señal] Valor ``SWITCH'' del enumerado ``SignalType''.
+		\item[Mensaje de SWITCH] Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Señal'':
 			\begin{description}
-				\item[Interfaz destino] Valor ``TO\_WIFI'' del enumerado ``ToInterface''  
-				\item[SSID] Una \String{} con el nombre de la red \wifi{} a la que se va a realizar el cambio
-				\item[BSSID] Una \String{} con la MAC del punto de acceso para evitar cualquier equívoco
-				\item[Dirección IP coordinador] Una \String{} con la dirección IP del nodo 
+				\item[Interfaz destino] Valor ``TO\_WIFI'' del enumerado ``ToInterface''.  
+				\item[SSID] Una \String{} con el nombre de la red \wifi{} a la que se va a realizar el cambio.
+				\item[BSSID] Una \String{} con la MAC del punto de acceso para evitar cualquier equívoco.
+				\item[Dirección IP coordinador] Una \String{} con la dirección IP del nodo.
 			\end{description}
 	\end{description}
 \protobufTableEnd{Campos del mensaje SWITCH hacia \wifi{}}{switchToWifi}
  
-Al terminar de configurar la interfaz (siendo ésta ya efectiva), dejamos programado un \textit{timeout} que dispare el fin de cambio contextual para evitar bloqueos porque algún no responda. A partir de ahora esperamos a que los nodos normales configuren su interfaz de \wifi{} (antes apagarán su interfaz en curso, en este caso \bt{}) y vayan entrando en la nueva red tal y como se contó en las secciones~\ref{subsec:configInterface} y~\ref{subsec:enterInNetwork}. 
+Al terminar de configurar la interfaz (siendo ésta ya efectiva), dejamos programado un \textit{timeout} que dispare el fin de cambio contextual para evitar bloqueos porque algún no responda. A partir de ahora esperamos a que los nodos normales configuren su interfaz de \wifi{} (antes apagarán su interfaz en curso, en este caso \bt{}) y vayan entrando en la nueva red tal y como se contó en las secciones~\ref{subsec:configInterface} y~\ref{subsec:enterInNetwork}
 
 El coordinador al recibir los ``HelloPackets'' en vez de seguir el flujo normal que consiste informar a todos los nodos de la nueva entrada y al nuevo nodo informarle sobre el mapa de red, nos limitamos a enviarle un mensaje de confirmación indicándole que hemos recibido el ``HelloPacket'' para que éste pare su envío, así evitamos enviar muchos mensajes de señalización de una situación que es probable que cambie. Estos paquetes están enviados directamente a la IP del coordinador (recogida del mensaje de señalización de cambio) para que haya más posibilidades de recepción. Si por algún casual el nodo normal terminase su ráfaga y no obtuviese respuesta el mismo entendería que el proceso de cambio de contexto ha acabado de manera insatisfactoria. El detalle de este mensaje de confirmación de entrada en la red en situación de cambio se ve en la tabla~\ref{itm:okSwitch}
 
 \protobufTableInit{Estructura mensaje confirmación cambio de contexto}   
-	\item[Tipo] Valor ``RESPONSE'' del enumerado ``MessageType''
-  \item[Mensaje de respuesta]  Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Tipo''
+	\item[Tipo] Valor ``RESPONSE'' del enumerado ``MessageType''.
+  \item[Mensaje de respuesta]  Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Tipo'':
 	\begin{description}
-		\item[What] Valor ``SWITCH'' del enumerado ``AskType''
+		\item[What] Valor ``SWITCH'' del enumerado ``AskType''.
 	\end{description}
 \protobufTableEnd{Campos del mensaje de confirmación entrada (\wifi{}) / interfaz lista (\bt{})}{okSwitch}
 
 Si antes de que salte el \textit{timeout} programado, hemos recibido todos los ``HelloPackets'' de todos los nodos que estaban formando la red, procedemos a finalizar el cambio de contexto, si no esperamos a que finalice el \textit{timeout}, situación en la que habremos perdido algún nodo.
 
-\paragraph{Coordinador} Apagamos la interfaz \bt{} y liberamos todos los recursos. Hemos mantenido la interfaz arriba hasta el último momento para no perder mensajes de datos si algún nodo actúa de manera incorrecta y envía estos mensajes en pleno cambio de conexto. Acto seguido se envía el mapa de red por medio de señalización a todos los nodos que formen ahora la red (idealmente todo los que la formaban antes del cambio), cuyo detalle se aprecia en la tabla~\ref{itm:endSwitch}
+\paragraph{Coordinador} Al dispararse el final del cambio de contexto, apagamos la interfaz \bt{} y liberamos todos los recursos. Hemos mantenido la interfaz arriba hasta el último momento para no perder mensajes de datos si algún nodo actúa de manera incorrecta y envía estos mensajes en pleno cambio de conexto. Acto seguido se envía el mapa de red por medio de señalización a todos los nodos que formen ahora la red (idealmente todo los que la formaban antes del cambio), cuyo detalle se aprecia en la tabla~\ref{itm:endSwitch}
 
 \protobufTableInit{Estructura mensaje fin cambio de contexto}   
-	\item[Tipo] Valor ``SIGNALING'' del enumerado ``MessageType''
-	\item[Desde] Una \String{} con la direción MAC de \bt{} del nodo (coordinador)
-  \item[Mensaje de señalizacion]  Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Tipo''
+	\item[Tipo] Valor ``SIGNALING'' del enumerado ``MessageType''.
+	\item[Desde] Una \String{} con la direción MAC de \bt{} del nodo (coordinador).
+  \item[Mensaje de señalizacion]  Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Tipo'':
 	\begin{description}
-		\item[Señal] Valor ``TOPOLOGY'' del enumerado ``SignalType''
-		\item[Mensaje de mapa de red] Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Señal''
+		\item[Señal] Valor ``TOPOLOGY'' del enumerado ``SignalType''.
+		\item[Mensaje de mapa de red] Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Señal'':
 			\begin{description}
-				\item[Cambio] Valor ``ALL\_END\_SWITCH'' del enumerado ``TopologyChange''  			
+				\item[Cambio] Valor ``ALL\_END\_SWITCH'' del enumerado ``TopologyChange''.  			
 					\begin{description}
 						\item[Representación de un nodo] Mensaje con los cambios que sirven para representar a nodo (ver tabla~\ref{itm:infoNode}). Tendremos tantas representaciones como nodos haya en la red.
 					\end{description}				
@@ -872,10 +950,49 @@ Si antes de que salte el \textit{timeout} programado, hemos recibido todos los `
 	\end{description}
 \protobufTableEnd{Campos del mensaje finalización cambio de contexto}{endSwitch}
 
-Notar que este mensaje es diferente para cada nodo ya que lista de nodos vista desde cada nodo difiere en que él mismo no se encuentra en ésta pero el resto sí. Los últimos pasos para finalizar el cambio de contexto es intentar enviar los mensajes encolados (los mensajes que hayan entregado las aplicaciones mientras que el proceso de cambio de contexto esté vigente) y publicar hacia las aplicaciones registradas en el servicio el evento del fin de cambio de contexto que incluye la nueva interfaz, el estado de ésta y la lista de nodos que forman la red en este momento.
+Notar que este mensaje es diferente para cada nodo ya que lista de nodos vista desde cada nodo difiere en que él mismo no se encuentra en ésta pero el resto sí. Los últimos pasos para finalizar el cambio de contexto es intentar enviar los mensajes encolados (los mensajes que hayan entregado las aplicaciones mientras que el proceso de cambio de contexto esté vigente) y publicar hacia las aplicaciones registradas en el servicio el evento del fin de cambio de contexto que incluye la nueva interfaz, el estado de ésta y la lista de nodos que forman la red en este momento. Así como el vaciado de la cola de mensajes pendientes de envío.
 
+\paragraph{Normal} Al recibir el mensaje de señalización de cambio de contexto, procedemos a cancelar (de nuevo)el envío de ``HelloPackets'' por si no hubiesemos recibido el mensaje visto en la tabla~\ref{itm:okSwitch}, informar a las aplicaciones el evento de fin de cambio de contexto con el nuevo mapa de red leído del mensaje de señalización y proceder al envío de los mensajes encolados mientras haya durado este proceso.
 
-\paragraph{Normal} Al recibir el mensaje de señalización de cambio de contexto, procedemos a cancelar el envío de ``HelloPackets'' por si no hubiesemos recibido el mensaje visto en la tabla~\ref{itm:okSwitch}, informar a las aplicaciones el evento de fin de cambio de contexto con el nuevo mapa de red leído del mensaje de señalización y proceder al envío de los mensajes encolados mientras haya durado este proceso.
+\umlsdInitTitle[h!]{Cambio de contexto, situación problemática}
+	\newthread{nc}{nodo Coordinador} \newinst[2]{a}{nodo A} \newinst[1]{b}{nodo B} \newinst[1]{c}{nodo C}
+	\callSelf{nc}{Configurar \wifi{} y obtener ip}
+	
+	\mess{nc}{}{a} 
+	\prelevel\mess{nc}{}{b}
+	\prelevel\mess{nc}{Switch: ip, ssid}{c}
+	\prelevel\callSelf{a}{}%\shortstack{Configurar\\ \wifi{}}}
+	\prelevel\prelevel\callSelf{b}{}
+	\prelevel\prelevel\callSelf{c}{\shortstack{Configurar \wifi{}\\y apagar interfaz origen}}
+	
+	\messFail{a}{\bsq{HelloPacket}}{nc}
+	\messFail{c}{\bsq{HelloPacket}}{nc}	
+	\messFail{a}{\bsq{HelloPacket}}{nc}
+	
+	\mess{b}{\bsq{HelloPacket}}{nc}
+	\mess{nc}{ACK \bsq{HelloPacket}}{b}
+	\prelevel\callSelf{b}{Parar envío \bsq{HelloPacket}}\prelevel
+	
+	\mess{a}{\bsq{HelloPacket}}{nc}
+	\mess{nc}{ACK \bsq{HelloPacket}}{a}
+	\prelevel\callSelf{a}{Parar envío \bsq{HelloPacket}}\prelevel
+
+	\postlevel\postlevel
+
+	\draw[thick,->] (0.9,-8) -- (1.4,-8) node[anchor=south east] {\small\shortstack{\textit{Timeout}\\expirado\\en Coor-\\dinador}};
+	\callSelf{nc}{Apagar interfaz origen}
+	\prelevel\mess{nc}{End Switch}{a}
+	\messFail{c}{\bsq{HelloPacket}}{nc}	
+	\mess{nc}{End Switch}{b}
+		
+	\callSelf{c}{\small\shortstack{\textit{Timeout} expirado en\\ C: No hay respuesta\\a \bsq{HelloPacket}: no\\ en CWSN}}		
+	\node[fill=blue!30, align=right] at (6,-11.7) {\small\shortstack{Situación normal de red\\ población: A, B y Coordinador}};
+	%\node [draw, rotate=90] at(0,-3) (first) {Timeout};
+	%\node at(-0.5,-3) (second) {a};
+	%\draw[->,gray,rounded corners] (second) edge (first);
+	
+	%\draw[thick,->] (0.5,-4) -- (1,-4) node[anchor=south east] {Timeout expired};
+\umlsdEnd{Ejemplo cambio de contexto hacia \wifi{} con pérdida de nodos}{switchToWifiFail}
 
 \subsubsection{Cambio de contexto con interfaz destino Bluetooth}
 \begin{codeInvolved}
@@ -884,26 +1001,75 @@ Notar que este mensaje es diferente para cada nodo ya que lista de nodos vista d
 \end{files}
 \end{codeInvolved}
 
-Cuando se produce un cambio de interfaz a \bt{} el coordinador como antes obtiene una lista de quién está en la red y se marcan como inactivos, comunicamos hacia las aplicaciones el nuevo estado de la red y procedemos a enviar un mensaje de señalización que marque a los demás nodos el evento de cambio de contexto hacia \bt{}, este mensaje tiene la disposición mostrada en la tabla~\ref{itm:switchToBT}\\
+\umlsdInit
+	\newthread{nc}{nodo Coordinador} \newinst[2]{a}{nodo A} \newinst[1]{b}{nodo B}
+	\mess{nc}{Switch}{a} 
+	\prelevel\mess{nc}{}{b}
+	\prelevel\callSelf{a}{}%\shortstack{Configurar\\ \wifi{}}}
+	\prelevel\prelevel\callSelf{b}{Configurar \bt{}}	
+
+	\mess{a}{OK Switch}{nc}
+	\mess{b}{OK Swtich}{nc}
+	
+	\callSelf{nc}{Configurar \bt{} y apagar interfaz origen}
+	\begin{call}{nc}{connect()}{a}{conexión aceptada} \end{call}
+	\begin{call}{nc}{connect()}{b}{conexión aceptada} \end{call}	
+	\mess{nc}{End Switch}{a}
+	\prelevel\callSelf{a}{Desconectar interfaz origen}
+	\mess{nc}{End Switch}{b}
+	\prelevel\callSelf{b}{Desconectar interfaz origen}
+\umlsdEnd{Ejemplo cambio de contexto hacia \bt{}}{switchToBT}
+
+Cuando se produce un cambio de interfaz a \bt{} el coordinador al igual que en el otro cambio de contexto obtiene una lista de quién está en la red y se marcan como inactivos. Comunicamos hacia las aplicaciones el nuevo estado de la red y procedemos a enviar un mensaje de señalización que marque a los demás nodos el evento de cambio de contexto hacia \bt{}, este mensaje tiene la disposición mostrada en la tabla~\ref{itm:switchToBT}\\
 
 \protobufTableInit{Estructura mensaje SWITCH hacia \bt{}}   
-	\item[Tipo] Valor ``SIGNALING'' del enumerado ``MessageType''
-	\item[Desde] Una \String{} con la direción MAC de \bt{} del nodo
-  \item[Mensaje de señalizacion]  Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Tipo''
+	\item[Tipo] Valor ``SIGNALING'' del enumerado ``MessageType''.
+	\item[Desde] Una \String{} con la direción MAC de \bt{} del nodo.
+  \item[Mensaje de señalizacion]  Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Tipo'':
 	\begin{description}
-		\item[Señal] Valor ``SWITCH'' del enumerado ``SignalType''
-		\item[Mensaje de SWITCH] Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Señal''
+		\item[Señal] Valor ``SWITCH'' del enumerado ``SignalType''.
+		\item[Mensaje de SWITCH] Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Señal'':
 			\begin{description}
-				\item[Interfaz destino] Valor ``TO\_BT'' del enumerado ``ToInterface''   
+				\item[Interfaz destino] Valor ``TO\_BT'' del enumerado ``ToInterface''.   
 			\end{description}
 	\end{description}
 \protobufTableEnd{Campos del mensaje SWITCH hacia \bt{}}{switchToBT}
 
-Una vez enviado, programamos la tarea de configurar la interfaz de \bt{} en el coordinador con un margen de tiempo suficiente para obtener las respuesta de los nodos normales, que al recibir la señalización configuran su interfaz \bt{} e informan a sus aplicaciones del nuevo estado. Una vez levantada, comunican al coordinador través de la interfaz en curso (\bt{} aún no es efectiva para envíar mensajes, ya que entre otras cosas no hemos establecido ninguna conexión con el coordinador) que la interfaz destino está lista para aceptar conexiones, para ello utilizamos el mensaje ya visto en la tabla~\ref{itm:okSwitch}, reutilizamos este mensaje de confirmación que no lleva ninguna información especial y que por el contexto le damos el significado de estar preparado (en la otra ocasión el contexto le daba el significado de confirmación de entrada en la red).\\
+Una vez enviado, programamos la tarea de configurar la interfaz de \bt{} en el coordinador con un margen de tiempo suficiente para obtener las respuestas de los nodos normales, que al recibir la señalización configuran su interfaz \bt{} e informan a sus aplicaciones del nuevo estado. Una vez levantada, comunican al coordinador través de la interfaz en curso (\bt{} aún no es efectiva para envíar mensajes, ya que entre otras cosas no hemos establecido ninguna conexión con el coordinador) que la interfaz destino está lista para aceptar conexiones, para ello utilizamos el mensaje ya visto en la tabla~\ref{itm:okSwitch}, reutilizamos este mensaje de confirmación que no lleva ninguna información especial y que por el contexto le damos el significado de estar preparado (en la otra ocasión el contexto le daba el significado de confirmación de entrada en la red).\\
 
-Este mensaje le sirve al coordinador para saber que el nodo ya está listo y cuando recibe todas las confirmaciones (o salta el timeout programado anteriormente) procede a configurar su interfaz de \bt{} pasándole la lista de nodos que obtuvimos. Procede por tanto a configurar la interfaz y disparar una ronda de conexiónes a los nodos que formaban la red antes del cambio, que es pasada como parámetro. Una vez terminado ejecuta los mismos pasos descritos en la sección anterior para terminar el cambio de contexto. Salvo que en el mensaje de señalización de fin de cambio de contexto (ver tabla~\ref{itm:endSwitch}) la representación de cada nodo no incluye el campo ``Dirección IP''.
+Este mensaje le sirve al coordinador para saber que el nodo ya está listo y cuando recibe todas las confirmaciones (o salta el timeout programado anteriormente) procede a configurar su interfaz de \bt{} pasándole la lista de nodos que obtuvimos. La configuración de la interfaz incluye una ronda de conexiones a los nodos que formaban la red antes del cambio, que es pasada como parámetro. Una vez terminado ejecuta los mismos pasos descritos en la sección anterior para terminar el cambio de contexto. Salvo que en el mensaje de señalización de fin de cambio de contexto (ver tabla~\ref{itm:endSwitch}) la representación de cada nodo no incluye el campo ``Dirección IP''.
 
 Por su parte el nodo normal al configurar su interfaz \bt{} y después de enviar la confirmación al coordinador de que está listo, programa una tarea (implementada gracias al esquema de programación basado en \textit{Runnables} alojados en la interfaz \textit{Future} y ejecutados en hebras gestionadas por el objeto \textit{Executor}) para salir de la situación de cambio de contexto por si no recibe ninguna conexión entrante o por si no recibe el mensaje de señalización de fin de cambio de contexto. Así se garantiza que ningún nodo se quede en \textit{deadlock} y el flujo siempre se ejecuta de principio a fin.
+
+\umlsdInitTitle[h!]{Cambio de contexto, situación problemática}
+	\newthread{nc}{nodo Coordinador} \newinst[2]{a}{nodo A} \newinst[1]{b}{nodo B} \newinst[1]{c}{nodo C}
+	\mess{nc}{Switch}{a} 
+	\prelevel\mess{nc}{}{b}
+	\prelevel\mess{nc}{}{c}
+	\prelevel\callSelf{a}{}%\shortstack{Configurar\\ \wifi{}}}
+	\prelevel\prelevel\callSelf{b}{Configurar \bt{}}
+	\callSelf{c}{\shortstack{Configurar \\\bt{}: NOK}}
+
+	\mess{a}{OK Switch}{nc}
+	\mess{b}{OK Swtich}{nc}
+	\postlevel\postlevel\postlevel
+	\draw[thick,->] (0.9,-6) -- (1.4,-6) node[anchor=south east] {\small\shortstack{\textit{Timeout}\\expirado\\en Coor-\\dinador}};
+	\callSelf{nc}{Configurar \bt{} y apagar interfaz origen}
+	\begin{messcall}{nc}{connect()}{a}{} \end{messcall}
+	\begin{messcall}{nc}{connect()}{a}{} \end{messcall}
+	\begin{messcall}{nc}{connect()}{a}{} \end{messcall}
+	\begin{messcall}{nc}{connect()}{b}{} \end{messcall}
+	\begin{call}{nc}{connect()}{b}{conexión aceptada} \end{call}
+	\begin{messcall}{nc}{connect()}{c}{} \end{messcall}
+	\begin{messcall}{nc}{connect()}{c}{} \end{messcall}
+	\begin{messcall}{nc}{connect()}{c}{} \end{messcall}	
+	\mess{nc}{End Switch}{b}
+	\prelevel\callSelf{b}{Desconectar interfaz origen}
+	\postlevel\callSelf{a}{\textit{Timeout} expirado en A y C: no en CWSN}
+	\prelevel\prelevel\callSelf{c}{}
+	\node[fill=blue!30, align=right] at (6,-18.3) {\small\shortstack{Situación normal de red\\ población: B y Coordinador}};
+\umlsdEnd{Ejemplo cambio de contexto hacia \bt{} con pérdida de nodos}{switchToBTFail}
+
 
 %-------------------------------------------------------------------
 %\section*{\NotasBibliograficas}

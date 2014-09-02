@@ -202,6 +202,21 @@ Sequence Diagrams.]
   \node (#3 to) at (mess to) {};
 }
 
+\newcommand{\messFail}[4][0]{
+  \stepcounter{seqlevel}
+  \path
+  (#2)+(0,-\theseqlevel*\unitfactor-0.7*\unitfactor) node (mess from) {};
+  \addtocounter{seqlevel}{#1}
+  \path
+  (#4)+(0,-\theseqlevel*\unitfactor-0.7*\unitfactor) node (mess to) {};
+  \draw[->,{-]},shorten >=20pt] (mess from) -- (mess to) node[midway, above]
+  {#3};
+
+  \node (#3 from) at (mess from) {};
+  \node (#3 to) at (mess to) {};
+}
+
+
 \newenvironment{messcall}[4][1]{
   \stepcounter{seqlevel}
   \stepcounter{callevel} % push
