@@ -8,7 +8,6 @@
 % texto y centralizar funcionalidad
 %
 %---------------------------------------------------------------------
-
 \def\android{\textit{Android}}
 \def\nc{\small{No usado/indiferente}}
 \def\messApp{Messenger de la aplicaci\'{o}n}
@@ -18,9 +17,20 @@
 \def\integers{enteros}
 \def\double{\textit{double}}
 \def\String{\textit{cadena de caracteres}}
+\def\Strings{\textit{cadenas de caracteres}}
 \def\false{\bsq{\textit{false}}}
 \def\true{\bsq{\textit{true}}}
 \def\bsq#1{\lq{#1}\rq}
+%\def\cst#1{{\small\texttt{#1}}}
+\def\Lcst#1{\leavevmode\nobreak\hskip0pt plus\linewidth\penalty50\hskip0pt plus-\linewidth\nobreak{\small\texttt{#1}}}% long costant
+\def\Scst#1{{\small\texttt{#1}}}% short constant
+\def\var#1{\texttt{#1}}
+
+\providecommand{\class}[2][es.upm.die\allowbreak.lsi.pfc\allowbreak.CWSNoA]{%
+\texttt{\small\ifthenelse{\equal{#1}{}}{#1\allowbreak.#2}{\ifthenelse{\equal{#1}{util}}{es.upm\allowbreak.die.lsi\allowbreak.pfc\allowbreak.CWSNoA.util\allowbreak.#2}{#1\allowbreak.#2}}%
+}%
+}
+
 %---
 \def\ListaNodosNoDeliveredItem{
 \item[Lista de nodos a los cuales no se han entregado el mensaje] \ListaNodosDescription{}

@@ -258,3 +258,9 @@
 
 @entry{LTE,4G,\emph{Long Term Evolution}}
 
+@entry{UUID, ,\emph{Universally unique identifier}}
+
+@entry{AP, ,\emph{Access point}}
+
+@entry{PPP, ,\emph{Point-to-point}}
+

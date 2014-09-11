@@ -491,7 +491,8 @@
 \fi
 \fi
 
-\newcommand{\compImpl}[1]{ \textbf{({\small \textsc{Comentario: #1 }})}}
+\definecolor{comment}{rgb}{0,0.6,0}
+\newcommand{\compImpl}[1]{{\bf\small\sc\color{comment} (Comentario: #1)}\\}
 
 % Incluimos el fichero que incorpora todos los paquetes necesarios
 \include{TeXiS/TeXiS_pream}
