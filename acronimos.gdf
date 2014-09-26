@@ -264,3 +264,22 @@
 
 @entry{PPP, ,\emph{Point-to-point}}
 
+@entry{IPC, ,\emph{Inter-Process Communication}}
+
+@entry{AIDL, ,\emph{Android Interface Definition Language}}
+
+@entry{SQL, ,\emph{Structured Query Language}}
+
+@entry{IDL, ,\emph{Interface Definition language}}
+
+@entry{TCP, ,\emph{Transmission Control Protocol}}
+
+@entry{UDP, ,\emph{User Datagram Protocol}}
+
+@entry{ANR, ,\emph{Android Not Responding}}
+
+@entry{SSID, ,\emph{Service set identification}}
+
+@entry{SS7, , \emph{Signalling System no. 7}}
+
+@entry{CB, ,\emph{Connectivity Brokerage}}

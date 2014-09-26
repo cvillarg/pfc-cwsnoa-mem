@@ -134,9 +134,9 @@ Un conjunto de dos \textit{arrays} ligados, uno con los identificadores de los n
 \providecommand{\apiTableInit}[1]{%
 \begin{table}[h]
 \begin{center}
-	\begin{tabular}{r @{\hskip 1cm} l}
+	\begin{tabular}{r @{\hskip 0.717cm} l}
 	\multicolumn{2}{c}{#1}\\ \hline
-	\noalign{\vskip 0.25cm} 
+	\noalign{\vskip 0.24cm} 
 	%\dashuline{Constante usada en el c\'{o}digo} & \dashuline{Representaci\'{o}n en forma de \integer{}} \\  %\cdashline{2-2}
 	\uwave{\texttt{Constante usada en el c\'{o}digo}} & \uwave{\texttt{Representaci\'{o}n en forma de \integer{}}} \\  %\cdashline{2-2}
 	\noalign{\vskip 0.17cm} %\hdashline
@@ -185,6 +185,58 @@ Un conjunto de dos \textit{arrays} ligados, uno con los identificadores de los n
 \caption{#1} \label{fig:#2}
 \end{figure}
 }%
+%-----------------------------
+%	Tabla: scheme database
+%				_init: inicializa la tabla con el nombre de la tabla en la base de datos
+%				_row: fila de la tabla | clave | nombre campo | explicación tipo.
+%				_end: cierra la tabla, leyenda e incluye caption
+%-----------------------------
+\providecommand{\ddbbTableInit}[1]{%
+\begin{table}[h]%
+\begin{center}%
+	\begin{tabular}{c r @{\hskip 7pt} l}%
+		\hline%
+		\multicolumn{3}{|c|}{Tabla: #1}\\ \hline% 
+		\noalign{\vskip 6pt}%
+}%
 
+\providecommand{\ddbbTableRow}[3]{%
+	\noalign{\vskip 1.17pt}%
+	\texttt{#1} \hfill| & #2 & #3 \\\hline%
+	\noalign{\vskip 1.17pt}%
+}%
 
-
+\providecommand{\ddbbTableEnd}[2]{%
+	\hline%
+	\end{tabular}%
+	~\\\vspace{7pt}%
+	*\texttt{PK}: Primary key, \texttt{FK}: Foreing key\\%
+	\caption{#1} \label{tab:#2}%
+\end{center}%
+\end{table}%
+}%
+%-----------------------------
+% Tabla: 2 columnas state manager
+%      _init: inicializa la tabla
+%      _row: fila de la tabla
+%      _end: finaliza la tabla con caption y label
+%-----------------------------
+\providecommand{\smTableInit}[1]{%
+\begin{table}[h]%
+\begin{center}%
+	\begin{tabular}{l @{\hskip 1.17cm} l}%
+	\multicolumn{2}{c}{#1}\\ \hline
+	\noalign{\vskip 0.25cm} 
+	%\dashuline{Constante usada en el c\'{o}digo} & \dashuline{Representaci\'{o}n en forma de \integer{}} \\  %\cdashline{2-2}
+	\uwave{\texttt{Estados interfaz}} & \uwave{\texttt{Eventos interfaz}} \\  %\cdashline{2-2}
+	\noalign{\vskip 0.17cm} %\hdashline
+}%
+\providecommand{\smTableRow}[2]{%
+	\MakeUppercase{\small #1} & \MakeUppercase{\small #2} \\
+}%
+\providecommand{\smTableEnd}[2]{%
+	\end{tabular}%
+	\caption{#1} \label{tab:#2}%
+\end{center}%
+\end{table}%
+}%

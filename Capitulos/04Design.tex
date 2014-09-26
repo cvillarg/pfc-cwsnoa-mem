@@ -4,10 +4,14 @@
 %
 %---------------------------------------------------------------------
 \chapter{Diseño}
-
+\begin{FraseCelebre}
+	\begin{Frase}
+	No es pretender el triunfo,\\ es resistir a los fracasos
+	\end{Frase}
+	\begin{Fuente} \textit{Def.} Esperanza, {\scriptsize\sc Novena Virgen de la Salud} \end{Fuente}
+\end{FraseCelebre}
 \begin{resumen}
-Contar qué es una arquitectura modular y comparación con una arquitectura cognitiva.
-vamos a citar cosar \cite{internetofthings} acronimo! \ac{CWSN}
+En este capítulo definimos la arquitectura del nodo cognitivo sobre la que detallamos las interfaces de programación y los procesos de red invulcrados en su funcionamiento.
 \end{resumen}
 
 
@@ -15,9 +19,121 @@ vamos a citar cosar \cite{internetofthings} acronimo! \ac{CWSN}
 \section{Arquitectura cognitiva}
 %-------------------------------------------------------------------
 \label{sec:arquitecturaCognitiva}
+\figura{Vectorial/design/node}{width=.65\textwidth}{fig:architecture}{Arquitectura cognitiva}
 
-Explicación de los diferentes bloques de una arquitectura cognitiva: Repositorio, ejecutor, optimizador....
-                                                                                      
+Nuestra arquitectura se ha diseñado siguiendo pinceladas del modelo \textit{Connectivity Brokerage framework} \cite{conbrok}, no se han podido seguir todas las recomendaciones puesto que no implementamos el objeto \texttt{CompNet} (distintas redes cooperando para por ejemplo mitigar la interferencia) y que no tenemos acceso a otros planos que no sea el de aplicación. Al tener \textit{hardware} sin posibilidad de cambios y al tener un control limitado de éste (sólo las partes que \android{} nos permite) se desvanece la posibilidad de selecionar proactivamente la modulación, la codificación o el nivel de potencia en la transmisión. Nos restringimos a el diseño de una arquitectura confiando en las propias capacidades cognitivas u optimizaciones que elige la plataforma de por sí o que son accesibles de alguna u otra manera: \textit{reflection}, \textit{root}\ldots\\
+
+Como puede verse en la figura~\ref{fig:architecture} se ha estructurado la arquitectura en dos capas, existiendo una subdivisión de la capa inferior en otras dos. Un modelo de capas permite definir interfaces de comunicación entre las diferentes unidades, limitando el alcance y conocmiento de cada módulo independizando su propósito del resto. A saber:
+
+\begin{enumerate}
+\item \bsq{\bf Capa de aplicación}: Formada por cada una de las aplicaciones que operan sobre el servicio cognitivo que les sirve como canal de comuncaciones. Cada una de estas aplicaciones, tiene que cumplir con la interfaz definida entre esta capa y la inferior (aplicación y cognitiva). El diseño e implementación de cada aplicación excede a este proyecto y depende en cada caso del tercero que desarolle la aplicación. No obstante para probar y utilizar las capacidades de nuestro nodo cognitivo se ha desarrollado una aplicación que será brevemente ilustrada en el próximo capítulo.  
+\item \bsq{\bf Capa cognitiva} El interés del proyecto se centra en el desarollo de esta capa. Es una capa compuesta por otras dos: una primera capa de control donde se recoge toda la inteligencia y propósitos cognitivos y otra capa de actuación que provee de toda la funcionalidad para recibir y enviar datos por cada una de las interfaces de comunicación presentes:
+	\begin{enumerate}[i.]
+		\item \bsq{\bf Módulo cognitivo} Está fuertemente inspirado en los módulos que podemos ver en \cite{castaliacwsn} con ciertas peculiaridades e implementaciones que veremos a continuación.
+		\item \bsq{\bf Controladores de interfaz} Esta capa está formada por cada una de las interfaces presentes en \textit{smartphone}, la implementación final recoge la interfaz de \wifi{} y \bt{}, pero el diseño recoge un número arbitrario debido a que si construimos este módulo siguiendo la interfaz entre capas, puede ser fácilmente añadida a la arquitectura final.
+	\end{enumerate}
+\end{enumerate}
+
+Los diferentes bloques que hemos definido en la arquitectura son:
+
+\subsection{Interfaz Aplicación - Módulo Cognitivo}
+El apellido cognitivo supone una abstracción en el modelo de comunicaciones de tal forma que el usuario (la aplicación) sea transparente a los parámetros, tiempos o detalles de la comunicación usada para transmitir los datos. Para lograr esta abstracción necesitamos un punto de ruptura que aisle y defina solamente la información estrictamente necesaria a intercambiar entre ambos agentes para poder recrear una \ac{CWSN}. En la sección~\ref{sec:api} se expone la definición de la \ac{API} que debe cumplir el desarrollador de las distintas aplicaciones.\\
+
+Al definir una interfaz permitimos que terceros puedan desarollar sus propias aplicaciones que usen de este servicio para montar sus comunicaciones, podemos decir que es una interfaz tipo cliente-servidor, donde se permite dar soporte simultáneo a varias aplicaciones, esto es posible gracias al \texttt{Apps Manager} que explicamos en la siguiente sección.
+%----------
+
+\subsection{Sensor Manager}
+Es el punto de entrada a nuestro servicio cognitivo, el encargado de recoger las peticiones de las distintas aplicaciones e informar tanto de la respuesta a la aplicación que lo solicitó, como al resto de ellas si las hubiese acerca de información común generada en la \ac{CWSN} donde cooperan. Esto se consigue gracias al submódulo \var{Apps Manager} que lleva un registro de cada una de las aplicaciones y permite discernir entre peticiones de éstas. Las peticiones entrantes son sanetizadas y codificadas para poder disparar los procesos internos a lo largo de los diferentes módulos y descodificadas elimando cualquier rasto cognitivo antes de ser entregadas a la aplicación en cuestión. Dentro de este módulo existe una cola \var{(Queue)} para mensajes de datos por si, entre otras funciones que detallaremos más a delante, no fuese posible atender a las peticiones en el momento de recibirlas, puedan ser atendidas en cuanto las condiciones lo permitan.
+%----------
+
+\subsection{Policy, optimizer, executor}
+Estos tres módulos podemos considerarlos como el cerebro cognitivo, su interacción es jerárquica. De acuerdo a unas políticas descritas en el módulo \var{policy}, el \var{optimizer} evalua el cumplimiento de ellas conforme a valores que recoge del módulo \var{repository} que sirve como punto concentrador de la información, esta evaluación puede generar nuevos valores a almacenar en el repositorio y/o la actuación directa gracias a el módulo \var{executor}.\\
+
+Para nuestro primer diseño sólo hemos definido una política cognitiva (ver sección~\ref{subsec:senseAndPolicy}) y el módulo ejecutor sólo realiza cambios  de cambio de contexto o \textit{handovers}, debido a las limitaciones en la plataforma para ajustar otros parámetros que finalmente han sido descartados del diseño.
+%----------
+
+\subsection{Repositorio}
+\label{subsec:repository}
+La información que hemos de guardar en el repositorio es:
+\begin{description}
+	\item[Información relativa al servicio] Necesitamos almacenar interfaz actual de comunicaciones y el estado de ésta, así como un valor que nos permita averiguar si el servicio ha sido destruido por causas ajenas para intentar reconstruir la \ac{CWSN} ante una eventualidad, esta información necesita ser persistente. También almacenamos cuál es el peridodo con la que el optimizador y ejecutor actúan en base al tiempo. Si en vez de sobreescribir esta información hacemos un seguimiento, podemos obtener información acerca de la estabilidad y la adaptabilidad de la red.
+
+\item[Información relativa a los nodos en la red] Para hacer un mapa de red necesitamos información acerca de qué nodos hay en la red y cómo llegar a ellos, los datos elegidos son:
+	\begin{itemize}
+		\item Identificador del nodo. Un \integer{} asignado al conocer el nodo por primera vez. 
+		\item Nombre del nodo. Una \String{} representando el nombre con el que se presenta a la red.
+		\item Papel del nodo. Una \String{} cuya codificación es: \bsq{p} para usuario primario y \bsq{s} como secundario (\bsq{u} para valor desconido).
+		\item Tipo de nodo. Una \String{} cuyos valores pueden ser: \bsq{n} normal, \bsq{c} coordinador (\bsq{u} para valor desconocido).
+		\item Dirección \ac{MAC} de \bt{} del nodo. Este dato identifica al nodo unívocamente
+		\item Dirección \ac{IP} del nodo.
+		\item Identificador de su nodo coordinador. Un \integer{} que hace referencia a un identificador de nodo previamente conocido y que nos permite alcanzar todos sus datos.
+	\end{itemize}
+
+\item[Información relativa al sensado] Los datos recogidos por cada dispositivo los almacenamos siguiendo esta estructura:
+	\begin{itemize}
+		\item Identificador del nodo, un \integer{} que nos indica quién es el propietario de la información.
+		\item RSSI, un \integer{} con el valor en dBm de la intensidad de señal recogida de la red \wifi{}.
+		\item Tasa de envío, Un \double{} con el intervalo de tiempo medio de envios en la red.
+		\item Marca de tiempo, una referencia al momento en que estos datos fueron obtenidos.
+	\end{itemize}
+\end{description}
+
+Estos datos son compartidos con el coordinador quién distribuye (sin filtrar, aunque podría implementarse un filtrado ya que se han reservado valores \textit{dummy} encaminados a el ocultamiento de la información) esta información. Nuestro repositorio por tanto es distribuido de tal forma que todos tengan la misma foto aunque no tengan los mismos valores, ya que los identificadores de los nodos en cada dispositivo varían, la clave que nos permite sincronizar todo el repositorio recae en la dirección \ac{MAC} de \bt{} que se usa como clave primaria.
+%----------
+
+\subsection{Discovery}
+Este módulo se asemeja a los ojos de nuestra arquitectura, siguiendo con el anterior símil del cerebro, una ventana al mundo. Ambos módulos se conectan a través del repositorio (una especie de bus). En la sección~\ref{subsec:senseAndPolicy}, se entra en detalle sobre los parámetros recogidos del entorno. 
+Este módulo no sólo recoge parámetros, si no que monitoriza el estado de las diferentes interfaces de comunicaciones, por ello parte de este módulo está muy ligado al controlador de la interfaz, sin embargo debido a que ciertas políticas necesitan que el optimizador evalue parámetros de interfaces de comunicaciones no activas, se ha sacado del diseño del controlador esta parte para añadirla al modulo \var{discovery} y que pueda ser manejada en cualquier momento, en la sección~\ref{subsec:btControllerImpl} del siguiente capítulo completamos el por qué de ésto. 
+%----------
+
+\subsection{Interface Manager}
+Este módulo es el punto de salida del módulo o servicio cognitivo hacia los controladores. En confluyen dos planos: el primero para los mensajes de aplicación provenientes del \var{Sensor Manager} (plano de datos) y el segundo para la elaboración de señalización proveniente del módulo \var{executor} o de eventos de red generados en el gestor de estados (ver~\ref{subsubsec:stateManager}) (plano de control y gestión).\\
+
+En el se implementa todas las funciones de encaminamiento que son necesarias transmitir a los controladores pues estos no conocen nada del plano cognitivo, son meras palancas de acción. En este módulo también implementamos el submódulo \var{Access} encargado de compartir con el resto de nodos parte de nuestro repositorio que es enviado por el canal \var{VCC}. 
+
+El diseño del canal \var{VCC} encargado de transmitir toda la información de control y gestión de la \ac{CWSN}, se hubica en la misma red por la que circulan los datos, a diferencia de otros sistemas como el \ac{SS7} \cite{ss7} por razones de simplicidad. De hecho comparten ambos tráficos el mismo canal, la manera de distinguirlos reside en el valor de la etiqueta \var{MessageType}. Sin embargo la arquitectura no cierra las puertas a que el plano de datos y el de control estén sean transmitidos en distintas interfaces de comunicación, por ejemplo datos en \wifi{} y señalización en \bt{}.
+
+%----------
+
+\subsection{Interfaz Módulo Cognitivo - Controlador}
+\subsubsection{Comunicación hacia controlador: invocación de métodos}
+La forma de comunicarse con el controlador de la interfaz es mediante la invocación de métodos del propio controlador. Al basarse en una programación en objetos, el módulo o servicio cognitivo tiene una referencia a cada controlador que le permite invocar sus métodos declarados como públicos permitiendo disparar procesos, para homogeneizar y que el servicio interactue de forma similar con todas las interfaces, sus controladores deben implementar una serie de métodos que desencadenen un proceso que al final tenga una respuesta parecida. Estos métodos son asíncronos cuya llamada no devuelve ningún valor, es a través de la interfaz entre las capas pero en el otro sentido como obtenemos la resuesta. Entre la serie de métodos que un controlador debe implementar, los indispensables al ser comunes a todos son:
+\begin{description}
+	\item[start()] Este método nos permite configurar el controlador teniendo en cuenta los requerimientos que tenga el módulo o servicio cognitivo.
+	\item[stop()] Gracias a él se liberan todos los recursos (menos los relacionados con el módulo \var{discovery}).
+	\item[write()] Para escribir cualquier tipo de información sobre la red:
+	\begin{itemize}
+		\item\bsq{Plano de datos}: canal de datos.
+		\item\bsq{Plano de control}: canal \var{VCC}.
+	\end{itemize}
+\end{description}
+%----------
+
+\subsubsection{Comunicación hacia módulo: Gestor de estados}
+\label{subsubsec:stateManager}
+O \textit{State Manager}, es una interfaz de comunicación uniderecional desde los distintos controladores hacia el servicio para expresar el estado en el que se encuentran éstas. Estos mensajes son consecuencia de procesos bien disparados por el servicio al invocar métodos del controlador (módulo ejecutor e \var{Interface Manager}) o bien originados en el propio controlador al tratarse de un evento de red.
+
+\paragraph{WiFi} Los diferentes estados y eventos en los que pueden estar la interfaz \wifi{}:\\
+\smTableInit{\textit{WiFi State Manager}}
+	\smTableRow{STATE\_none}{event\_no\_device\_changes}	
+	\smTableRow{STATE\_listen}{EVENT\_ENTERED\_IN\_NETWORK}
+	\smTableRow{STATE\_sending}{EVENT\_LOST\_NODE}
+	\smTableRow{STATE\_receiving}{EVENT\_HELLO\_NOT\_REACHED}
+\smTableEnd{Gestor de estados WiFi}{wifiStateManager}
+
+\paragraph{Bluetooth} De manera análoga los diferentes estados y eventos en los que pueden estar la interfaz \bt{}:
+\smTableInit{\textit{Bluetooth State Manager}}
+	\smTableRow{STATE\_none}{event\_no\_device\_changes}	
+	\smTableRow{STATE\_listen}{EVENT\_new\_device}
+	\smTableRow{STATE\_connecting}{EVENT\_device\_LOST}
+	\smTableRow{STATE\_connected}{EVENT\_CONNECTING\_DEVICE\_FAILED}
+	\smTableRow{STATE\_sending}{EVENT\_CONNECTION\_ALREADY\_EXISTING}
+	\smTableRow{STATE\_receiving}{}
+\smTableEnd{Gestor de estados Bluetooth}{btStateManager}
+
+Esta información recibida por cada controlador se mapea con los eventos y estados que veremos en la \ac{API} (ver sección~\ref{subsec:serviceInformation}) de forma que las singularidades de cada interfaz sean ocultadas más allá del servicio.
+%----------
+                                                     
 %-------------------------------------------------------------------
 \section{API: Definición, Cómo montar una aplicación sobre el servicio cognitivo}
 %-------------------------------------------------------------------
@@ -43,11 +159,11 @@ Este campo \textit{what} es un \integer{} único que define el número diferente d
 	\apiTableRow{QUEUED\_MESSAGE}{11}
 	\apiTableRow{CONNECT\_TO\_VIA\_BT}{12}
 	\noalign{\vskip 0.25cm}
-	\apiTableRow{WORKAROUND\_WHAT\_TO\_REPLY}{20}
-	\apiTableRow{WORKAROUND\_ASK\_RESPONSE}{21}
-	\apiTableRow{WORKAROUND\_CONTEXT\_CHANGE}{22}
-	\apiTableRow{WORKAROUND\_PENDINGMESSAGE\_INJECTION}{23}
-	\apiTableRow{WORKAROUND\_PENDINGMESSAGE\_DISPOSAL}{24}
+	\apiTableRow{{\footnotesize WORKAROUND\_WHAT\_TO\_REPLY}}{20}
+	\apiTableRow{{\footnotesize WORKAROUND\_ASK\_RESPONSE}}{21}
+	\apiTableRow{{\footnotesize WORKAROUND\_CONTEXT\_CHANGE}}{22}
+	\apiTableRow{{\footnotesize WORKAROUND\_PENDINGMESSAGE\_INJECTION}}{23}
+	\apiTableRow{{\footnotesize WORKAROUND\_PENDINGMESSAGE\_DISPOSAL}}{24}
 \apiTableEnd{Mensaje tipo}{apiMessages}
  Las filas en gris corresponden a mensajes reservados no implementados como son las constantes \Scst{OUTGOING\allowbreak\_CONTENT\allowbreak\_PROGRESS} (5) y \Scst{INCOMING\allowbreak\_CONTENT\allowbreak\_PROGRESS} (7). Están pensadas para una posible segmentación de los mensajes de aplicación por parte del servicio. En caso de segmentación la forma de informar a la aplicación del progreso del envío de segmentos (y de la recepción de éstos) se haría con este tipo de mensajes. Las filas precedidas por \Scst{WORKAROUND} son comportamientos necesarios para disparar procesos manualmente, corresponden por tanto a una interfaz de \textit{test} no necesario su cumplimiento para el correcto funcionamiento.
 %----------
@@ -488,7 +604,7 @@ Puede darse el caso que, en este punto del proceso, ya haya aplicaciones montada
 \label{subsec:configInterface}
 %%diseño+implementacion
 \comp{D+I: 
-Tras recibir el \textit{handshaking} de registro de la aplicación, el servicio si no se encuentra colaborando en una \ac{CWSN}, procede a la configuración de una interfaz de comunicación, esta configuración se realiza en una \textit{AsynTask} de \android{} que permite descargar la \textit{UI-Thread} evitando errores del tipo \textit{ANR ``Application Not Responding''} ya que parte de la tarea se ejecuta en segundo plano, además este tipo de tarea habilita mecanismos de paso de información entre ambas hebras. Antes de configurar una interfaz pediremos a los controladores de las otras interfaces que liberen los recursos (llamando a su método \textit{stop}) para  poder partir de una situación deseable.
+Tras recibir el \textit{handshaking} de registro de la aplicación, el servicio si no se encuentra colaborando en una \ac{CWSN}, procede a la configuración de una interfaz de comunicación, esta configuración se realiza en una \textit{AsyncTask} de \android{} que permite descargar la \textit{UI-Thread} evitando errores del tipo \textit{ANR ``Application Not Responding''} ya que parte de la tarea se ejecuta en segundo plano, además este tipo de tarea habilita mecanismos de paso de información entre ambas hebras. Antes de configurar una interfaz pediremos a los controladores de las otras interfaces que liberen los recursos (llamando a su método \textit{stop}) para  poder partir de una situación deseable.
 }
 %%---
 Tras recibir el \textit{handshaking} de registro de la aplicación, el servicio si no se encuentra colaborando en una \ac{CWSN}, procede a la configuración de una interfaz de comunicación que se realiza en segundo plano. Antes de empezar la configuración una interfaz pediremos a los controladores de las otras interfaces que liberen los recursos (llamando a su método \textit{stop}) para partir de una situación con mínimos recursos utilizados.
@@ -497,7 +613,7 @@ Tras recibir el \textit{handshaking} de registro de la aplicación, el servicio s
 \subsubsection{WiFi: servicio y controlador}
 \begin{codeInvolved}
 \begin{files}
-\textbf{Service}: SetupWifiInterface (asynTask)\\
+\textbf{Service}: SetupWifiInterface (AsyncTask)\\
 \textbf{WifiController}: stop(), start() / StatusReceiver\_wifi (BroadcastReceiver)
 \end{files}
 \end{codeInvolved}
@@ -521,7 +637,7 @@ La configuración comienza encendiendo la interfaz con la ayuda de la \ac{API} de
 \subsubsection{Bluetooth: servicio y controlador}
 \begin{codeInvolved}
 \begin{files}
-\textbf{Service}: SetupBTinterface (asynTask)\\
+\textbf{Service}: SetupBTinterface (AsyncTask)\\
 \textbf{BluetoothController}: stop(), start(), connect(), setState() / StatusReceiver\_bt (BroadcastReceiver)
 \end{files}
 \end{codeInvolved}
@@ -556,7 +672,7 @@ Según la interfaz en la que nos encontremos se alterna el papel de quién da el p
 \subsubsection{WiFi}
 \begin{codeInvolved}
 \begin{files}
-\textbf{WifiController}: SendHelloPacket (AsynTask), UDPlistener (Thread), stopSendingHelloPacket(), setState()\\
+\textbf{WifiController}: SendHelloPacket (AsyncTask), UDPlistener (Thread), stopSendingHelloPacket(), setState()\\
 \textbf{Service}: mHandlerWf, sendInfoNewNodeOnNetwork()\\
 \textbf{Database}: eventNewDeviceIPCoordinator(), newDeviceEventNormal(), modifyNode()
 \end{files}
@@ -651,7 +767,7 @@ En esta interfaz tenemos una conexión intermitente, que se desplega y se retrae 
 Este mecanismo consiste en el envío de un paquete llamado \textit{``ByePacket''} que contiene la dirección \ac{MAC} del nodo que abandona la red. El envío de este paquete puede ser sobre \ac{TCP} o \ac{UDP}, en el caso de que el envío sea desde el nodo coordinador, sólo podremos mandarlo sobre \ac{TCP} ya que los nodos normales no escuchan sobre \ac{UDP} como hemos visto en \ref{subsec:configInterface}\\
 %%diseño+impletacion
 \comp{D+I:
-Este envío se realiza gracias a otra asynTask que al finalizar libera los recursos del controlador cerrando la vida de la aplicación por completo.
+Este envío se realiza gracias a otra \textit{AsyncTask} que al finalizar libera los recursos del controlador cerrando la vida de la aplicación por completo.
 }
 %%--
 
@@ -790,7 +906,7 @@ Una vez entregado el mensaje al servicio se empieza a procesar. Asumimos que el 
 
 Una vez tenemos el mensaje lo guardamos en una cola, lo que nos ayuda a calcular el tiempo de llegada de los mensajes de datos por parte de las aplicaciones y es necesario para ofrecer a la aplicación una confirmación positiva o negativa sobre la entrega a los nodos destinararios para cada mensaje. Como esta confirmación puede no ser inmediata, necesitamos almacenar de alguna manera el mensaje para poder recuperarlo cuando nos llegue ésta. Para guardarlo y rescatarlo cuando llegue el momento nos ayudamos de una clave, un \textit{hash} calculado en base a la marca de tiempo, el contenido del mensaje y la dirección \ac{MAC} de \bt{} del nodo que envía el mensaje. 
 
-El siguiente punto es ver si podemos enviar el mensaje por la red, para ello debemos estar registrados en una \ac{CWSN} y no estar en una situación de cambio de contexto, si se da esta situación marcamos el mensaje como ``pendiente de envío'' en la cola. Si podemos enviarlo lo marcamos como ``en envío'' y se procede al envío. Para ello necesitamos saber quién o quienes son los siguientes nodos en la cadena de envío. Aunque gracias a que cada nodo tiene información sobre cómo alcanzar a otros nodos, nuestra red está centralizada en la figura del coordinador, por lo que la comunicación entre nodos no es posible siendo precisa una comunicación de saltos en los que el coordinador juega el papel central. \textcolor{red}{citar algo de aumentar eficiencia con el Cognitive brokeage white paper?}. No obstante, hay casos en que esta comunicación de saltos viene forzada por la interfaz de comunicación de uso, estamos hablando de \bt{} cuya única tipología posible es la de estrella (esclavo/maestro). El encaminamiento por tanto depende del tipo de nodo: 
+El siguiente punto es ver si podemos enviar el mensaje por la red, para ello debemos estar registrados en una \ac{CWSN} y no estar en una situación de cambio de contexto, si se da esta situación marcamos el mensaje como ``pendiente de envío'' en la cola. Si podemos enviarlo lo marcamos como ``en envío'' y se procede al envío. Para ello necesitamos saber quién o quienes son los siguientes nodos en la cadena de envío. Aunque gracias a que cada nodo tiene información sobre cómo alcanzar a otros nodos, nuestra red está centralizada en la figura del coordinador, por lo que la comunicación entre nodos no es posible siendo precisa una comunicación de saltos en los que el coordinador juega el papel central, siguendo la recomendación vista en \ac{CB} (\cite{conbrok}) para incrementar la eficiencia. No obstante, hay casos en que esta comunicación de saltos viene forzada por la interfaz de comunicación de uso, estamos hablando de \bt{} cuya única tipología posible es la de estrella (esclavo/maestro). El encaminamiento por tanto depende del tipo de nodo: 
 
 \paragraph{Normal} El siguiente eslabón de la cadena siempre es nuestro nodo coordinador, tanto si el mensaje es dirigido a él, como si lo es a otros nodos. 
 
@@ -861,7 +977,8 @@ Al igual que en un envío normal, almacenamos el mensaje en la cola y lo enviamos
 
 
 %------------------------------
-\subsection{Sensado del entorno y política cognitiva}
+\subsection{Sensado del entorno compartido y política cognitiva}
+\label{subsec:senseAndPolicy}
 Los parámetros del entorno que son de nuestro interés son el  \ac{RSSI} (intensidad de señal) de la red \wifi{} a la cual estamos conectados y la tasa de envío de mensajes de datos. El sensado del entorno se realiza en varios puntos de la arquitectura y son compartidos mediante señalización (ver tabla~\ref{itm:scanMessage}) con el coordinador de forma periódica. Éste al recibirlos dependiendo de la prioridad con la que vengan marcados se limita a guardarlos en su base de datos o a hacer un análisis rápido de la situación que desemboque en la toma de ciertas decisiones.
 
 \protobufTableInit{Estructura mensaje SCAN}
@@ -1012,7 +1129,7 @@ Notar que este mensaje es diferente para cada nodo ya que lista de nodos vista d
 	\prelevel\mess{nc}{Switch: ip, ssid}{c}
 	\prelevel\callSelf{a}{}%\shortstack{Configurar\\ \wifi{}}}
 	\prelevel\prelevel\callSelf{b}{}
-	\prelevel\prelevel\callSelf{c}{\shortstack{Configurar \wifi{}\\y apagar interfaz origen}}
+	\prelevel\prelevel\callSelf{c}{\shortstack{Configurar \wifi{}\\y apagar\\interfaz origen}}
 	
 	\messFail{a}{\bsq{HelloPacket}}{nc}
 	\messFail{c}{\bsq{HelloPacket}}{nc}	
