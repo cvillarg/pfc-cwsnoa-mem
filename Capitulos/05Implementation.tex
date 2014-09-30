@@ -14,9 +14,6 @@
 Este capítulo es complementario al de diseño, existe una delgada línea entre diseño e implementación que es muy fácil traspasar, quizás debido a que según cómo se mire la implementación puede interpretarse como el diseño de la siguiente capa a lo largo de éstas según bajamos hacia el \textit{hardware}. En él se intenta explicar el cómo se ha hecho, es decir, qué componentes \textit{software} se han utilizado para tal propósito.
 \end{resumen}
 
-\section{Arquitectura cognitiva bloques}
-Necesito esto? o voy pincelando dentro de algo.
-
 %-------------------------------------------------------------------
 \section{Detalles de implementación}
 %-------------------------------------------------------------------
@@ -24,7 +21,14 @@ Necesito esto? o voy pincelando dentro de algo.
 
 Para la implementación de los distintos bloques de la arquitectura se han elegido los mecanismos que mayor grado de independencia obtienen ayudando a estructurar los procesos en capas y tener puntos de intercomunicación entre éstos fuertmente marcados. La programación basada en objetos y el paso de mensajes entre distinas entidades ayudan a resolver las directrices de modularidad marcadas en diseño.
 
-\subsection{Servicio cognitivo}
+\subsection{Interfaz aplicación servicio (cliente-servidor)}
+Como se vió en análisis~\ref{sec:android}, de entre las formas de recrear la interfaz cliente-servidor necesaria para la confección de un \textit{bound service}, escogemos aquella que se realiza a través de un \textit{Messenger}. De esta forma la interfaz no declara métodos para su llamada desde el cliente, si no que la interacción con el servicio se basa en el intercambio de mensajes que son recogidos en su método \textit{handleMessage()} declarado en su \textit{Handler}. Por consiguiente tenemos una interfaz mucho más flexible y actualizable a cambio de estar abierta a errores (mensajes intercambiados sin fijarse a las reglas previamente declaradas), además de proveer de un entorno \textit{thread-safe} al encolar las solicitudes de los diferentes clientes y ser entregadas al servicio en orden una vez que se haya atendido a la petición mediante la hebra que maneja el \textit{Handler}.  
+La interfaz o el objeto \textit{IBinder} se construye gracias al método \textit{getBinder()} del objeto \textit{Messenger} creado gracias al \textit{Handler} implementado en el servicio.
+
+A su vez las aplicaciones deben declarar su propio \textit{Handler} para poder recibir mensajes desde el servicio, para ello se deberá informar al servicio cúal es el objeto \textit{Messenger} de la aplicación. Así habilitamos también en sentido contrario la comunicación habilitando al servicio que nos comunique datos en cualquier instante de tiempo, al igual estos envíos de información serán encolados por lo que la aplicación no debe preever mecanismos \textit{multi-thread} para atender al servicio.  
+
+%-------------------
+\subsection{Módulo o Servicio cognitivo}
 El servicio se constituye en dos clases con una relación de heredamiento entre ambas. La clase padre \class{CognitiveLayer\allowbreak\_common\allowbreak\_Service} que intenta encapsular las partes que todo servicio cognitivo tendría que satisfacer:
 \begin{itemize}
 	\item Métodos de inicialización de los componentes necesarios no específicos y su destrucción. (\textit{onCreate(), onDestroy()}).
@@ -47,42 +51,7 @@ El apellido cognitivo supone una abstración del modelo de comunicaciones. La apl
 }
 \paragraph{Programación tarea} Se basa en el sistema de alarmas de \android{} \cite{alarms}, este sistema es útil para realizar periodicamente operaciones sin tener en cuenta el ciclo de vida de la aplicación (en este caso el servicio cognitivo). Una alarma puede ser usada para lanzar \textit{Services} en conjunción con \textit{BroadcastReceivers}. Al dispararse la alarma gracias a la clase \class[android.app]{AlarmManager} y efectuarse el \textit{pendingIntent} descrito en ella, se ejecuta el método \textit{onReceive()} del \textit{BroadcastReceiver} (puesto en el \textit{intent}) este método se ejecuta en la hebra principal y si dura demasiado tiempo \android{} matará el proceso por ello este método debe ser ligero y lanzar por ejemplo un \textit{service}. Entre que se termina de ejecutar el método y empieza a ejecutar el servicio (en este caso) ocurre un espacio de tiempo \cite[p.~328-342]{busyCoder} en que nuestro dispositivo puede dormirse. Por lo tanto debemos adquirir en el método \textit{onReceive()} un \textit{wakelock} que impida que el dispositivo pueda dormirse en este espacio de tiempo y liberarlo una vez se ha terminado de ejecutar las operaciones deseadas.\\
 Para hacer este truco, llamamos a un método (que debe ser estático para poder llamarlo sin ser objeto) de nuestro servicio (alojado en \textit{common}) que adquiere el cerrojo e inicia el servicio. Cuando un servicio es iniciado se crea el servicio si no estuviese ya iniciado o vinculado (\textit{bound}) se ejecuta el método \textit{onStartCommand()} una vez terminado no se produce a la destrucción hasta que se pare el servicio. Nuestro servicio permite ser vinculado para prestar conectividad en una \ac{CWSN} y permite ser iniciado para realizar operaciones de forma periódica. La vinculación la realizan otras aplicaciones, sin embargo la iniciación la realiza el mismo servicio gracias a la sucesión de alarmas que se programa cuando se crea el servicio (método \textit{onCreate()}), como consecuencia la extinción del servicio tiene que ser llevado a cabo por el mismo cuando detecte que no hay aplicaciones sobre él a las que dar soporte. El flujo de vida del servicio se ve alterado ya que al haber una iniciación, la falta de vinculación no detendrá al servicio, siendo preciso la llamada al método \textit{stopSelf()} cuando sea oportuno (ver~\ref{subsec:salidaRedImpl}).
-
-
-\subsection{Mensajes enviados por la red}
-
-La implementación esta basada en \textit{Protocol-Buffers} de Google \cite{protocolBuffers}. Los mensajes son construidos utilizando \ac{IDL}, un archivo donde definimos la estructura de estos mensajes. \textit{Protocol-Buffers} utiliza un entero para cada campo para evitar codificar el nombre del campo y así serilizar estructuras de datos de manera más eficaz, la manera de codificar este entero varia por la misma razón: desde el 1-15 se codifica con un \textit{byte}, del 16-2047 con dos y así en adelante. \textit{Protocol-Buffers} define una entidad llamada \bsq{\textit{Message}} que puede albergar campos de distintos tipos: int32, bool, bytes\ldots tipos más complejos como enumerados u otros mensajes anidados.\\
-Con esta \ac{IDL} que definimos en la clase \class[util]{Message} con extensión \texttt{.proto}, \textit{Protocol-Buffers} nos genera (gracias al compilador \texttt{protoc}) un \textit{parser} y todos los métodos necesarios para construir y serializar así nuestras estructuras de datos. Usamos la sentencia \Scst{option optimize\_for = LITE\_RUNTIME;} en nuestro archivo \ac{IDL} para indicar que nuestra maquina es débil y usar los menos recursos posibles a cambio de ser menos rápidos.\\
-
-En nuestra implementación para facilitar el \textit{parsing} de los diferentes mensajes, hemos definido dos grandes mensajes: uno que engloba todos los mensajes intercambiados en la \ac{CWSN} y otro que engloba los paquetes que se envían sobre \wifi{} para el registro y desregistro en la red. Empezamos a interpretar un mensaje asumiendo (por probabilidad) que tiene que ver con la \ac{CWSN} si obtenemos un error del tipo \Scst{InvalidProtocolBufferException} entonces pasamos a interpretar como si fuera del otro tipo. Así mensajes diferentes no son anidados perjudicando y ensuciando el modelo.
-
-
-\comp{Esto creo que es mejor en análisis:\\
-Un servicio es una clase de Java que se ejecuta, en principio, en la misma hebra y en el mismo proceso que la aplicación. Pero que su ciclo de vida está desligado de la pantalla, no tiene interfaz gráfica y está pensado para ejecutarse en \textit{background} con operaciones costosas en el tiempo, que siguen ejecutándose aunque la aplicación que inició estas operaciones no esté activa o esté a otros menesteres. Un servicio es el componente menos dependiente de los posibles eventos que se producen en un móvil: el usuario cambia de aplicación, entra una llamada entrante que hace que el foco cambie\ldots 
-
-Además para cumplir el requisito de proveer una serie de operaciones a otras aplicaciones (ya que \android{} nos permite la instanciación de otros componentes fuera de nuestra aplicacion) el único componente que nos permite comunicación en los dos sentidos en cualquier instante de tiempo es el servicio, en concreto entre las configuraciones que nos permite \android{}, elegimos la de \textit{bound service}, es decir un servicio atado, atado a la aplicación que requiere sus servicios, una especie de interfaz cliente-servidor. La interfaz se basa en un objeto \textit{IBdinder} que el cliente (la aplicación) utiliza para comunicarse con el servicio, una referencia que le permite ejecutar los métodos declarados en el servicio. Hay tres formas de declarar esta interfaz:
-\begin{description}
- \item [Extendiendo la clase Binder] Si el alcance se restringe a la misma aplicación y no se necesita comunicación entre procesos, está es la manera más sencilla de conseguir una referencia para llamar a todos los métodos publicos del servicio.
- \item [Usando un Messenger] Este objeto nos permite que el servicio preste soporte a otros procesos más allá del local y evitando condiciones de carrera entre las distintas peticiones ya que la hebra que maneja el \textit{Handler} recoge y encola las solicutudes. Las peticiones son en forma de mensaje por lo que no hay una interfaz que declare métodos propiamente dichos, si no que brinda una comunicación entre ambos por medio de paso de mensajes que son procesados en una cola.
- \item [Usando AIDL] Esta forma es la menos intervencionista por parte de \android{}, nos permite definir una \ac{API} propiamente dicha con la declaración de funcionalidad gracias a \ac{AIDL} que descompone los objetos en primitivas que pueden ser traspasadas entre procesos para desmpeñar \ac{IPC}. Es la única manera de proveer un servicio que acepte peticiones simultaneamente pero es responsabilidad del programador proveer una estructura \textit{multi-thread-safe} 
-\end{description}
-}
-\subsection{Interfaz aplicación servicio (cliente-servidor)}
-Como se vió en análisis~\ref{sec:android}, de entre las formas de recrear la interfaz cliente-servidor necesaria para la confección de un \textit{bound service}, escogemos aquella que se realiza a través de un \textit{Messenger}. De esta forma la interfaz no declara métodos para su llamada desde el cliente, si no que la interacción con el servicio se basa en el intercambio de mensajes que son recogidos en su método \textit{handleMessage()} declarado en su \textit{Handler}. Por consiguiente tenemos una interfaz mucho más flexible y actualizable a cambio de estar abierta a errores (mensajes intercambiados sin fijarse a las reglas previamente declaradas), además de proveer de un entorno \textit{thread-safe} al encolar las solicitudes de los diferentes clientes y ser entregadas al servicio en orden una vez que se haya atendido a la petición mediante la hebra que maneja el \textit{Handler}.  
-La interfaz o el objeto \textit{IBinder} se construye gracias al método \textit{getBinder()} del objeto \textit{Messenger} creado gracias al \textit{Handler} implementado en el servicio.
-
-A su vez las aplicaciones deben declarar su propio \textit{Handler} para poder recibir mensajes desde el servicio, para ello se deberá informar al servicio cúal es el objeto \textit{Messenger} de la aplicación. Así habilitamos también en sentido contrario la comunicación habilitando al servicio que nos comunique datos en cualquier instante de tiempo, al igual estos envíos de información serán encolados por lo que la aplicación no debe preever mecanismos \textit{multi-thread} para atender al servicio.  
-
-\subsection{Interfaz servicio controladores}
-Esta comunicación está fuertemente marcada y se basa también en el paso de mensajes. Esto nos ayuda a colocar la funcionalidad en cada parcela e intercambiar exclusivamente y de forma estandarizada la información necesaria para llevar a cabo un proceso.
-
-En el servicio implementamos tantos \textit{Handlers} como controladores de interfaz tengamos, que pasamos como referencia a éstos. El controlador por tanto tiene una forma de remitir información de manera estandarizada sin conocer más datos del servicio, el cúal si que puede lanzar los procesos (llamar a métodos del controlador) al estar en un nivel jerárquico superior. El servicio recoge los diferentes mensajes enviados por el controlador que son entregados en orden y cuando se haya atendido a la petición anterior al basarse en la misma implementación que la interfaz aplicación servicio. Estos mensajes aglutinan tanto el evento que se produzca en la red como el estado de la interfaz.
-
-\comp{Diseño:
-y los homogeneiza su respuesta entre los distintos controladores para que las distintas comunicaciones que tenga que hacer a las aplicaciones sean uniformes y transparentes a la interfaz de comunicación usada en ese momento. 
-
-Estos mensajes pueden ser respuesta al lanzamiento de un proceso por parte del servicio o directamente bajo iniciativa del propio controlador al cambiar de estado por eventos de red. Se crea así un gestor de estados entre controlador y servicio 
-}
+%-------------------
 \subsection{Repositiorio, capa de datos}
 Utilizamos la tecnología de base de datos de \texttt{Sqlite3} para implementar nuestro repositorio. La principal razón de esta elección es que se trata de una base de datos integrada en \android{} lista para usar que consume pocos recursos y se adapta bastante bien a casi todas las necesidades que pueda tener una aplicación móvil.\\ 
 
@@ -132,7 +101,47 @@ La tabla \var{Nodes} (tabla~\ref{tab:tableNodes}) alberga la representación de t
 \ddbbTableEnd{Estructura tabla Scans}{tableScans}
 
 La tabla \var{Scans} (tabla~\ref{tab:tableScans}) hace referencia a los datos de sensado del entorno. La clave primaria está formada por el par (\textit{id\_node}, \textit{id\_scan}), de tal forma que no se permiten valores repetidos de este par. Vinculamos esta tabla con la tabla \var{Nodes} gracias a la clave foránea \textit{id\_node} que hace referencia al campo \textit{id\_node} de \var{Nodes} de tal forma que no se permite introducir datos del entorno de nodos que no existan y borrar nodos en la tabla \var{Nodes} si existen datos en la tabla \var{Scans} para no dejar huérfano el dato. La manera de introducir nuevos valores implica una consulta anterior para averiguar cual es el número de \textit{scan} que corresponde al nodo al que queremos vincular el dato. Este proceso está encapsulado en el método que se publica en la capa de datos siendo transparente al servicio.
+%----------------------
 
+
+\subsection{Mensajes enviados por la red}
+Estos mensajes son resultado en última instancia de \var{InterfaceManager} que es el punto de salida del módulo cognitivo hacia los \bsq{controladores de interfaz} para su envío por el \var{canal de datos} o por el \var{VCC}.
+La implementación esta basada en \textit{Protocol-Buffers} de Google \cite{protocolBuffers}. Los mensajes son construidos utilizando \ac{IDL}, un archivo donde definimos la estructura de estos mensajes. \textit{Protocol-Buffers} utiliza un entero para cada campo para evitar codificar el nombre del campo y así serilizar estructuras de datos de manera más eficaz. La manera de codificar este entero varia por la misma razón: desde el 1-15 se codifica con un \textit{byte}, del 16-2047 con dos y así en adelante. \textit{Protocol-Buffers} define una entidad llamada \bsq{\textit{Message}} que puede albergar campos de distintos tipos: int32, bool, bytes\ldots tipos más complejos como enumerados u otros mensajes anidados.\\
+Con esta \ac{IDL} que definimos en la clase \class[util]{Message} con extensión \texttt{.proto}, \textit{Protocol-Buffers} nos genera (gracias al compilador \texttt{protoc}) un \textit{parser} y todos los métodos necesarios para construir y serializar las estructuras de datos. Usamos la sentencia \Scst{option optimize\_for = LITE\_RUNTIME;} en nuestro archivo \ac{IDL} para indicar que nuestra maquina es limitada y así usar los menos recursos posibles a cambio de perder otras características como la rapidez.\\
+
+Para facilitar el \textit{parsing} de los diferentes mensajes, se ha definido dos grandes mensajes para evitar anidar mensajes que no comparten un significado, lo que haría poco claro el modelo. El primer mensaje engloba todos los mensajes intercambiados en la \ac{CWSN}, [\var{NodeMessage}] y el otro engloba a los paquetes que se envían sobre \wifi{} para el registro y desregistro en la red, [\var{WifiPacket}]. Empezamos a interpretar un mensaje asumiendo (por probabilidad) que es del tipo \var{NodeMessage} si obtenemos un error del tipo \Scst{InvalidProtocolBufferException} significa que el mensaje recibido es del otro tipo. Para saber qué tipo de mensaje está contenido evaluamos \var{type} y \var{packetType} respectivamente, estos campos no deben ser codificados con el mismo número, de ser así el proceso de \textit{parser} puede confudir ambos tipos de mensaje.\\
+%El punto de entrada en el proceso de \textit{parsing} para cada mensaje es la evaluación de \var{type} y \var{packetType} respectivamente, para evitar fallos en la interpretación y confundir ambos mensajes estos campos no pueden ser codificados con el mismo número.
+
+En la figura~\ref{fig:messageProto} se plasma un mapa completo de la estructura de anidación de los diferentes mensajes que se han visto en los procesos de red (sección~\ref{sec:procesosRed} del capítulo de diseño). En color {\bf\color[RGB]{0,128,128}turquesa} se pintan el nombre de los campos que son opcionales y en {\bf negro} aquellos que son obligatorios, los denominados con el prefijo \textit{list} en el tipo, aceptan más de un valor convirtiéndose en una lista del tipo denominado. Aunque se nos permite anidar más de un tipo de mensaje, la manera de interpretarlo está guidada por los campos donde se especifica qué tipo de mensaje contenemos, por ello cada mensaje anidado está marcado como opcional pero siempre debemos asegurar que está presente el mismo tipo de mensaje que el especificado en el campo que usamos como guía.
+
+\figura{Vectorial/implementation/message2}{width=.9\textwidth}{fig:messageProto}{Estructura anidada de mensajes de red sobre \textit{Protocol-Buffers}}
+%
+%\figura{Vectorial/implementation/message2}{width=.976\textwidth}{fig:messageProto}{Estructura anidada de mensajes de red sobre \textit{Protocol-Buffers}}
+%\clearpage
+
+\comp{Esto creo que es mejor en análisis:\\
+Un servicio es una clase de Java que se ejecuta, en principio, en la misma hebra y en el mismo proceso que la aplicación. Pero que su ciclo de vida está desligado de la pantalla, no tiene interfaz gráfica y está pensado para ejecutarse en \textit{background} con operaciones costosas en el tiempo, que siguen ejecutándose aunque la aplicación que inició estas operaciones no esté activa o esté a otros menesteres. Un servicio es el componente menos dependiente de los posibles eventos que se producen en un móvil: el usuario cambia de aplicación, entra una llamada entrante que hace que el foco cambie\ldots 
+
+Además para cumplir el requisito de proveer una serie de operaciones a otras aplicaciones (ya que \android{} nos permite la instanciación de otros componentes fuera de nuestra aplicacion) el único componente que nos permite comunicación en los dos sentidos en cualquier instante de tiempo es el servicio, en concreto entre las configuraciones que nos permite \android{}, elegimos la de \textit{bound service}, es decir un servicio atado, atado a la aplicación que requiere sus servicios, una especie de interfaz cliente-servidor. La interfaz se basa en un objeto \textit{IBdinder} que el cliente (la aplicación) utiliza para comunicarse con el servicio, una referencia que le permite ejecutar los métodos declarados en el servicio. Hay tres formas de declarar esta interfaz:
+\begin{description}
+ \item [Extendiendo la clase Binder] Si el alcance se restringe a la misma aplicación y no se necesita comunicación entre procesos, está es la manera más sencilla de conseguir una referencia para llamar a todos los métodos publicos del servicio.
+ \item [Usando un Messenger] Este objeto nos permite que el servicio preste soporte a otros procesos más allá del local y evitando condiciones de carrera entre las distintas peticiones ya que la hebra que maneja el \textit{Handler} recoge y encola las solicutudes. Las peticiones son en forma de mensaje por lo que no hay una interfaz que declare métodos propiamente dichos, si no que brinda una comunicación entre ambos por medio de paso de mensajes que son procesados en una cola.
+ \item [Usando AIDL] Esta forma es la menos intervencionista por parte de \android{}, nos permite definir una \ac{API} propiamente dicha con la declaración de funcionalidad gracias a \ac{AIDL} que descompone los objetos en primitivas que pueden ser traspasadas entre procesos para desmpeñar \ac{IPC}. Es la única manera de proveer un servicio que acepte peticiones simultaneamente pero es responsabilidad del programador proveer una estructura \textit{multi-thread-safe} 
+\end{description}
+}
+%--------------------------
+
+\subsection{Interfaz servicio controladores}
+Esta comunicación está fuertemente marcada y se basa también en el paso de mensajes. Esto nos ayuda a colocar la funcionalidad en cada parcela e intercambiar exclusivamente y de forma estandarizada la información necesaria para llevar a cabo un proceso.
+
+En el servicio implementamos tantos \textit{Handlers} como controladores de interfaz tengamos, que pasamos como referencia a éstos. El controlador por tanto tiene una forma de remitir información de manera estandarizada sin conocer más datos del servicio, el cúal si que puede lanzar los procesos (llamar a métodos del controlador) al estar en un nivel jerárquico superior. El servicio recoge los diferentes mensajes enviados por el controlador que son entregados en orden y cuando se haya atendido a la petición anterior al basarse en la misma implementación que la interfaz aplicación servicio. Estos mensajes aglutinan tanto el evento que se produzca en la red como el estado de la interfaz.
+
+\comp{Diseño:
+y los homogeneiza su respuesta entre los distintos controladores para que las distintas comunicaciones que tenga que hacer a las aplicaciones sean uniformes y transparentes a la interfaz de comunicación usada en ese momento. 
+
+Estos mensajes pueden ser respuesta al lanzamiento de un proceso por parte del servicio o directamente bajo iniciativa del propio controlador al cambiar de estado por eventos de red. Se crea así un gestor de estados entre controlador y servicio 
+}
+%-----------------------
 
 \subsection{Controlador interfaz WiFi}
 Está formado por:
@@ -166,7 +175,7 @@ Como se ve ambos controladores tienen una arquitectura similar. El de \bt{} está
 \begin{itemize}
 	\item La clase \class{BluetoothController} manejadora del establecimiento y mantenimiento de las conexiones sobre un canal RFCOMM.
 Al igual que su homóloga implementa por la misma razón hebras que gobiernan los detalles de la comunicación. En concreto se usan tres tipos de hebras como veremos en la configuración de la interfaz, dos de ellas para conseguir el \textit{socket} sobre el que enviar y recibir datos y otra para alojar y controlar a éste.
-	\item La \textit{AsyncTask} para la configuración de la interfaz y del objeto \texttt{BluetoothController}: \class{CognitiveLayer\allowbreak\_specific\allowbreak\_Service\allowbreak.SetupBTinterface}, imitando las mismas líneas marcadas en el controlador de \wifi{}.
+	\item La \textit{AsyncTask} para la configuración de la interfaz y del objeto  \texttt{{\small BluetoothController}}: \class{CognitiveLayer\allowbreak\_specific\allowbreak\_Service\allowbreak.SetupBTinterface}, imitando las mismas líneas marcadas en el controlador de \wifi{}.
 	\item Un \textit{broadcastReceiver} \class{StatusReceiver\allowbreak\_bluetooth} encargado de recoger los eventos de encendido o apagado, para sincronizar procesos.
 \end{itemize}  
 
@@ -433,6 +442,7 @@ Para calcular el promedio móvil almacenamos los valores a promediar en una \text
 La razón de poner el promedio en una clase independiente es por si se necesita usar otro tipo de promedios (que puedan ser codificados como \double{}) en otra parte de la arquitectura, por ejemplo su uso en políticas cognitivas.
 
 \subsubsection{Política cognitiva}
+\label{subsubsec:policyImpl}
 \begin{codeInvolved}
 \begin{files}
 \textbf{Service}: mayTakeAdvantageOfBT() mayTakeAdvantageOfWiFi(), sendTroublingRssi(), coordinatorCognitiveTask()
@@ -461,9 +471,59 @@ Los cambios de contexto o \textit{handover} usan protolocos, mensajes de red y o
 
 Mencionar que para ayudar en la tarea de uniformidad y que procesos parecidos empiecen en el mismo punto de partida, parte del flujo del cambio de contexto como implica configurar una interfaz, se reutiliza la misma \textit{AsyncTask} utilizada para el levantamiento de la interfaz con pequeños pasos intermedios que antes no se ejecutaban y ahora sí, para ello debemos pasar como parámetro si estamos configurando la interfaz para un levantamiento normal o como consecuencia de un cambio de contexto.
 
-Los \textit{timeouts} utilizados para evitar \textit{deadlocks} se implemtan siguendo el esquema de programación basado en \textit{Runnables} alojados en la interfaz \class[java.util.concurrent]{ScheduledFuture<V>} y ejecutados en hebras gestionadas por \class[java.util.concurrent]{Executor}
+Los \textit{timeouts} utilizados para evitar \textit{deadlocks} se implemtan siguendo el esquema de programación basado en \textit{Runnables} siguiendo las directrices de la interfaz \class[java.util.concurrent]{ScheduledFuture<V>} y ejecutados en hebras gestionadas por \class[java\allowbreak.util\allowbreak.concurrent]{Executor}
 
 Al programar una tarea (el objeto \textit{Runnable}) con el objeto \textit{Executor} a través de su método \textit{schedule()} obtenemos una referencia a la interfaz \textit{Future}, esta interfaz nos permite consultar si una tarea ha sido o no realizada y la cancelación de ésta.
+
+%-------------------------------------------------------------------
+\section{Aplicación utilitaria servicio cognitivo}
+\label{sec:appImpl}
+%-------------------------------------------------------------------
+La aplicación desarrollada se apoya en dos componentes \android{}: \textit{Activity} [\var{App\allowbreak\_Activity}] y \textit{PreferenceActivity} [\var{App\_Settings\_Activity}], siendo la clase \class{App\_Activity} la que vertebra toda la aplicación.\\
+
+Esta clase extiende del componente \var{FragmentActivity} para permitir la compatibilidad hacia atrás de ciertas funciones (hasta la versión 1.6 de \android{}) haciendo uso de la libreria \textit{Support Library} \cite{androidSupportLib}. A efectos prácticos actúa como cualquier \textit{Activity}, este componente hace de contenedor y lanza a otros elementos, centralizando la comunicación con la \bsq{capa cognitiva}, los componentes que contiene son \textit{Fragments} \cite{fragments}, un fragmento es un trozo autónomo contenido en una \textit{activity}. Aunque pueden no tener interfaz gráfica, su uso está pensado para ocupar un lugar que junto a otros fragmentos construyan la interfaz de usuario. Esta construcción puede ser dinámica y reusable ya que cada trozo puede ser reutilizado en cualquier sitio. Las comunicaciones entre fragmentos se realizan a través de la \textit{activity} que los contiene. La \textit{activity} por ser dueña del fragmento tiene acceso a todos los métodos de éste, además los eventos producidos en un fragmentos (como la pulsación de un botón) pueden ser capturados directamente en la propia \textit{activity}. Por lo que la comunicación hacia abajo (\textit{activity} $\rightarrow$ \textit{fragment}) es bastante sencilla al basarse en invocación.\\
+ Sin embargo la comunicación hacia arriba (proveniente desde el \textit{fragment} se basa en la declaración de interfaces de métodos. Estos métodos tienen que ser implementados en la \textit{activity}, el fragmento puede forzar a que la \textit{activity} que le contenga cumpla esa interfaz de métodos, de tal forma, que se asegure la ejecución mediante la invocación del método en la \textit{activity} desde la referencia obtenida en el método \textit{onAttach()} en el fragmento, haciendo a éste autónomo en el paso de información. La comunicación entre fragmentos se basa en una mezcla de los dos procedimientos, una comunicación hacia arriba y una vez se está en el \textit{scope} de la \textit{activity} realizar una comunicación hacia abajo al fragmento deseado.\\
+En la figura~\ref{fig:appImpl} se ve la comunicación entre fragmentos con flecha discontinua debido a que la \textit{activity} media en este intercambio de información.\\
+
+\figura{Vectorial/implementation/app}{width=.76\textwidth}{fig:appImpl}{Diagrama de bloques de las secciones que componen la aplicación y su comunicación entre ellas}
+
+En la figura vemos los componentes que dan sentido a las tres secciones descritas en diseño, las dos primeras están albergadas en la \var{App\_activity} que se compone de:
+
+\begin{itemize}
+	\item {\sc Service Controller} Es un fragmento que no tiene interfaz gráfica y que marcamos con la sentencia \textit{setRetainInstance(true);} como \bsq{no destruible} frente a cambios en la configuración (como puede ser un volteo de la pantalla, o un cambio del idioma\ldots) para no perder el vínculo con el servicio cognitivo. En él, se implementan los procesos de \textit{bind} y todas las comunicaciones de la \ac{API}. Este fragmento ubicado en la clase \class{App\_serviceController\_Fragment} da soporte a los demás componentes a través de la \textit{activity} que lo contiene, convirtiéndose en la puerta de entrada a la \bsq{capa cognitiva}. 
+	\item {\sc Monitor fragment}	Monitoriza el estado del servicio, mostrando el estado de la conexión, la interfaz utilizada y el nombre del coordinador. La comunicación es unidirecional entre la clase \class{App\_monitor\_Fragment} y el fragmento que controla la comunicación con el servicio 
+	\item {\sc Sensor fragment} Ubicamos en \class{App\_sensor\_Fragment} la simulación de un sensor. El fragmento extiende la clase \var{ListFragment} para presentar y manejar en pantalla un historial de mensajes recibidos y enviados. Junto a ello se presenta un formulario para introducir y enviar el valor del sensor. Necesitamos de una conexión bidirecional para en un sentido enviar el dato y en el otro recibir y actualizar la lista de nodos que se muestra.
+	\item {\sc Test fragment} Este fragmento implementa por si sólo (en conjunción con el fragmento \var{App\_serviceController\_Fragment}) la segunda sección, mientras que los arriba enumerados componen la primera sección focalizada en el función de la aplicación. Dentro de este fragmento: \class{App\_testing\_fragment} se ubican otros dos que son cargados dinámicamente según el tipo de nodo que se trate:
+	\begin{itemize}
+		\item \class{App\_testing\_normal\_Fragment} provee una manera al usuario de guardar un valor en el servicio que será lo que envíe al recibir una petición de \var{TEST}.
+		\item \class{App\_testing\_coordinator\_Fragment} en caso de nodo coordinador permite selecionar un nodo gracias a un \textit{spinner} modificado para que la acción de pulsar devuelva siempre un valor aunque sea el mismo que tenía selecionado. Al interactuar con él se lanzan los procesos de red necesarios para obtener el valor almacenado en el servicio del nodo remoto.  
+	\end{itemize}
+Un detalle de implementación que cabe destacar de esta sección de test es el envío periódico de datos del sensor. En vez de arrancar objetos pesados como una hebra o jugar con un \textit{timer} se ha decidido trabajar como trabaja \android{} que es mediante el envío de mensajes a colas del sistema, para ello:
+	\begin{enumerate} 
+		\item Creamos un objeto \textit{Handler} para obtener una cola y manejar mensajes.
+		\item Con el método \textit{postDelayed()} mandamos un mensaje a la cola pasados los milisegundos que se indican como parámetro, el otro parámetro necesario es un objeto \textit{Runnable} donde definimos nuestra funcionalidad. Al final del método \textit{run()} mandamos otro mensaje a la cola pasándole como objeto \textit{Runnable} este mismo y el mismo retraso.
+		\item Al transcurrir el periodo especificado el mensaje llega a la cola del sistema y se ejecuta el objeto \textit{Runnable} quien deja preparado otro mensaje en la cola para su posterior ejecución, mediante una variable de control podemos dejar de progrmar el envío de mensajes a la cola.
+	\end{enumerate}
+Este esquema de programación, no introduce \textit{sleeps} ni bloqueos, se gestiona con un procedimiento nativo de \android{} lo que permite ser eficientes al no consumir casi recursos.
+\end{itemize}
+
+La tercera sección se hubica en su totalidad en la clase \class{App\allowbreak\_Settings\allowbreak\_Activity} es un componente especializado para hubicar preferencias ya que muestra un \textit{layout} conveniente para mostrar una serie de valores con su descripción y maneja el archivo de preferencias donde se hubican éstas.\\
+Esta sección es lanzada por la \var{App\_Activity} a través del menú. Se lanza con un \textit{intent} que espera resultado, es decir cuando el usuario retorne de la configuración, \android{} informa al que lanzó el intent con un código de resultado:
+\begin{center}
+	\begin{tabular}{l c c}
+	\hline%
+	Constante & Valor & Máscara\\ \hline%
+	\noalign{\vskip 0.17cm}
+	\var{Activity.RESULT\_CANCELED} & \multicolumn{2}{c}{(definido por la plataforma)}\\ \hline%
+	\var{RESULT\_UPDATE\_APP\_STUFF} & \bsq{1} & \phantom{000}1\\ \hline%
+	\var{RESULT\_UPDATE\_SERVICE\_STUFF} & \bsq{2} & \phantom{00}10\\ \hline%
+	\var{RESULT\_CHANGES\_MISC} & \bsq{4} & \phantom{0}100\\ \hline%
+	\var{RESULT\_CHANGES\_TEST} & \bsq{8} & 1000 \\ \hline\hline%
+\end{tabular}
+\end{center}
+En \var{App\_settingsActivity} vamos, de acuerdo a estas máscaras, modificando el valor a devolver, no se produce enmascaramiento del valor debido a que las máscaras son ortogonales entre si. Al recibirlo en \var{App\_activity}, vamos pasando este valor por cada una de las máscaras descubriendo si ha habido algún cambio en sección: parámetros cognitivos (aplicación, servicio), preferencias o test. Al acabar todos los filtros los cambios ocurridos son evaluados y agrupados si hemos de traspasarlo al servicio. Otros cambios son a nivel aplicación como la carga dinámica de la sección de test o el borrado automático del valor del sensor al enviar el dato.\\
+
+Estas máscaras permiten que si el usuario no hace nada (se devuelve un valor \bsq{0} que corresponde a \var{Activity.RESULT\_CANCELED}) no informar al servicio y si ha habido cambios no tener que revisar toda la configuración para ver que ha cambiado y actuar en consecuencia, el valor devuelto nos indica dónde se ha producido el cambio.
 
 %-------------------------------------------------------------------
 %\section*{\NotasBibliograficas}

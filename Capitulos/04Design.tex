@@ -21,20 +21,22 @@ En este capítulo definimos la arquitectura del nodo cognitivo sobre la que detal
 \label{sec:arquitecturaCognitiva}
 \figura{Vectorial/design/node}{width=.65\textwidth}{fig:architecture}{Arquitectura cognitiva}
 
-Nuestra arquitectura se ha diseñado siguiendo pinceladas del modelo \textit{Connectivity Brokerage framework} \cite{conbrok}, no se han podido seguir todas las recomendaciones puesto que no implementamos el objeto \texttt{CompNet} (distintas redes cooperando para por ejemplo mitigar la interferencia) y que no tenemos acceso a otros planos que no sea el de aplicación. Al tener \textit{hardware} sin posibilidad de cambios y al tener un control limitado de éste (sólo las partes que \android{} nos permite) se desvanece la posibilidad de selecionar proactivamente la modulación, la codificación o el nivel de potencia en la transmisión. Nos restringimos a el diseño de una arquitectura confiando en las propias capacidades cognitivas u optimizaciones que elige la plataforma de por sí o que son accesibles de alguna u otra manera: \textit{reflection}, \textit{root}\ldots\\
+Nuestra arquitectura se ha diseñado siguiendo pinceladas del modelo \ac{CB} \cite{conbrok}, no se han podido seguir todas las recomendaciones puesto que no implementamos el objeto \texttt{CompNet} (distintas redes cooperando para por ejemplo mitigar la interferencia) y que no tenemos acceso a otros planos que no sea el de aplicación. Al tener \textit{hardware} sin posibilidad de cambios y al tener un control limitado de éste (sólo las partes que \android{} nos permite) se desvanece la posibilidad de selecionar proactivamente la modulación, la codificación o el nivel de potencia en la transmisión. Nos restringimos a el diseño de una arquitectura confiando en las propias capacidades cognitivas u optimizaciones que elige la plataforma de por sí o que son accesibles de alguna u otra manera: \textit{reflection}, \textit{root}\ldots\\
+
+%\figura{Vectorial/design/node}{width=.65\textwidth}{fig:architecture}{Arquitectura cognitiva}
 
 Como puede verse en la figura~\ref{fig:architecture} se ha estructurado la arquitectura en dos capas, existiendo una subdivisión de la capa inferior en otras dos. Un modelo de capas permite definir interfaces de comunicación entre las diferentes unidades, limitando el alcance y conocmiento de cada módulo independizando su propósito del resto. A saber:
 
 \begin{enumerate}
-\item \bsq{\bf Capa de aplicación}: Formada por cada una de las aplicaciones que operan sobre el servicio cognitivo que les sirve como canal de comuncaciones. Cada una de estas aplicaciones, tiene que cumplir con la interfaz definida entre esta capa y la inferior (aplicación y cognitiva). El diseño e implementación de cada aplicación excede a este proyecto y depende en cada caso del tercero que desarolle la aplicación. No obstante para probar y utilizar las capacidades de nuestro nodo cognitivo se ha desarrollado una aplicación que será brevemente ilustrada en el próximo capítulo.  
+\item \bsq{\bf Capa de aplicación}: Formada por cada una de las aplicaciones que operan sobre el servicio cognitivo que les sirve como canal de comuncaciones. Cada una de estas aplicaciones, tiene que cumplir con la interfaz definida entre esta capa y la inferior (aplicación y cognitiva). El diseño e implementación de cada aplicación excede a este proyecto y depende en cada caso del tercero que desarolle la aplicación. No obstante para probar y utilizar las capacidades de nuestro nodo cognitivo se ha desarrollado una aplicación cuyo diseño presentamos en la sección~\ref{sec:app} e implentación en~\ref{sec:appImpl} en el siguiente capítulo.
 \item \bsq{\bf Capa cognitiva} El interés del proyecto se centra en el desarollo de esta capa. Es una capa compuesta por otras dos: una primera capa de control donde se recoge toda la inteligencia y propósitos cognitivos y otra capa de actuación que provee de toda la funcionalidad para recibir y enviar datos por cada una de las interfaces de comunicación presentes:
 	\begin{enumerate}[i.]
-		\item \bsq{\bf Módulo cognitivo} Está fuertemente inspirado en los módulos que podemos ver en \cite{castaliacwsn} con ciertas peculiaridades e implementaciones que veremos a continuación.
+		\item \bsq{\bf Módulo cognitivo} Está fuertemente inspirado en los módulos que podemos ver en la arquitectura cognitiva desarrollada sobre Castalia \cite{castaliacwsn} con ciertas peculiaridades e implementaciones que veremos a continuación.
 		\item \bsq{\bf Controladores de interfaz} Esta capa está formada por cada una de las interfaces presentes en \textit{smartphone}, la implementación final recoge la interfaz de \wifi{} y \bt{}, pero el diseño recoge un número arbitrario debido a que si construimos este módulo siguiendo la interfaz entre capas, puede ser fácilmente añadida a la arquitectura final.
 	\end{enumerate}
 \end{enumerate}
 
-Los diferentes bloques que hemos definido en la arquitectura son:
+A continuación haremos una breve descripción de los diferentes bloques que hemos definido en la arquitectura, al ser los procesos entidades que hacen uso más de un bloque se ha preferido dejar para más adelante (sección~\ref{sec:procesosRed}) su explicación una vez vista la arquitectura. Así se obtienen varios puntos de vista que ayudan a comprender el funcionamiento.
 
 \subsection{Interfaz Aplicación - Módulo Cognitivo}
 El apellido cognitivo supone una abstracción en el modelo de comunicaciones de tal forma que el usuario (la aplicación) sea transparente a los parámetros, tiempos o detalles de la comunicación usada para transmitir los datos. Para lograr esta abstracción necesitamos un punto de ruptura que aisle y defina solamente la información estrictamente necesaria a intercambiar entre ambos agentes para poder recrear una \ac{CWSN}. En la sección~\ref{sec:api} se expone la definición de la \ac{API} que debe cumplir el desarrollador de las distintas aplicaciones.\\
@@ -43,7 +45,7 @@ Al definir una interfaz permitimos que terceros puedan desarollar sus propias ap
 %----------
 
 \subsection{Sensor Manager}
-Es el punto de entrada a nuestro servicio cognitivo, el encargado de recoger las peticiones de las distintas aplicaciones e informar tanto de la respuesta a la aplicación que lo solicitó, como al resto de ellas si las hubiese acerca de información común generada en la \ac{CWSN} donde cooperan. Esto se consigue gracias al submódulo \var{Apps Manager} que lleva un registro de cada una de las aplicaciones y permite discernir entre peticiones de éstas. Las peticiones entrantes son sanetizadas y codificadas para poder disparar los procesos internos a lo largo de los diferentes módulos y descodificadas elimando cualquier rasto cognitivo antes de ser entregadas a la aplicación en cuestión. Dentro de este módulo existe una cola \var{(Queue)} para mensajes de datos por si, entre otras funciones que detallaremos más a delante, no fuese posible atender a las peticiones en el momento de recibirlas, puedan ser atendidas en cuanto las condiciones lo permitan.
+Es el punto de entrada a nuestro servicio cognitivo, el encargado de recoger las peticiones de las distintas aplicaciones e informar tanto de la respuesta a la aplicación que lo solicitó, como al resto de ellas si las hubiese acerca de información común generada en la \ac{CWSN} donde cooperan. Esto se consigue gracias al submódulo \var{Apps Manager} que lleva un registro de cada una de las aplicaciones y permite discernir entre peticiones de éstas. Las peticiones entrantes son sanetizadas y codificadas para poder disparar los procesos internos a lo largo de los diferentes módulos y descodificadas elimando cualquier rasto cognitivo antes de ser entregadas a la aplicación en cuestión. La presencia del submódulo \var{Queue} permite, entre otras funciones que se detallarán, encolar mensajes de aplicación por si estas peticiones no pudiesen ser atendidas en el mismo momento de la recepción (fundamentalmente debido a cambios de contexto o \textit{handovers}. Una vez que las condiciones lo permitan se consulta a esta cola para ver si quedan ordenes pendientes.
 %----------
 
 \subsection{Policy, optimizer, executor}
@@ -99,9 +101,9 @@ El diseño del canal \var{VCC} encargado de transmitir toda la información de con
 \subsubsection{Comunicación hacia controlador: invocación de métodos}
 La forma de comunicarse con el controlador de la interfaz es mediante la invocación de métodos del propio controlador. Al basarse en una programación en objetos, el módulo o servicio cognitivo tiene una referencia a cada controlador que le permite invocar sus métodos declarados como públicos permitiendo disparar procesos, para homogeneizar y que el servicio interactue de forma similar con todas las interfaces, sus controladores deben implementar una serie de métodos que desencadenen un proceso que al final tenga una respuesta parecida. Estos métodos son asíncronos cuya llamada no devuelve ningún valor, es a través de la interfaz entre las capas pero en el otro sentido como obtenemos la resuesta. Entre la serie de métodos que un controlador debe implementar, los indispensables al ser comunes a todos son:
 \begin{description}
-	\item[start()] Este método nos permite configurar el controlador teniendo en cuenta los requerimientos que tenga el módulo o servicio cognitivo.
-	\item[stop()] Gracias a él se liberan todos los recursos (menos los relacionados con el módulo \var{discovery}).
-	\item[write()] Para escribir cualquier tipo de información sobre la red:
+	\item[start()] \hfill \\Este método nos permite configurar el controlador teniendo en cuenta los requerimientos que tenga el módulo o servicio cognitivo.
+	\item[stop()]\hfill \\Gracias a él se liberan todos los recursos (menos los relacionados con el módulo \var{discovery}).
+	\item[write()]\hfill \\Para escribir cualquier tipo de información sobre la red:
 	\begin{itemize}
 		\item\bsq{Plano de datos}: canal de datos.
 		\item\bsq{Plano de control}: canal \var{VCC}.
@@ -113,14 +115,14 @@ La forma de comunicarse con el controlador de la interfaz es mediante la invocac
 \label{subsubsec:stateManager}
 O \textit{State Manager}, es una interfaz de comunicación uniderecional desde los distintos controladores hacia el servicio para expresar el estado en el que se encuentran éstas. Estos mensajes son consecuencia de procesos bien disparados por el servicio al invocar métodos del controlador (módulo ejecutor e \var{Interface Manager}) o bien originados en el propio controlador al tratarse de un evento de red.
 
-\paragraph{WiFi} Los diferentes estados y eventos en los que pueden estar la interfaz \wifi{}:\\
+\paragraph{WiFi} Los diferentes estados y eventos en los que pueden estar la interfaz \wifi{}:%\\
 \smTableInit{\textit{WiFi State Manager}}
 	\smTableRow{STATE\_none}{event\_no\_device\_changes}	
 	\smTableRow{STATE\_listen}{EVENT\_ENTERED\_IN\_NETWORK}
 	\smTableRow{STATE\_sending}{EVENT\_LOST\_NODE}
 	\smTableRow{STATE\_receiving}{EVENT\_HELLO\_NOT\_REACHED}
 \smTableEnd{Gestor de estados WiFi}{wifiStateManager}
-
+%~\\
 \paragraph{Bluetooth} De manera análoga los diferentes estados y eventos en los que pueden estar la interfaz \bt{}:
 \smTableInit{\textit{Bluetooth State Manager}}
 	\smTableRow{STATE\_none}{event\_no\_device\_changes}	
@@ -138,9 +140,9 @@ Esta información recibida por cada controlador se mapea con los eventos y estado
 \section{API: Definición, Cómo montar una aplicación sobre el servicio cognitivo}
 %-------------------------------------------------------------------
 \label{sec:api}
-La forma de interactuar con el servicio cognitivo se basa en, como se verá en \ref{sec:detallesImplementacion}, el intercambio de mensajes a través de los objetos \textit{Messenger} y \textit{Handler} provistos por \android{}. Estos mensajes provocan el disparo de ciertos procesos en el servicio que responderá, si procede, en cuanto el resultado esté listo. Son llamadas por tanto asíncronas, de igual modo el servicio entregará mensajes a las aplicaciones en cualquier momento sin que estás hayan solicitado nada.\\
+En esta sección se explica cada detalle de la interfaz Aplicación - Módulo Cognitivo en ambos sentidos, su cumplimiento es necesario para desarollar una aplicación que interactue de forma correcta con el módulo o servicio cognitivo. La forma de interactuar con éste se basa en, como se verá en \ref{sec:detallesImplementacion}, el intercambio de mensajes a través de los objetos \textit{Messenger} y \textit{Handler} provistos por \android{}. Estos mensajes provocan el disparo de ciertos procesos en el servicio que responderá, si procede, en cuanto el resultado esté listo. Son llamadas por tanto asíncronas, de igual modo el servicio entregará mensajes a las aplicaciones en cualquier momento sin que estás hayan solicitado nada.\\
 
-La aplicación que se monte por tanto no necesita cumplir más requisitos que la de manejar los distintos mensajes que le entrege el servicio en cualquier instante de tiempo y la de almacenar la lista de nodos formada por el par (identificador, nombre) entregada por el servicio y modificada en cada evento que lo requiera. La confección de algunos mensajes de la \ac{API} requieren que sean informados con algunos valores de la lista de nodos, por lo que la aplicación debe tener accesible esta lista ya que no hay una manera activa de pedirla al servicio.
+La aplicación que haga uso del modelo no necesita cumplir más requisitos que la de manejar los distintos mensajes que le entrege el servicio en cualquier instante de tiempo y la de almacenar la lista de nodos formada por el par (identificador, nombre) entregada por el servicio y modificada en cada evento que lo requiera. La confección de algunos mensajes de la \ac{API} requieren que sean informados con algunos valores de la lista de nodos, por lo que la aplicación debe tener accesible esta lista ya que no hay una manera activa de pedirla al servicio.
 
 Los mensajes que se intercambian tienen un campo \textit{what} que resume el proposito de éste, más una serie de añadidos experesados en forma de parámetros y extras que conforman y describen el proceso que está ocurriendo.
 Este campo \textit{what} es un \integer{} único que define el número diferente de mensajes tipo que se intercambian, entre éstos habrá algunos que sólo existan en un sentido de la comunicación y otros que aparezcan en ambos sentidos.
@@ -190,7 +192,7 @@ Acto seguido debemos informar sobre parámetros de nuestra aplicación al servicio
 \item[Papel de nodo] En el campo \textit{arg1} del mensaje. \bsq{0} para indicar que somos un nodo secundario y \bsq 1 para indicar que nuestro papel es primario.
 \item[Código de aplicación] Como extra del mensaje incluimos una \String{} con la clave ``appCode'' indicando qué aplicación somos, para intercambiar mensajes cuyo código de aplicación coincida.
 \end{description}
-A través de este mensaje (ver tabla~\ref{tab:registerExchangeMessage}).
+A través del mensaje descrito en la tabla~\ref{tab:registerExchangeMessage}
 
 \messageTableInit{\appToServ}{3 =\\ \scriptsize{REGISTER\_EXCHANGE}}{0=secundario / 1=primario}{\nc}{\textit{null}}{\messApp{}}
 \messageTableExtra{appCode}{Una string con el código de aplicación}
@@ -1159,7 +1161,7 @@ Notar que este mensaje es diferente para cada nodo ya que lista de nodos vista d
 	
 	%\draw[thick,->] (0.5,-4) -- (1,-4) node[anchor=south east] {Timeout expired};
 \umlsdEnd{Ejemplo cambio de contexto hacia \wifi{} con pérdida de nodos}{switchToWifiFail}
-
+~\\%ajustar espacios y que caiga por debajo de la imagen
 \subsubsection{Cambio de contexto con interfaz destino Bluetooth}
 \begin{codeInvolved}
 \begin{files}
@@ -1243,6 +1245,74 @@ Por su parte el nodo normal al configurar su interfaz \bt{} y después de enviar 
 	\node[fill=blue!30, align=right] at (6,-18.3) {\small\shortstack{Situación normal de red\\ población: B y Coordinador}};
 \umlsdEnd{Ejemplo cambio de contexto hacia \bt{} con pérdida de nodos}{switchToBTFail}
 
+%-------------------------------------------------------------------
+\clearpage
+\section{Aplicación utilitaria servicio cognitivo}
+\label{sec:app}
+%-------------------------------------------------------------------
+Para hacer uso y probar las características cognitivas de nuestra arquitectura se ha diseñado una aplicación que se monta sobre el módulo o servicio cognitivo. La aplicación desarrollada además de cumplir la \ac{API} en su totalidad (incluida la denominada parte oculta) permite acceder a los parámetros de la politica cognitiva y los timeouts utilizados en los procesos de red.\\
+
+La aplicación simula el comportamiento de un sensor cuyo valor lo introduce el usuario y monitoriza el estado del servicio gracias a los mensajes de información que se envían desde el propio servicio o módulo cognitivo. Se estrutura en tres secciones: la principal que da cabida al objetivo de la aplicación y permite en caso de \bt{} la conexión manual al nodo. En una segunda sección se muestra (si el usuario lo requiere desde la configuración) unas funciones de \textit{test} entre las que podemos enumerar:
+\begin{description} 
+	\item[Petición, respuesta] Permite dependiendo del tipo de nodo, guardar una respuesta en el caso de nodos normales o pedir esta información para los nodos coordinadores. Con esta función se habilita un mecanismo de petición de información muy útil para la arquitectura cognitiva para la compartición de datos de sensado.
+	\item[Encolamiento de mensajes] Debido a que la aplicación actualiza de forma instantánea la lista de nodos al recibir un evento de cambio de contexto, se inabilita la elaboración de mensajes de datos que entregar al servicio debido a que no es posible construir una lista de destinatarios válida puesto que el único valor seleccionable por el usuario es \bsq{0} cuyo significado es la ausencia de nodos. Al intentar entregar un mensaje de datos al servicio con este valor, la validación que existe en la aplicación impide finalmente su entrega.\\
+Por este motivo no es posible generar un mensaje válido que se entrege al servicio en el momento que produzca su encolamiento, por lo que la aplicación permite gracias a un \textit{shortcut} \textit{(workaround)} el forzado para el encolamiento. Al pulsar el botón diseñado a tal efecto, se nos pregunta a través de una cadena de diálogos el mensaje a encolar y a que destinatarios debe dirigirse.
+	\item[Vaciado de la cola de mensajes] El vaciado de la cola de mensajes pendientes de envío se produce al efectuarse un cambio de conexto, una vez las funciones de red están nuevamente activas, si se quiere forzar el vaciado de esta cola por motivos de \textit{test} se ha habilitado un botón junto al de la función anterior a tal efecto.
+	\item[Envío periódico datos sensor] Una característica muy presente en redes de sensores es la que los sensores suelen enviar datos de forma periódica. Simulamos esta característica en la aplicación tras selecionar el periodo, los datos enviados consiste en una \String{} más un número que incrementamos en cada envio. 
+\end{description}
+Por último, en una tercera sección que alberga la configuración. En ella podemos elegir:
+\begin{description}
+	\item[Ajustes del servicio] Tipo y nombre del nodo, periodo tarea cognitiva y valores de la política que regula los cambios de contexto (ver~\ref{subsubsec:policyImpl}).
+	\item[Ajustes de la aplicación] Código de aplicación, papel del nodo y si el texto que se usa como valor del sensor debe borrarse después de su envío al servicio.
+ \item[Ajustes de test] Toda la configuración de la segunda sección como: si ha de visualizarse en la pantalla principal, con qué interfaz debe arrancar el servicio si la sección de \textit{test} está activada y los \textit{timeouts} utilizados para los \textit{handovers}.
+\end{description}
+
+La aplicación proporciona validaciones adicionales para evitar el incumplimiento de la \ac{API} o la interacción con el servicio si no es necesaria. No se permite:
+\begin{itemize}
+	\item El envío de mensajes de datos si no está establecida una \ac{CWSN}.
+	\item El envío de mensajes no dirigidos a un nodo válido (tanto si es inactivo pues no se permite su selección al no estar presente entre los \textit{items} que se presentan al usuario, como si el único valor que se presenta es la ausencia de nodos).
+	\item La actualización vacía de la configuración. Es decir si no hay un cambio en la configuración no se traspasan las modificaciones necesarias al servicio para su actualización.
+\end{itemize} 
+
+\begin{figure}
+\begin{center}%
+	\begin{minipage}[t]{.5\textwidth}%
+		\centering%
+		\includegraphics[width=.6\linewidth]{Imagenes/Bitmap/design/settings}%
+		\caption{settings1}%
+	\end{minipage}%
+	\begin{minipage}[t]{.5\textwidth}%
+		\centering%
+		\includegraphics[width=.6\linewidth]{Imagenes/Bitmap/design/settings2}%
+		\caption{settings2}%
+	\end{minipage}%
+	%\caption{settings}%
+\end{center}
+\end{figure}
+
+
+\begin{figure}
+\begin{center}%
+	\begin{minipage}[t]{.5\textwidth}%
+		\centering%
+		\includegraphics[width=.6\linewidth]{Imagenes/Bitmap/design/listnodes}%
+		\caption{main ui}%
+	\end{minipage}%
+	\begin{minipage}[t]{.5\textwidth}%
+		\centering%
+		\includegraphics[width=.6\linewidth]{Imagenes/Bitmap/design/menu}%
+		\caption{menu}%
+	\end{minipage}%
+	%\caption{settings}%
+\end{center}
+\end{figure}
+
+\begin{figure}
+\begin{center}%
+		\includegraphics[width=.3\linewidth]{Imagenes/Bitmap/design/uitest}%
+		\caption{testing ui}%
+\end{center}
+\end{figure}
 
 %-------------------------------------------------------------------
 %\section*{\NotasBibliograficas}
