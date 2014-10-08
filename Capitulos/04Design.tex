@@ -21,22 +21,47 @@ En este capítulo definimos la arquitectura del nodo cognitivo sobre la que detal
 \label{sec:arquitecturaCognitiva}
 \figura{Vectorial/design/node}{width=.65\textwidth}{fig:architecture}{Arquitectura cognitiva}
 
-Nuestra arquitectura se ha diseñado siguiendo pinceladas del modelo \ac{CB} \cite{conbrok}, no se han podido seguir todas las recomendaciones puesto que no implementamos el objeto \texttt{CompNet} (distintas redes cooperando para por ejemplo mitigar la interferencia) y que no tenemos acceso a otros planos que no sea el de aplicación. Al tener \textit{hardware} sin posibilidad de cambios y al tener un control limitado de éste (sólo las partes que \android{} nos permite) se desvanece la posibilidad de selecionar proactivamente la modulación, la codificación o el nivel de potencia en la transmisión. Nos restringimos a el diseño de una arquitectura confiando en las propias capacidades cognitivas u optimizaciones que elige la plataforma de por sí o que son accesibles de alguna u otra manera: \textit{reflection}, \textit{root}\ldots\\
+Nuestra arquitectura se ha diseñado siguiendo pinceladas del modelo
+\ac{CB} \cite{conbrok}, no se han podido seguir todas las
+recomendaciones puesto que no implementamos el objeto \texttt{CompNet}
+(distintas redes cooperando para por ejemplo mitigar la interferencia)
+y que no tenemos acceso a otros planos que no sea el de aplicación. Al
+tener \textit{hardware} sin posibilidad de cambios y al tener un
+control limitado de éste (sólo las partes que \android{} nos permite)
+se desvanece la posibilidad de selecionar proactivamente la
+modulación, la codificación o el nivel de potencia en la
+transmisión. Nos restringimos a el diseño de una arquitectura
+confiando en las propias capacidades cognitivas u optimizaciones que
+elige la plataforma de por sí o que son accesibles de alguna u otra
+manera: \textit{reflection}, \textit{root}\ldots\\
+
+%En este primer parrafo creo que despues de la referencia va punto:
+%[1]. Sin embargo, no se han podido...
 
 %\figura{Vectorial/design/node}{width=.65\textwidth}{fig:architecture}{Arquitectura cognitiva}
 
-Como puede verse en la figura~\ref{fig:architecture} se ha estructurado la arquitectura en dos capas, existiendo una subdivisión de la capa inferior en otras dos. Un modelo de capas permite definir interfaces de comunicación entre las diferentes unidades, limitando el alcance y conocmiento de cada módulo independizando su propósito del resto. A saber:
+Como puede verse en la figura~\ref{fig:architecture} se ha estructurado la arquitectura en dos capas, existiendo una subdivisión de la capa inferior en otras dos. Un modelo de capas permite definir interfaces de comunicación entre las diferentes unidades, limitando el alcance y conocimiento de cada módulo independizando su propósito del resto. A saber:
 
 \begin{enumerate}
 \item \bsq{\bf Capa de aplicación}: Formada por cada una de las aplicaciones que operan sobre el servicio cognitivo que les sirve como canal de comuncaciones. Cada una de estas aplicaciones, tiene que cumplir con la interfaz definida entre esta capa y la inferior (aplicación y cognitiva). El diseño e implementación de cada aplicación excede a este proyecto y depende en cada caso del tercero que desarolle la aplicación. No obstante para probar y utilizar las capacidades de nuestro nodo cognitivo se ha desarrollado una aplicación cuyo diseño presentamos en la sección~\ref{sec:app} e implentación en~\ref{sec:appImpl} en el siguiente capítulo.
 \item \bsq{\bf Capa cognitiva} El interés del proyecto se centra en el desarollo de esta capa. Es una capa compuesta por otras dos: una primera capa de control donde se recoge toda la inteligencia y propósitos cognitivos y otra capa de actuación que provee de toda la funcionalidad para recibir y enviar datos por cada una de las interfaces de comunicación presentes:
 	\begin{enumerate}[i.]
-		\item \bsq{\bf Módulo cognitivo} Está fuertemente inspirado en los módulos que podemos ver en la arquitectura cognitiva desarrollada sobre Castalia \cite{castaliacwsn} con ciertas peculiaridades e implementaciones que veremos a continuación.
-		\item \bsq{\bf Controladores de interfaz} Esta capa está formada por cada una de las interfaces presentes en \textit{smartphone}, la implementación final recoge la interfaz de \wifi{} y \bt{}, pero el diseño recoge un número arbitrario debido a que si construimos este módulo siguiendo la interfaz entre capas, puede ser fácilmente añadida a la arquitectura final.
+		\item \bsq{\bf Módulo cognitivo} Está fuertemente
+                  inspirado en los módulos que podemos ver en la
+                  arquitectura cognitiva desarrollada sobre Castalia
+                  \cite{castaliacwsn} con ciertas peculiaridades e
+                  implementaciones que veremos a continuación.
+
+%XXX-jblesa No diria sobre Castalia, sino sobre un simulador cognitivo
+%desarrollado en el laboratorio de sistemas integrados.
+
+		\item \bsq{\bf Controladores de interfaz} Esta capa
+                  está formada por cada una de las interfaces
+                  presentes en el \textit{smartphone}. La implementación final recoge la interfaz de \wifi{} y \bt{}, pero el diseño recoge un número arbitrario debido a que si construimos este módulo siguiendo la interfaz entre capas, puede ser fácilmente añadida a la arquitectura final.
 	\end{enumerate}
 \end{enumerate}
 
-A continuación haremos una breve descripción de los diferentes bloques que hemos definido en la arquitectura, al ser los procesos entidades que hacen uso más de un bloque se ha preferido dejar para más adelante (sección~\ref{sec:procesosRed}) su explicación una vez vista la arquitectura. Así se obtienen varios puntos de vista que ayudan a comprender el funcionamiento.
+A continuación haremos una breve descripción de los diferentes bloques que hemos definido en la arquitectura. Al ser los procesos entidades que hacen uso más de un bloque se ha preferido dejar para más adelante (sección~\ref{sec:procesosRed}) su explicación una vez vista la arquitectura. Así se obtienen varios puntos de vista que ayudan a comprender el funcionamiento.
 
 \subsection{Interfaz Aplicación - Módulo Cognitivo}
 El apellido cognitivo supone una abstracción en el modelo de comunicaciones de tal forma que el usuario (la aplicación) sea transparente a los parámetros, tiempos o detalles de la comunicación usada para transmitir los datos. Para lograr esta abstracción necesitamos un punto de ruptura que aisle y defina solamente la información estrictamente necesaria a intercambiar entre ambos agentes para poder recrear una \ac{CWSN}. En la sección~\ref{sec:api} se expone la definición de la \ac{API} que debe cumplir el desarrollador de las distintas aplicaciones.\\
@@ -45,22 +70,61 @@ Al definir una interfaz permitimos que terceros puedan desarollar sus propias ap
 %----------
 
 \subsection{Sensor Manager}
-Es el punto de entrada a nuestro servicio cognitivo, el encargado de recoger las peticiones de las distintas aplicaciones e informar tanto de la respuesta a la aplicación que lo solicitó, como al resto de ellas si las hubiese acerca de información común generada en la \ac{CWSN} donde cooperan. Esto se consigue gracias al submódulo \var{Apps Manager} que lleva un registro de cada una de las aplicaciones y permite discernir entre peticiones de éstas. Las peticiones entrantes son sanetizadas y codificadas para poder disparar los procesos internos a lo largo de los diferentes módulos y descodificadas elimando cualquier rasto cognitivo antes de ser entregadas a la aplicación en cuestión. La presencia del submódulo \var{Queue} permite, entre otras funciones que se detallarán, encolar mensajes de aplicación por si estas peticiones no pudiesen ser atendidas en el mismo momento de la recepción (fundamentalmente debido a cambios de contexto o \textit{handovers}. Una vez que las condiciones lo permitan se consulta a esta cola para ver si quedan ordenes pendientes.
+Es el punto de entrada a nuestro servicio cognitivo, el encargado de
+recoger las peticiones de las distintas aplicaciones e informar tanto
+de la respuesta a la aplicación que lo solicitó, como al resto de
+ellas si las hubiese acerca de información común generada en la
+\ac{CWSN} donde cooperan. Esto se consigue gracias al submódulo
+\var{Apps Manager} que lleva un registro de cada una de las
+aplicaciones y permite discernir entre peticiones de éstas. Las
+peticiones entrantes son sanetizadas y codificadas para poder disparar
+los procesos internos a lo largo de los diferentes módulos y
+descodificadas elimando cualquier rasto cognitivo antes de ser
+entregadas a la aplicación en cuestión. La presencia del submódulo
+\var{Queue} permite, entre otras funciones que se detallarán, encolar
+mensajes de aplicación por si estas peticiones no pudiesen ser
+atendidas en el mismo momento de la recepción (fundamentalmente debido
+a cambios de contexto o \textit{handovers}. Una vez que las
+condiciones lo permitan se consulta a esta cola para ver si quedan
+ordenes pendientes.
+%XXX-jblesa Ten cuidado con las palabras en ingles. Siempre hay que
+%intentar buscar palabras en español.
 %----------
 
 \subsection{Policy, optimizer, executor}
-Estos tres módulos podemos considerarlos como el cerebro cognitivo, su interacción es jerárquica. De acuerdo a unas políticas descritas en el módulo \var{policy}, el \var{optimizer} evalua el cumplimiento de ellas conforme a valores que recoge del módulo \var{repository} que sirve como punto concentrador de la información, esta evaluación puede generar nuevos valores a almacenar en el repositorio y/o la actuación directa gracias a el módulo \var{executor}.\\
+Estos tres módulos podemos considerarlos como el cerebro cognitivo, su
+interacción es jerárquica. De acuerdo a unas políticas descritas en el
+módulo \var{policy}, el \var{optimizer} evalua el cumplimiento de
+ellas conforme a valores que recoge del módulo \var{repository} que
+sirve como punto concentrador de la información. Esta evaluación puede
+generar nuevos valores a almacenar en el repositorio y/o la actuación
+directa gracias a el módulo \var{executor}.\\
 
-Para nuestro primer diseño sólo hemos definido una política cognitiva (ver sección~\ref{subsec:senseAndPolicy}) y el módulo ejecutor sólo realiza cambios  de cambio de contexto o \textit{handovers}, debido a las limitaciones en la plataforma para ajustar otros parámetros que finalmente han sido descartados del diseño.
+
+%XXX-jblesa. Exlica lo de la interaccion jerarquica, no lo veo claro.
+
+Para nuestro primer diseño sólo hemos definido una política cognitiva
+(ver sección~\ref{subsec:senseAndPolicy}) y el módulo ejecutor sólo
+realiza cambios  de cambio de contexto o \textit{handovers}, debido a
+las limitaciones en la plataforma para ajustar otros parámetros que
+finalmente han sido descartados del diseño.
+
+%XXX-jblesa Dos veces seguidas la palabra cambio.
+
+
 %----------
 
 \subsection{Repositorio}
 \label{subsec:repository}
 La información que hemos de guardar en el repositorio es:
-\begin{description}
-	\item[Información relativa al servicio] Necesitamos almacenar interfaz actual de comunicaciones y el estado de ésta, así como un valor que nos permita averiguar si el servicio ha sido destruido por causas ajenas para intentar reconstruir la \ac{CWSN} ante una eventualidad, esta información necesita ser persistente. También almacenamos cuál es el peridodo con la que el optimizador y ejecutor actúan en base al tiempo. Si en vez de sobreescribir esta información hacemos un seguimiento, podemos obtener información acerca de la estabilidad y la adaptabilidad de la red.
+%XXX-jblesa. Me falta una pequeña frase introductoria.
 
-\item[Información relativa a los nodos en la red] Para hacer un mapa de red necesitamos información acerca de qué nodos hay en la red y cómo llegar a ellos, los datos elegidos son:
+\begin{description}
+	\item[Información relativa al servicio.] Necesitamos almacenar
+          la interfaz actual de comunicaciones y el estado de ésta, así como un valor que nos permita averiguar si el servicio ha sido destruido por causas ajenas para intentar reconstruir la \ac{CWSN} ante una eventualidad. Esta información necesita ser persistente. También almacenamos cuál es el peridodo con la que el optimizador y ejecutor actúan en base al tiempo. Si en vez de sobreescribir esta información hacemos un seguimiento, podemos obtener información acerca de la estabilidad y la adaptabilidad de la red.
+
+\item[Información relativa a los nodos en la red.] Para hacer un mapa
+  de la red necesitamos información acerca de qué nodos hay en la red y cómo llegar a ellos. Los datos elegidos son:
 	\begin{itemize}
 		\item Identificador del nodo. Un \integer{} asignado al conocer el nodo por primera vez. 
 		\item Nombre del nodo. Una \String{} representando el nombre con el que se presenta a la red.
@@ -71,29 +135,46 @@ La información que hemos de guardar en el repositorio es:
 		\item Identificador de su nodo coordinador. Un \integer{} que hace referencia a un identificador de nodo previamente conocido y que nos permite alcanzar todos sus datos.
 	\end{itemize}
 
-\item[Información relativa al sensado] Los datos recogidos por cada dispositivo los almacenamos siguiendo esta estructura:
+\item[Información relativa al sensado.] Los datos recogidos por cada dispositivo los almacenamos siguiendo esta estructura:
 	\begin{itemize}
 		\item Identificador del nodo, un \integer{} que nos indica quién es el propietario de la información.
 		\item RSSI, un \integer{} con el valor en dBm de la intensidad de señal recogida de la red \wifi{}.
-		\item Tasa de envío, Un \double{} con el intervalo de tiempo medio de envios en la red.
+		\item Tasa de envío, un \double{} con el intervalo de tiempo medio de envios en la red.
 		\item Marca de tiempo, una referencia al momento en que estos datos fueron obtenidos.
 	\end{itemize}
 \end{description}
 
-Estos datos son compartidos con el coordinador quién distribuye (sin filtrar, aunque podría implementarse un filtrado ya que se han reservado valores \textit{dummy} encaminados a el ocultamiento de la información) esta información. Nuestro repositorio por tanto es distribuido de tal forma que todos tengan la misma foto aunque no tengan los mismos valores, ya que los identificadores de los nodos en cada dispositivo varían, la clave que nos permite sincronizar todo el repositorio recae en la dirección \ac{MAC} de \bt{} que se usa como clave primaria.
+Estos datos son compartidos con el coordinador quién distribuye (sin
+filtrar, aunque podría implementarse un filtrado ya que se han
+reservado valores \textit{dummy} encaminados a el ocultamiento de la
+información) esta información. Nuestro repositorio, por tanto, es
+distribuido de tal forma que todos tengan la misma foto aunque no
+tengan los mismos valores, ya que los identificadores de los nodos en
+cada dispositivo varían, la clave que nos permite sincronizar todo el
+repositorio recae en la dirección \ac{MAC} de \bt{} que se usa como
+clave primaria.
+
+%XXX-jblesa. Quita dummy y pon algo en español.
 %----------
 
 \subsection{Discovery}
-Este módulo se asemeja a los ojos de nuestra arquitectura, siguiendo con el anterior símil del cerebro, una ventana al mundo. Ambos módulos se conectan a través del repositorio (una especie de bus). En la sección~\ref{subsec:senseAndPolicy}, se entra en detalle sobre los parámetros recogidos del entorno. 
-Este módulo no sólo recoge parámetros, si no que monitoriza el estado de las diferentes interfaces de comunicaciones, por ello parte de este módulo está muy ligado al controlador de la interfaz, sin embargo debido a que ciertas políticas necesitan que el optimizador evalue parámetros de interfaces de comunicaciones no activas, se ha sacado del diseño del controlador esta parte para añadirla al modulo \var{discovery} y que pueda ser manejada en cualquier momento, en la sección~\ref{subsec:btControllerImpl} del siguiente capítulo completamos el por qué de ésto. 
+Este módulo se asemeja a los ojos de nuestra arquitectura, siguiendo
+con el anterior símil del cerebro, una ventana al mundo. Ambos módulos
+se conectan a través del repositorio (una especie de bus). En la
+sección~\ref{subsec:senseAndPolicy}, se entra en detalle sobre los
+parámetros recogidos del entorno. 
+
+%XXX-jblesa. A que modulos te refieres con ambos modulos?
+
+Este módulo no sólo recoge parámetros, si no que monitoriza el estado de las diferentes interfaces de comunicaciones, por ello parte de este módulo está muy ligado al controlador de la interfaz, sin embargo debido a que ciertas políticas necesitan que el optimizador evalue parámetros de interfaces de comunicaciones no activas, se ha sacado del diseño del controlador esta parte para añadirla al modulo \var{discovery} y que pueda ser manejada en cualquier momento. En la sección~\ref{subsec:btControllerImpl} del siguiente capítulo completamos el por qué de ésto. 
 %----------
 
 \subsection{Interface Manager}
 Este módulo es el punto de salida del módulo o servicio cognitivo hacia los controladores. En confluyen dos planos: el primero para los mensajes de aplicación provenientes del \var{Sensor Manager} (plano de datos) y el segundo para la elaboración de señalización proveniente del módulo \var{executor} o de eventos de red generados en el gestor de estados (ver~\ref{subsubsec:stateManager}) (plano de control y gestión).\\
 
-En el se implementa todas las funciones de encaminamiento que son necesarias transmitir a los controladores pues estos no conocen nada del plano cognitivo, son meras palancas de acción. En este módulo también implementamos el submódulo \var{Access} encargado de compartir con el resto de nodos parte de nuestro repositorio que es enviado por el canal \var{VCC}. 
+En el se implementan todas las funciones de encaminamiento que son necesarias transmitir a los controladores pues estos no conocen nada del plano cognitivo, son meras palancas de acción. En este módulo también implementamos el submódulo \var{Access} encargado de compartir con el resto de nodos parte de nuestro repositorio que es enviado por el canal \var{VCC}. 
 
-El diseño del canal \var{VCC} encargado de transmitir toda la información de control y gestión de la \ac{CWSN}, se hubica en la misma red por la que circulan los datos, a diferencia de otros sistemas como el \ac{SS7} \cite{ss7} por razones de simplicidad. De hecho comparten ambos tráficos el mismo canal, la manera de distinguirlos reside en el valor de la etiqueta \var{MessageType}. Sin embargo la arquitectura no cierra las puertas a que el plano de datos y el de control estén sean transmitidos en distintas interfaces de comunicación, por ejemplo datos en \wifi{} y señalización en \bt{}.
+El diseño del canal \var{VCC} encargado de transmitir toda la información de control y gestión de la \ac{CWSN}, se hubica en la misma red por la que circulan los datos, a diferencia de otros sistemas como el \ac{SS7} \cite{ss7} por razones de simplicidad. De hecho comparten ambos tráficos el mismo canal, la manera de distinguirlos reside en el valor de la etiqueta \var{MessageType}. Sin embargo, la arquitectura no cierra las puertas a que el plano de datos y el de control estén sean transmitidos en distintas interfaces de comunicación, por ejemplo datos en \wifi{} y señalización en \bt{}.
 
 %----------
 
