@@ -221,11 +221,11 @@ Esta información recibida por cada controlador se mapea con los eventos y estado
 \section{API: Definición, Cómo montar una aplicación sobre el servicio cognitivo}
 %-------------------------------------------------------------------
 \label{sec:api}
-En esta sección se explica cada detalle de la interfaz Aplicación - Módulo Cognitivo en ambos sentidos, su cumplimiento es necesario para desarollar una aplicación que interactue de forma correcta con el módulo o servicio cognitivo. La forma de interactuar con éste se basa en, como se verá en \ref{sec:detallesImplementacion}, el intercambio de mensajes a través de los objetos \textit{Messenger} y \textit{Handler} provistos por \android{}. Estos mensajes provocan el disparo de ciertos procesos en el servicio que responderá, si procede, en cuanto el resultado esté listo. Son llamadas por tanto asíncronas, de igual modo el servicio entregará mensajes a las aplicaciones en cualquier momento sin que estás hayan solicitado nada.\\
+En esta sección se explica cada detalle de la interfaz Aplicación - Módulo Cognitivo en ambos sentidos. Su cumplimiento es necesario para desarollar una aplicación que interactue de forma correcta con el módulo o servicio cognitivo. La forma de interactuar con éste se basa en, como se verá en \ref{sec:detallesImplementacion}, el intercambio de mensajes a través de los objetos \textit{Messenger} y \textit{Handler} provistos por \android{}. Estos mensajes provocan el disparo de ciertos procesos en el servicio que responderá, si procede, en cuanto el resultado esté listo. Son llamadas por tanto asíncronas. De igual modo, el servicio entregará mensajes a las aplicaciones en cualquier momento sin que estás hayan solicitado nada.\\
 
 La aplicación que haga uso del modelo no necesita cumplir más requisitos que la de manejar los distintos mensajes que le entrege el servicio en cualquier instante de tiempo y la de almacenar la lista de nodos formada por el par (identificador, nombre) entregada por el servicio y modificada en cada evento que lo requiera. La confección de algunos mensajes de la \ac{API} requieren que sean informados con algunos valores de la lista de nodos, por lo que la aplicación debe tener accesible esta lista ya que no hay una manera activa de pedirla al servicio.
 
-Los mensajes que se intercambian tienen un campo \textit{what} que resume el proposito de éste, más una serie de añadidos experesados en forma de parámetros y extras que conforman y describen el proceso que está ocurriendo.
+Los mensajes que se intercambian tienen un campo llamado \textit{what} que resume el proposito de éste, más una serie de añadidos experesados en forma de parámetros y extras que conforman y describen el proceso que está ocurriendo.
 Este campo \textit{what} es un \integer{} único que define el número diferente de mensajes tipo que se intercambian, entre éstos habrá algunos que sólo existan en un sentido de la comunicación y otros que aparezcan en ambos sentidos.
 
 \apiTableInit{Mensajes tipo intercambiados entre Aplicación y servicio}
@@ -252,7 +252,9 @@ Este campo \textit{what} es un \integer{} único que define el número diferente d
 %----------
 \subsection{Conectarse al servicio}
 \label{subsec:apiStart}
-Para poder entregar y recibir mensajes necesitamos una referencia al \textit{Messenger} del servicio, esta referencia la obtenemos tras hacer una petición de \textit{bind} llamando al método \textit{bindService()} con un \textit{Intent} a la clase:
+Para poder entregar y recibir mensajes necesitamos una referencia al
+\textit{Messenger} del servicio, esta referencia la obtenemos tras
+hacer una petición de union (\textit{bind}) llamando al método \textit{bindService()} con un \textit{Intent} a la clase:
 \begin{verbatim}
 es.upm.die.lsi.pfc.CWSNoA.CognitiveLayer_specific_Service.class
 \end{verbatim}
@@ -399,7 +401,6 @@ La información que podemos leer de este mensaje es:
 \end{description}
 
 El tiempo de entrega de esta confirmación no está acotado, depende de la complejidad en el envío y de si ha habido encolamiento en cualquiera de los segmentos de red por los que ha pasado el mensaje.
-
 
 %----------
 \subsection{Recibiendo datos}
@@ -572,15 +573,17 @@ Acto seguido el servicio intentará si la interfaz de comunicación actual es \bt{
 \subsection{La API oculta: workarounds, test\ldots}
 %----------
 \subsubsection{Actualización de parámetros avanzada}
-Un nodo cognitivo tiene mas parámetros (como se puede ver en~\ref{subsec:updateSettings}) que los expuestos en la \ac{API}, un nodo cognitivo en nuestra aplicación, se define además por:
+Un nodo cognitivo tiene mas parámetros (como se puede ver en~\ref{subsec:updateSettings}) que los expuestos en la \ac{API}. Un nodo cognitivo en nuestra aplicación, se define además por:
 \begin{itemize}
 	\item Nombre: con el que nos conocen los demas nodos.
 	\item Tipo: si somos coordinador o normal.
 	\item Periodo de la tarea cognitiva: el intervalo de tiempo que transcurre entre sensados del entorno y/o toma de decisiones.
 \end{itemize}
-Como vemos son parámetros que no son propios de la aplicación o aplicaciones que en ese momento estén registradas. Estos valores son devueltos cuando finaliza el \textit{handshaking} para que las aplicaciones conozcan al nodo cognitivo aunque para éstas debe ser transparente. 
+Como vemos, son parámetros que no son propios de la aplicación o aplicaciones que en ese momento estén registradas. Estos valores son devueltos cuando finaliza el \textit{handshaking} para que las aplicaciones conozcan al nodo cognitivo aunque para éstas debe ser transparente. 
 
-Sin embargo para poder configurar el nodo para que pueda cooperar en cualquier \ac{CWSN} debemos habilitar una manera de modificar estos parámetros. Bien, la forma es enviar el mismo mensaje que cuando actualizamos nuestro papel o código de aplicación pero con unos campos adicionales. En concreto el campo clave para saber si se trata de una actualización normal o avanzada recae en el campo \textit{obj}. Vimos que en una actualización normal su valor es \textit{null} y en una avanzada este valor será \bsq{no nulo} como vemos en la estructura del mensaje (ver tabla~\ref{tab:updateAllParamsMessage}). Los pormenores de este flujo los veremos en la sección~\ref{sec:procesosRed}
+Sin embargo, para poder configurar el nodo para que pueda cooperar en
+cualquier \ac{CWSN} debemos habilitar una manera de modificar estos
+parámetros. Para llevar a cabo esto se envia el mismo mensaje que cuando actualizamos nuestro papel o código de aplicación pero con unos campos adicionales. En concreto, el campo clave para saber si se trata de una actualización normal o avanzada recae en el campo \textit{obj}. Vimos que en una actualización normal su valor es \textit{null} y en una avanzada este valor será \bsq{no nulo} como vemos en la estructura del mensaje (ver tabla~\ref{tab:updateAllParamsMessage}). Los pormenores de este flujo los veremos en la sección~\ref{sec:procesosRed}
 
 \messageTableInit{\appToServ}{3 =\\ \scriptsize{REGISTER\_EXCHANGE}}{0=secundario / 1=primario}{0=normal / 1=coordinador}{\textbf{True}}{\messApp{}}
 \messageTableExtra{appCode}{Una \String{} con el código de aplicación}
@@ -590,19 +593,25 @@ Sin embargo para poder configurar el nodo para que pueda cooperar en cualquier \
 
 
 \subsubsection{Mensaje de petición y respuesta}
-Un flujo interesante en redes de sensores cognitivas es la de habilitar una vía para que el coordinador pida de forma activa información a otro nodo. Aunque en nuestra arquitectura este flujo está implementado la primera vez que incluimos un nodo nuevo en \bt{} para preguntarle acerca de su nombre y su papel. Hemos preferido dejar montado, lo que en principio se montó con finalidad de \textit{test}.
+Un flujo interesante en redes de sensores cognitivas es la de
+habilitar una vía para que el coordinador pida de forma activa
+información a otro nodo. En nuestra arquitectura, este flujo está
+implementado la primera vez que incluimos un nodo nuevo en \bt{} para
+preguntarle acerca de su nombre y su papel. Este sistema, que en
+principio se montó con finalidad de \textit{test} se ha decidido dejar
+operativo.
 
-La aplicación desarrollada junto al servicio incluye una interfaz de test que, entre sus funciones provee este flujo. El proceso tiene dos actores: por un lado los nodos normales que pueden guardar una respuesta (la información que posteriormente nos pedirá el coordinador) para ello enviamos un mensaje al servicio con la respuesta a enviar en el campo \textit{obj} del mensaje (ver tabla~\ref{tab:wa_reply}).
+La aplicación desarrollada junto al servicio incluye una interfaz de test que, entre sus funciones, provee este flujo. El proceso tiene dos actores: por un lado los nodos normales que pueden guardar una respuesta (la información que posteriormente nos pedirá el coordinador). Para ello enviamos un mensaje al servicio con la respuesta a enviar en el campo \textit{obj} del mensaje (ver tabla~\ref{tab:wa_reply}).
 
 \messageTableInit{\appToServ}{20 = \footnotesize{WORKAROUND\\ \_WHAT\_TO\_REPLY}}{\nc{}}{\nc{}}{\textit{reply}}{\messApp{}}
 \messageTableEnd{Mensaje \textit{workaround} salvado de respuesta}{wa_reply}
 
-El otro agente, el nodo coordinador, enviando este mensaje al servicio recupera la información del otro actor (ver tabla~\ref{tab:wa_ask}).
+El otro agente, el nodo coordinador, enviando este mensaje al servicio, recupera la información del otro actor (ver tabla~\ref{tab:wa_ask}).
 
 \messageTableInit{\appToServ}{21 = \footnotesize{WORKAROUND\\ \_ASK\_RESPONSE}}{\nc{}}{\nc{}}{Identificador nodo}{\messApp{}}
 \messageTableEnd{Mensaje \textit{workaround} petición de respuesta}{wa_ask}
 
-Una vez enviada esta petición la respuesta nos vendrá encapsulada en un mensaje del mismo tipo (ver tabla~\ref{tab:wa_ask_response}). Esta respuesta se envía a todas las aplicaciones porque no viene marcada con el \bsq{código de aplicación}, se recomienda su uso sólo en test ya que puede desconcertar a otras aplicaciones que estén registradas en el servicio.
+Una vez enviada esta petición la respuesta nos vendrá encapsulada en un mensaje del mismo tipo (ver tabla~\ref{tab:wa_ask_response}). Esta respuesta se envía a todas las aplicaciones porque no viene marcada con el \bsq{código de aplicación}. Se recomienda su uso sólo en test ya que puede desconcertar a otras aplicaciones que estén registradas en el servicio.
 
 \messageTableInit{\servToApps}{21 = \footnotesize{WORKAROUND\\ \_ASK\_RESPONSE}}{\nc{}}{\nc{}}{Respuesta del nodo preguntado}{\messApp{}}
 \messageTableEnd{Mensaje \textit{workaround} respuesta obtenida}{wa_ask_response}
@@ -615,7 +624,7 @@ Otra función de \textit{test} es la de forzar un cambio de interfaz de comunicac
 \messageTableEnd{Mensaje \textit{workaround} cambio de interfaz de comunicación}{wa_switch}
 
 \subsubsection{Encolar mensajes y forzar su entrega en cualquier momento}
-Para probar el encolamiento de mensajes y su entrega en momentos que no corresponden pueden enviarse estos mensajes al servcio que alterará el flujo normal para producir el resultado buscado.
+Para probar el encolamiento de mensajes y su entrega en momentos que no corresponden pueden enviarse estos mensajes al servicio que alterará el flujo normal para producir el resultado buscado.
 
 Para encolar un mensaje de datos entregaremos al servicio un mensaje con esta estructura (ver tabla~\ref{tab:wa_queue}).
 
@@ -627,6 +636,20 @@ Y para vaciar la cola de mensajes en cualquier momento deberemos enviar este otr
 
 \messageTableInit{\appToServ}{24=\scriptsize{WORKAROUND\_ PENDINGMESSAGE \_DISPOSAL}}{\nc{}}{\nc{}}{\nc{}}{\messApp{}}
 \messageTableEnd{Mensaje \textit{workaround} vaciado cola de mensajes}{wa_disposalqueue}
+
+
+%XXX-jblesa Esta seccion es implementacion claramente. Los detalles de
+%implementacion pasalos a implementacion. Aqui en diseño solo comentar
+%diagrama de bloques, se enviaran mensajes, etc. pero sin definir
+%detalles. Hay subapartados mejor enfocados a diseño, ya que hablan de
+%funcionalidades y no de detalles. Por ejemplo, todas las tablas con
+%campos son claramente implementacion. Los mensajes concretos son
+%implementacion. En diseño lo importante son diagramas de bloques,
+%UML, etc. Para que se vean las interfaces pero no los detalles.
+
+%XXX-jblesa. Cuida los puntos y comas. Tienes muchos fallos de
+%puntuacion. Cuida los alglicismos, pon en castellano todo lo que se
+%pueda.
 
 
 %-------------------------------------------------------------------
