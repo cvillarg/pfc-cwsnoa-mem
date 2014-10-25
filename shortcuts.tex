@@ -12,7 +12,9 @@
 \def\nc{\small{No usado/indiferente}}
 \def\messApp{Messenger de la aplicaci\'{o}n}
 \def\bt{\textit{Bluetooth}}
-\def\wifi{\textit{WiFi}}
+\def\wifi{\textit{Wi-Fi}}
+\def\wifiD{\textit{Wi-Fi Direct}}
+\def\adhoc{\textit{Ad-Hoc}}
 \def\integer{entero}
 \def\integers{enteros}
 \def\double{\textit{double}}
@@ -25,6 +27,12 @@
 \def\Lcst#1{\leavevmode\nobreak\hskip0pt plus\linewidth\penalty50\hskip0pt plus-\linewidth\nobreak{\small\texttt{#1}}}% long costant
 \def\Scst#1{{\small\texttt{#1}}}% short constant
 \def\var#1{\texttt{#1}}
+%\def\sphone#1{\textit{smartphone#1}}
+%\def\Sphone#1{\textit{Smartphone#1}}
+\def\sphone#1{tel\'{e}fono#1 inteligente#1}
+\def\Sphone#1{Tel\'{e}fono#1 inteligente#1}
+\def\fwork{\textit{framework}}
+\def\netbook#1{\textit{netbook#1}}
 
 \providecommand{\class}[2][es.upm.die\allowbreak.lsi.pfc\allowbreak.CWSNoA]{%
 \texttt{\small\ifthenelse{\equal{#1}{}}{#1\allowbreak.#2}{\ifthenelse{\equal{#1}{util}}{es.upm\allowbreak.die.lsi\allowbreak.pfc\allowbreak.CWSNoA.util\allowbreak.#2}{#1\allowbreak.#2}}%
@@ -240,3 +248,55 @@ Un conjunto de dos \textit{arrays} ligados, uno con los identificadores de los n
 \end{center}%
 \end{table}%
 }%
+%-----------------------------
+% figura with note: 
+%		#1 (optional) where to place
+%		#2 image#1 path
+%		#3 image#1 size 
+%		#4 notes
+%		#5 caption
+%		#6 label
+%-----------------------------
+\newcommand{\figuraNota}[6][h!]{%
+\begin{figure}[#1]%
+\begin{center}%
+	\includegraphics[#3]{Imagenes/#2}%
+%		\caption{settings1}%
+
+{\footnotesize\sf #4}%
+\caption{#5} \label{fig:#6}%
+\end{center}%
+\end{figure}%
+}%
+%-----------------------------
+% figura side-by-side: 
+%		#1 (optional) where to place
+%		#2 image#1 path
+%		#3 image#1 size 
+%		#4 image#2 path
+%		#5 image#2 size
+%		#6 notes
+%		#7 caption
+%		#8 label
+%-----------------------------
+\newcommand{\figuraSideBySide}[8][h!]{%
+\begin{figure}[#1]%
+\begin{center}%
+	\begin{minipage}[t]{.5\textwidth}%
+		\centering%
+		\includegraphics[#3]{Imagenes/#2}%
+%		\caption{settings1}%
+	\end{minipage}%
+	\begin{minipage}[t]{.5\textwidth}%
+		\centering%
+		\includegraphics[#5]{Imagenes/#4}%
+%		\caption{settings2}%
+	\end{minipage}%
+	%\caption{settings}%
+
+{\footnotesize\sf #6}%
+\caption{#7} \label{fig:#8}%
+\end{center}%
+\end{figure}%
+}%
+

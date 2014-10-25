@@ -1,0 +1,338 @@
+%---------------------------------------------------------------------
+%
+%                          Capítulo 2
+%
+%---------------------------------------------------------------------
+
+\chapter{Estado del Arte}
+
+\begin{FraseCelebre}
+\begin{Frase}
+No sé lo que hace... pero debe ser muy complicado
+\end{Frase}
+\begin{Fuente}
+Ana María del Rosario García Andrés
+\end{Fuente}
+\end{FraseCelebre}
+
+\begin{resumen}
+Este capítulo muestra un estudio de las plataformas móviles y su impacto en las redes de telecomunicaciones de tal forma que son el motor que empuja la evolución de éstas, acercándolas cada vez más a un enfoque cognitivo. Se describe qué son y qué ventajas aportan este tipo de redes, por último presentamos estudios actuales e implementaciones de estas redes en el campo de los \sphone{s}.
+\end{resumen}
+
+
+%-------------------------------------------------------------------
+\section{Plataformas Móviles}
+\label{sec:mobilePlatforms}
+%-------------------------------------------------------------------
+
+La definición de un \sphone{} no es un concepto muy definido, en general un teléfono móvil que disponga de un sistema operativo completo y que cuente con una mayor conectividad que un dispositivo tradicional son características válidas para obtener la denominación de \sphone{}. Un hito que suele recoger ambas características es la de poseer de soporte completo al correo electrónico.\\
+
+Se tiene por tanto una evolución desde el \textit{firmware} propietario cuyo diseño está completamente adaptado al \textit{hardware} del dispositivo desarrollando sólo las características indispensables y que vayan a ser usadas, a el desarrollo de un sistema operativo completo que abstraiga al \textit{hardware} y dote de funcionalidad completa llegando a asemejarse a una computadora personal. Este sistema operativo puede ser de código abierto (\var{Ubuntu Touch}) o privativo (\var{BlackBerry OS}), impulsado por operadores (\var{Vodafone360}), fabricantes de dispositivos \var{(iOS)} o empresas de \ac{IT} (\var{Android}) por citar algunos ejemplos.\\
+
+Como consecuencia se tiene un dispositivo con una gran conectividad y almacenamiento de datos. Esto habilita la realización de una experiencia \textit{web} completa e independiente. Precursores de los \sphone{s} se valían de la ayuda de su \ac{ISP} quién facilitaba la navegación \textit{web} adaptando el contenido al navegador del dispositivo. De tal forma que páginas estándar son traducidas al protocolo \ac{WAP} \cite{bulbrook2001wap}, a sus diferentes versiones: la versión 1.0 no soporta el protoloco \ac{HTTP}, por lo que el uso de una pasarela se hace indispensable y su versión 2.0 la pasarela o \textit{content adapter}  completa la adaptación que sigue siendo necesaria pues tanto el contenido como protocolos usados para proveerlo no estaban pensados para un mundo móvil, ejemplo de un \textit{content adapter} es \var{OpenWave} usando en la operadora Vodafone. A esta tecnología le sucedió \textit{i-mode} \cite{imode} pero no es hasta 2007, cuando un móvil incorpora el soporte nativo del modelo tradicional TCP/IP, cuando se puede hablar de una experiencia completa, dándole la denominación completa de \sphone{}.\\ El marco de conectividad se completa con las diferentes interfaces de comunicación que permiten el intercambio de información a través de más de una tecnología, entre las más comunes: \wifi{}, \bt{}, señalización móvil (\ac{SMS}), datos sobre la interfaz móvil (\ac{GPRS}, \ac{UMTS}, o \ac{LTE}), \ac{NFC}, \wifiD{}\ldots\\
+
+Antes de comentar las peculiaridades de las plataformas móviles analizadas, veamos cómo se reparte la cuota de mercado global
+
+\figuraNota{Bitmap/state/smartphone-share}{width=.86\textwidth}%
+	{Fuente: IDC, Statista (Marzo 2014), Nota * Estimado}%
+	{Cuota de mercado de teléfonos inteligentes, global por plataforma}%
+	{smartphone-share}%
+
+Se puede observar que el mercado prácticamente se reparte entre \var{Android} e \var{iOS}, las cifras de dispositivos son:
+\begin{description}
+	\item[Android] Unos 900 millones de activaciones y 4800 millones de aplicaciones descargadas a fecha de mayo de 2013 \cite{marketAndroid}.
+	\item[iOS] 800 millones de dispositivos y 7500 millones de aplicaciones descargadas a fecha de junio de 2014 \cite{marketIOS}.
+\end{description}
+Sin embargo los datos más recientes sugieren que las descargas en la plataforma de Google exceden alrededor del 60\% a las de Apple \cite{appMarket}, sin embargo Apple defiende que sus dispositivos son usados al rededor de un 50\% más que los de \var{Android}.
+%\vspace{-17pt}
+\section*{Descontinuados}
+A modo de anécdota comentamos varios sistemas operativos cuyo desarrollo se ha visto interrumpido y cuyo soporte está llamado a desaparecer.
+
+\subsubsection{MeeGo}
+Este sistema operativo de código abierto basado en Linux nace tras la alianza entre Intel y Nokia. Cada uno aporta un código fuente a partir del cual evolucionar, se trata de los sistemas \var{Mobin} y \var{Maemo} respectivamente, que tenía como objetivo desarrollar un sistema único para dispositivos empotrados como \netbook{s}, tabletas, ordenadores en vehículos, televisiones, teléfonos\ldots 
+
+Tras el anuncio por parte de Nokia de la alianza con Microsoft y los cambios en la dirección de la compañía, se decide abandonar el proyecto, que continua Intel con la elaboración de \var{Tizen}. Sin embargo la propia comunidad de \textit{software} libre que también participaba en el desarrollo del proyecto, así como ex-trabajadores de Nokia, continúan el desarrollo de \textit{MeeGo} en lo que se denomina \var{Mer}. Desarrollos comerciales de este sistema son llevados a cabo por Jolla, una \textit{startup} finlandesa formada por ex-trabajadores de Nokia, desembocando en el sistema operativo \var{Sailfish OS} que como el terminal Nokia N9 presenta una interfaz sin botones cuya interacción es mediante gestos únicamente.
+
+\subsubsection{Symbian}
+Parte como la evolución de EVOC un sistema operativo para PDA (asistente digital personal), cuando en 1998 se forma el consorcio entre Ericcson, Motorola y Nokia. Hasta 2008 otros fabricantes de móviles se unen para crear diferentes plataformas \textit{software} creadas para \var{Symbian}, es en esta fecha cuando Nokia bajo una fundación sin animo de lucro adquiere el sistema operativo del que mantiene dos repositorios: uno privado con los últimos desarrollos y librerías y componentes privados y otro público reglado por licencia de código libre. Sin embargo en noviembre de 2010 ayudado por las condiciones adversas en el mercado decide abandonar su rama abierta. A partir de este momento las fuerzas se diluyen lo que desemboca en la externalización del desarrollo a una consultora para crear las últimas versiones de este sistema llamadas \var{Nokia Belle}, a principios de 2014 Nokia deja de dar soporte a su sistema, que hasta finales de 2010 era el más popular.
+
+\subsubsection{Vodafone360}
+Nace en octubre de 2009 como esfuerzos por extender la experiencia de usuario de su navegación \textit{Live} dotándola de un sistema operativo completo bajo licencia de código abierto denominado \var{LiMo}. Esta distribución basa en Linux se amparaba bajo el paraguas de un consorcio formado por Mororola, NEC, NTT DoCoMo, Panasonic Mobile, Samsung y Vodafone. Tras el poco éxito cosechado con el lanzamiento de los terminales H1 y M1 fabricados por Samsung y el creciente éxito de Android lleva a la descontinuación del servicio, y la integración de la fundación \var{LiMo} en \var{Tizen}.
+
+%-------------
+\section*{En activo}
+Sin embargo los potenciales sistemas operativos sobre los que desarrollar nuestra aplicación son los que mantienen un soporte. Entre ellos podemos destacar una pequeña lista cuyas características más importantes pasamos a resumir: 
+
+\subsection{Android}
+El sistema operativo se empezó a desarrollar para cámaras digitales en 2003 bajo la empresa Android, pero rápidamente cambia el enfoque al darse cuenta que no estaban apuntando al mercado correcto y deciden crear un sistema para competir con \var{Symbian} y \var{Windows Mobile}. Sin embargo, es el 17 de agosto de 2005 cuando Google adquiere la compañía al tomar la decisión de entrar en el mercado de los \sphone{}, cuando realmente el proyecto empieza a tomar forma. En 2007 nace la \textit{Open Handset Alliance}: un compendio de empresas en las que se incluyen Google, algunas operadoras como Sprint o T-Mobile, fabricantes como HTC, Sony o Samsung y fabricantes de componentes electrónicos como Qualcomm o Texas Instruments,  con la intención de desarrollar estándares abiertos para dispositivos móviles, constituyendo \var{Android} como un sistema operativo para \sphone{s} construido bajo la versión 2.6 del núcleo de Linux. El alcance del sistema operativo ha ido cambiado con el tiempo y ahora no sólo alcanza a \sphone{s} si no también a tabletas, relojes, televisores y sistemas para automóviles \cite{andWeb}.\\
+
+\var{Android} se distribuye bajo licencia de código abierto cuyo desarrollo está liderado por Google quien libera el código en cada versión, aunque la comunidad puede contribuir a su desarrollo gracias al proyecto \ac{AOSP} \cite{andAosp}, sin embargo es común que el \textit{software} venga acompañado de ciertos componentes privativos de los distintos fabricantes como algunos \textit{drivers} o elementos usados para diferenciarse del resto de fabricantes. Samsung por ejemplo, pone en manos de los desarrolladores unas herramientas adicionales a las que provee la plataforma para controlar sus singularidades \cite{andSamsungSDK}.
+
+Aunque se puede considerar que es una distribución más de Linux, de hecho ha habido contribuciones mutuas al desarrollo del núcleo, lo cierto es que \var{Android} no incluye la librería C de \ac{GNU}, si no que integra la librería Bionic \cite{bionic} desarrollada específicamente para este sistema. Tampoco se da soporte a la mayoría de librerías de \ac{GNU}, lo que hace difícil portar aplicaciones de Linux. Para facilitar este fin se desarrolla el \ac{NDK}, un conjunto de herramientas que permiten ejecutar código escrito en C/C++ en la plataforma de \var{Android}, su uso está recomendado para aplicaciones que requieran de mucha carga computacional o tareas muy relacionadas con una programación de bajo nivel.\\
+
+El desarrollo de aplicaciones se lleva a cabo con las herramientas \cite{andTools} incluidas en el \ac{SDK}, entre ellas destaca \bsq{Android Debug Bridge} (adb) que nos permite mediante línea de comandos comunicarte bien con el emulador o bien con un dispositivo real, permitiendo extraer las trazas de depuración, instalar o borrar aplicaciones y hasta simular conexiones o \ac{SMS}. El lenguaje utilizado para desarrollar aplicaciones es Java, aunque a principios 2014 Google lanzó \bsq{Abobe Cordova} \cite{cordova} para portar las aplicaciones del navegador Chrome desarrolladas en HTML5 a \var{Android}.  Esta tecnología es usada por el \fwork{} externo \var{PhoneGap} que permite escribir aplicaciones con HTML, Javascript y CSS3 empaquetándolas de tal forma como si fuesen aplicaciones nativas para \var{iOS}, \var{Android}, \var{Windows Phone 7}, \var{Blackberry OS}, \var{Symbian}, \var{Bada} y \var{WebOS}, por lo que aunque no forme parte de la plataforma es posible escribir aplicaciones en casi todos los sistemas con lenguajes web.\\
+
+Entre las interfaces de comunicación \cite{andConnectivity} soportadas podemos destacar: \wifiD{}, \bt{}, \ac{NFC}, \wifi{} \cite{andWifi} y datos móviles \cite{andMobile}. La característica \adhoc{} está restringida por la plataforma aunque la mayoría de \textit{chipsets} lo soportan pero se necesitan permisos de superusuario para manejarlo.
+
+%---
+\subsection{BlackBerry OS}
+Propietario de la canadiense RIM, desarrolla su primer dispositivo en 1999 al que integra el correo y un teclado QWERTY. Este sistema operativo es conocido por su enfoque al mundo de la empresa para lo que desarrollo lo que se conoce como sistema \textit{Push}, que es un sistema por el cual la información es recibida en el mismo momento que se envía, para ellos RIM tiene su propia infraestructura que se conecta con los distintos \ac{ISP}. Este sistema centralizado permite un control total y garantizar ciertos parámetros de calidad sobre las conexiones de correo electrónico y mensajería instantánea pero tiene como principal debilidad la disponibilidad \cite{bbAvailability}, aunque debido, a una mala implementación \cite{bbmThreat}, también tiene fallos en la seguridad.\\
+
+En 2013 sale el sistema operativo \var{BlackBerry 10}, cuyo primer dispositivo en incorporarlo fue el Z10, luego se han ido sumando a este sistema los modelos Q10, Z30, Z3, Passport, Q5, P\lq9982 y P\lq9983. Este sistema nace tras la crisis interna por los problemas en la compañía debido a los fallos de la disponibilidad del servicio y como intento de frenar el bipolio entre \android{} e iOS. Es un sistema basado en distribución de tiempo real QNX (Unix) que gracias a su tecnología de micro-módulo presenta características de estabilidad avanzadas frente a fallos en las aplicaciones. El sistema es privativo y permitía cuatro formas de desarrollo:
+\begin{itemize}
+	\item \var{Nativo}: Aunque existen varias capas para adecuarse al tipo de desarrollador, la primera  permite desarrollar aplicaciones sobre Cascades, un \fwork{} basado en QT que combina QML y C++. Se soportan librerías gráficas como Unity, Box2D que están basadas (y también se puede desarrollar en ellas) en OpenGl, EGLm Scoreloop. Entre toda la plataforma nos interesan los módulos QtConectivity, QtMobility y QtNetwork. Sin embargo investigando éstos no se ha visto que se puedan realizar conexiones \adhoc{}, pero sí \wifiD{}.
+
+	\item \var{HTML5}: Se utiliza el \ac{SDK}: \bsq{BlackBerry 10} WebWorks para su desarrollo añadiendo \textit{plugins} para unir las funciones escritas en Javascript (HTML5) con funciones nativas de la plataforma. El módulo Connection nos permite obtener información sobre la conexión pero no con permisos de escritura.
+
+	\item \var{Adobe AIR y Runtime Android}: Se integran maquinas que interpretan el código desarrollado para \var{AIR} y \var{Android}. Para la versión 10.3.1 se quita el soporte de \var{AIR} en favor de \var{HTML5} y \var{Android}. Es necesario empaquetar de nuevo la aplicación nativa de \android{} para que pueda ejecutarse e instalarse en un dispositivo de \var{Blackberry 10}, hay dos maneras para portar una aplicación: automática que puede incurrir en fallos de compatibilidad, o manual dónde el desarrollador elige las \ac{API} apropiadas que quiere usar para evitar incompatibilidades y obligada se usa el \ac{NDK} para conservar su eficiencia.
+\end{itemize}
+
+%---
+\subsection{Firefox OS}
+Este sistema operativo \cite{firefoxOSbook} está enfocado a dispositivos móviles: \sphone{s} y tabletas, específicamente en el sector de gama baja. El modelo de desarrollo es código abierto, con núcleo Linux y utilizando Gecko como motor renderizador de páginas web. La forma de desarrollar aplicaciones para este sistema operativo se basa en HTML5 (HTML, CSS y JavaScript) y WebAPI para acceder a los componentes \textit{hardware} del teléfono. Además Mozilla quiere estandarizar estas \ac{API} de tal forma que sean accesibles en otros navegadores para que las aplicaciones desarrolladas para \var{Firefox OS} puedan ser portadas a otras plataformas con cada vez menos cambios. Asimismo las WebAPI no son exclusivas del sistema operativo si no que están implementadas en toda la plataforma de Mozilla: \var{Firefox OS}, navegador de escritorio y navegador Firefox para \android{}.
+
+El desarrollador es libre de distribuir la aplicación por el canal que desee, sin embargo algunas aplicaciones deben ser revisadas y firmadas por Mozilla si se utilizan ciertas WebAPI que son demasiado sensibles respecto a la seguridad para que cualquiera pueda ejecutarlas. Esto pudiera ser un riesgo para el desarrollo de ciertas características cognitivas, delegando a la modificación del propio sistema operativo para añadir ciertas funcionalidades si no son aprobadas por el equipo de Mozilla. Hay dos modelos de aplicaciones: aquellas que están ubicadas en un servidor remoto tal como si se tratase de una web normal y que son descargadas cuando no están disponibles desde la caché, permitiendo un mantenimiento más sencillo. Y aquellas que son distribuidas como un \bsq{zip} e instaladas en el dispositivo teniendo acceso a todas las WebAPI.\\
+
+Tras un breve análisis, podemos destacar que tanto \bt{} \cite{webAPIbt}  como \wifi{} \cite{webAPIwifi} son soportados pero ambas WebAPI necesitan del permiso para ser distribuidas por el \textit{Marketplace}, sin embargo para un mayor control de las interfaces de comunicación se necesita que las aplicaciones estén preinstaladas en los dispositivos con la firma de Mozilla, ejemplos son \bt{} \cite{webAPIbtRestrict} y interfaz móvil \cite{webAPImobile}. Por otro lado parece que el modo \adhoc{} en la conexión \wifi{} no está aun soportado \cite{webAPIadhoc}.
+
+%---
+\subsection{iOS}
+Lanzado en 2007 como \var{iPhone OS} por Apple, es un sistema operativo para dispositivos móviles: teléfonos, tabletas, reproductores de música y reproductores para televisión. Tanto el \textit{software} privativo como el \textit{hardware} no licenciado para otras compañías, hacen que junto a \var{Blackberry OS} sean las plataformas más restrictivas, de hecho el modelo de desarrollo posiblemente sea el más restrictivo de todos.  Esto se debe a que las herramientas de desarrollo sólo están disponibles para el sistema operativo \var{MAC OS X} que sigue el mismo tipo de licenciamiento. Además para poder probar el desarrollo en un dispositivo real se tiene que tener una cuenta de desarrollador con un coste asociado renovable cada año (para ciertas universidades hay programa especial sin coste).\\
+
+El núcleo del sistema está basado en XNU \cite{singh2006mac} de licencia libre y que fue integrado por \textit{Darwin BSD}: el sistema que subyace en \var{MAC OS X}. Este núcleo híbrido provee multitarea apropiativa y memoria protegida entre otros. Precisamente estos dos sistemas operativos comparten muchas capas en común: núcleo y servicios principales (\textit{Fundation kit}). Pero en la capa de presentación debido a las diferencias de computación e interacción \var{iOS} tiene como interfaz de usuario \var{Cocoa Touch} en lugar de \var{Cocoa}.
+
+Las diferentes versiones del sistema operativo han añadido diferentes características, la primera versión no disponía de un \ac{SDK} propiamente dicho revelando el desarrollo de aplicaciones a herramientas web sin tener acceso al \textit{hardware}, la segunda versión introduce además la tienda de aplicaciones y la denominación \var{iPhone OS}. Otra versión importante del sistema es la versión 4 cuando adopta la denominación de \var{iOS} que introduce la multitarea (con limitaciones a través de una \ac{API} especial) en aplicaciones de terceros. La única forma de desarrollar aplicaciones para estos dispositivos es bajo el conjunto de herramientas suministradas utilizando el lenguaje Objective-C, además recientemente se puede usar el lenguaje Swift \cite{iosSwift} para programar de forma más concisa y segura sobre la capa de presentación.\\
+
+Las conexiones que permite la plataforma son por una parte: \wifi{} y datos móviles presentados como una capa de comunicación \cite{iosReach} común en la que el desarrollador parece que no tiene manera de modificar los parámetros de conexión. En la versión 2 del sistema operativo hubo una \ac{API} que permitía desconectar y conectar la interfaz \wifi{}, con las nuevas versiones esta característica se ha visto relevada a un plano interno \cite{iosWiFi} que releva el desarrollo a fuera de los márgenes de Apple.  Aunque las redes \adhoc{} están soportadas no hay manera de recrear una red de este tipo con los dispositivos actuales \cite{iosAdHoc}. Por otra parte la tecnología \ac{NFC} sólo está disponible en el dispositivo \bsq{iPhone 6} y por el momento sólo se utiliza como pasarela de pagos. La única tecnología que nos puede dar conexiones \ac{P2P} de manera independiente (\wifi{} necesita de una infraestructura externa) y de forma completa es \bt{} \cite{iosBT}. Dejándonos una sensación de comunicación incompleta en torno a las necesidades de la radio cognitiva que no cumplen las expectativas depositadas en la plataforma.
+
+
+%---
+\subsection{Tizen}
+Tras el renombramiento de \var{LiMo} en \var{Tizen} \cite{tizen} junto con la \textit{Linux Fundation} continua el proyecto de crear un sistema operativo para todos los dispositivos móviles. Con respecto a los teléfonos, el único dispositivo de referencia (RD-PQ) se basa en el \bsq{Samsung Galaxy III}. El proyecto aunque abierto a la comunidad aún se encuentra en fase de desarrollo en la versión 2.2.1, que ha traído un cambio en el licenciamiento debido al modelo de patentes de Samsung, quién espera lanzar un piloto comercial en el mercado indio a finales de 2014.
+
+Este nuevo modelo de licencias, podría suponer un riesgo, aunque el código será libre siempre, el \ac{SDK} pertenece a Samsung quien lo distribuye bajo una licencia de código no abierto y otros componentes están bajo licencia Flora que no es aprobada por la \bsq{Open Source Initiative}.\\
+
+Con respecto al desarrollo de aplicaciones \cite{tizenArch} existen dos enfoques:
+\begin{itemize}
+	\item \var{Web}:  incluye todas las tecnologías de desarrollo web como HTML5: JavaScript (JQuery y JQuery mobile), así como todas las \ac{API} necesarias para controlar los distintos componentes del \textit{hardware}.
+	\item \var{Nativo}: si se requiere un control más preciso, se puede desarrollar programas en C++ de los cuales pueden hacer uso de las librerías Libxml2, EFL, Qt y GPL entre otras, al igual que una serie de funciones publicadas bajo varias \ac{API}.
+\end{itemize}
+
+Entre las conexiones \cite{tizenNet} soportadas caben destacar: \wifiD{} y \wifi{} \adhoc{} \cite{tizenAdhoc}. El ciclo de las aplicaciones recuerda mucho a \android{}, de hecho aplicaciones desarrolladas en este sistema operativo pueden ser ejecutadas en \var{Tizen}.
+ 
+%---
+\subsection{Ubuntu Touch}
+Presentado a primeros de 2013 por Canonical, este sistema operativo para dispositivos móviles y tabletas quiere proporcionar una experiencia de usuario muy similar a la versión de escritorio de la distribución Linux Ubuntu. De hecho ambos sistemas comparten las mismas tecnologías núcleo de tal forma que aplicaciones desarrolladas para las últimas versiones de la plataforma de escritorio pueden ser ejecutadas en el dispositivo móvil y viceversa.\\
+
+\var{Ubuntu Touch} \cite{ubuntuTouch} utiliza el \fwork{} Qt5 (QML y C++) para el desarrollo de aplicaciones nativas y la plataforma \bsq{Adobe Cordova} %\cite{cordova}
+ para el desarrollo con tecnologías web HTML5. Otros componentes integrados son OpenGL y otros provenientes de \var{MeeGo} (oFono: pila telefónica), así como libhybris: una capa para proveer compatibilidad a la librería de C de \ac{GNU} que desciende de Bionic %\cite{bionic}
+ lo que hace que sea más fácil portar este sistema a dispositivos \var{Android}, ejemplo de esto es que los únicos dispositivos por el momento que soportan todas las características son los modelos Nexus aunque con peculiaridades \cite{ubuntuDevices}.
+
+Con respecto a las interfaces de comunicación, debido a que el sistema aún está en fase de desarrollo, no están expuestas todas las características en la versión para desarrolladores \cite{ubuntuReleaseNotes}. La característica \adhoc{} se desconoce si será soportada de forma oficial.
+
+%---
+\subsection{Windows Phone}
+El sistema operativo móvil privativo de Microsoft nace a finales del 2010 como sucesor de \var{Windows Mobile} con la versión 7.0 pero no es hasta mayo de 2011 cuando se libera la versión 7.5 cuando podemos hablar de un sistema operativo completo tras la alianza con Nokia. La compañía finlandesa provee gran parte de los modelos que ejecutan este sistema operativo: la gama Lumia. Los desarrolladores tienen acceso a un \ac{SDK} \cite{winNokiaSDK} propio para desarrollar características exclusivas o acceder de manera completa al \textit{hardware} del teléfono.  
+
+A finales de 2012 sale \var{Windows Phone 8} una versión que integra un nuevo núcleo, hasta ahora basado en \bsq{Windows CE}. Se trata del núcleo \bsq{Windows NT} que da soporte a procesadores de varios núcleos. Esta versión sólo está disponible para nuevos dispositivos, lo que supone un corte. Al ser un núcleo que comparte muchas características con la versión de escritorio \var{Windows 8} y poseer la misma interfaz de usuario: \var{Metro} (ahora conocida como \var{Modern UI})  las aplicaciones pueden ser fácilmente portadas entre ambas plataformas.\\
+
+El modelo de desarrollo se basa en las herramientas de .Net a través de XAML \cite{xaml} (C++/CX, C\# o VisualBasic) o HTML5 (HTML, JavaScript: WinJs). Entre las \ac{API} publicadas \cite{winAPI} se puede observar que tenemos control sobre \bt{} y \wifiD{}, pero faltan el control de \wifi{} y la conexión de datos móvil, al igual que parece no haber un soporte a conexiones \adhoc{} \cite{winNetLacks}.
+
+
+%------------------
+\section{Redes de comunicaciones}
+Las plataformas móviles cursan sus datos por las redes de comunicaciones repartidas por todo el planeta, veremos su estado de crecimiento en los momentos actuales y una proyección de futuro enfocada tanto al crecimiento como a la evolución en cuanto a tecnología y características.
+\subsection{Crecimiento de las comunicaciones}
+Las comunicaciones de banda ancha están experimentando un crecimiento en los últimos años, sobre todo las móviles como podemos ver en el informe para dos mil catorce de la \ac{ITU}~\cite{itu2014report}. El número de líneas fijas (ver figura~\ref{fig:fixed-broadband-suscriptions}) en países emergentes alcanzó en 2013 al de los países desarrollados, debido a que, aunque en ambos mundos se aprecia que la tasa de crecimiento se está reduciendo, el mayor ratio sigue estando en los países emergentes dónde se pasa de un crecimiento del 18\% en 2011 al 6\% en 2014, mientras que en países desarrollados el crecimiento pasa del 4.8\% en 2011 a el 3.5\% en 2014. El 44\% de las líneas de banda ancha fija están localizadas en Asia-Pacífico (APAC) sin embargo, en Europa sólo representa el 24\% del total pero el grado de penetración es el mayor, tónica general de los países desarrollados.\\
+
+
+\figuraSideBySide{Bitmap/state/fixed-broadband-subscriptions}{width=\linewidth}%
+	{Bitmap/state/fixed-broadband-subscriptions-region2014}{width=\linewidth}%
+	{Fuente: ITU World Telecommunication/ICT base de datos de Indicadores, Nota * Estimado}%
+	{Líneas de banda ancha fijas (suscripciones por cada 100 habitantes) y estimación por región en 2014}%
+	{fixed-broadband-suscriptions}%
+
+Con respecto a la banda anchas en las comunicaciones móviles (ver figura~\ref{fig:mobile-broadband-suscriptions}) la penetración es del 32\% (tasa que se ha visto doblada a nivel de 2011 y cuadriplicada a nivel de 2009) llegando a tener 3200 millones de suscripciones de las cuales el 55\% se localizan en países emergentes donde la penetración es del 21\%. La tasa de crecimiento en estos países se espera que alcance el 26\%, cifra que dobla a la tasa de crecimiento de los países desarrollados que se augura que sea del 11.5\%. Sin embargo, al igual que pasa en las comunicaciones fijas el grado de penetración en estos países es mayor, situándose en un 84\%.
+
+\figuraSideBySide{Bitmap/state/mobile-broadband-subscriptions}{width=\linewidth}%
+	{Bitmap/state/mobile-broadband-subscriptions-region2014}{width=\linewidth}%
+	{Fuente: ITU World Telecommunication/ICT base de datos de Indicadores, Nota * Estimado}%
+	{Líneas de banda ancha móvil (suscripciones por cada 100 habitantes) y estimación por región en 2014}%
+	{mobile-broadband-suscriptions}%
+\newpage
+\paragraph{}Centrándonos exclusivamente en el mundo móvil comunicaciones de voz y datos podemos destacar según los informes de movilidad de Ericcson (EMR) del segundo trimestre del dos mil trece~\cite{ericsson2013report} y del dos mil catorce~\cite{ericsson2014report} que se ha incrementado en más de tres cientos millones el número de líneas móviles entre ambos ejercicios, alcanzando la cifra de 6800 millones en el segundo trimestre de dos mil catorce. En el segundo trimestre de 2014 se vendieron alrededor de 300 millones de \sphone{s} que representa un 65\% de las ventas totales, un año anterior suponían un 40\%. Las activaciones netas de líneas móvil se mantienen pasando de un 7\% en el ejercicio de 2013 a un 6\% en él del 2014. (ver figuras \ref{fig:mobile-suscriptions-2013} y \ref{fig:mobile-suscriptions-2014}).
+
+\figuraNota{Bitmap/state/mobile-subscriptions-2013}{width=.607\textwidth}%
+	{Fuente: Ericsson (Agosto 2013), Notar que Turquía se incluye desde este momento como parte de Oriente Medio en vez de Centro y Este de Europa. Por esta razón, no se deben hacer comparaciones entre esta  y ediciones previas del informe EMR}%
+	{Líneas móviles (total e incremento neto) por región, segundo trimestre de 2013}%
+	{mobile-suscriptions-2013}%
+
+\figuraNota{Bitmap/state/mobile-subscriptions-2014}{width=.607\textwidth}%
+	{Fuente: Ericsson (Agosto 2014)}%
+	{Líneas móviles: incremento neto (círculo) y total (barras) por región, segundo trimestre de 2014}%
+	{mobile-suscriptions-2014}%
+
+El grado de penetración evoluciona desde el 91 al 94\% en un año, pero como vemos en la figura~\ref{fig:mobile-penetration} en algunas regiones la tasa es mayor del 100\%, esto es debido a que no se trata de usuarios únicos, se cree que sólo 4500 millones de personas contratan las 6800 millones de suscripciones móviles.
+
+\figuraNota{Bitmap/state/mobile-penetration}{width=.96\textwidth}%
+	{Fuente: Ericsson (Agosto 2014)}%
+	{Penetración líneas móviles por región, segundo trimestre 2014}% 
+	{mobile-penetration}%
+
+\paragraph{}Todo esto se traduce en un aumento desmedido del tráfico cursado. En el último trimestre de dos mil nueve se produce un hito al sobrepasar el tráfico de datos al de voz. A partir de este momento se aprecia con más notoriedad una tendencia exponencial que se traduce en casi un duplicamiento del tráfico entre los segundos trimestres de 2012 y 2013 y en un incremento del más del 60\% entre los mismos periodos del año siguiente, alcanzando un tráfico de unos 2700 PetaBytes/mes (está cifra está fuera de la gráfica~\ref{fig:dataTraffic-mobileNetworks}).
+
+\figuraNota{Bitmap/state/dataTraffic-mobileNetworks}{width=.96\textwidth}%
+	{Fuente: Ericsson (Agosto 2013), Notar que no se incluye el tráfico proveniente de DVb-H, Wi-Fi, o WiMax. Además el tráfico de voz no incluye voz sobre ip (VoIP)}%
+	{Tráfico de datos global cursado en redes móviles}% 
+	{dataTraffic-mobileNetworks}%
+
+\pagebreak
+\subsection{Futuro de las comunicaciones}
+La perspectiva para el futuro mantiene las tendencias actuales (exponencial y lineal) aunque a medida que avanzamos en la gráfica podemos intuir una tendencia cada vez más lineal. Con respecto a las suscripciones móviles se espera que se alcance la cifra de 9200 millones de líneas móviles en 2019, de las cuales el 80\% cuenten con banda ancha, entre las tecnologías que soporten esta conectividad 2600 millones serán \ac{LTE}, aunque el grueso todavía se espera que sean las tecnología dual actual de \ac{UMTS} y \ac{GSM}. Al final de la década habrá 5600 millones de \sphone{s} y unos 700 millones de dispositivos con conexión móvil: tabletas, ordenadores.
+
+\figura{Bitmap/state/future-subscriptions-si}{width=.56\textwidth}{fig:future-subscriptions}{Estimación número de suscripciones hasta 2019}
+
+\paragraph{}Con respecto a la localización de estas conexiones, el mayor crecimiento (entorno al 60\%) se espera en Oriente Medio y África, pero el mayor número de éstas corresponderán a Asia y Pacífico. Además el 80\% de éstas contarán con la tecnología \ac{UMTS} y \ac{LTE} debido a que las nuevas suscripciones son el motor de su crecimiento.
+
+Todo esto nos lleva de nuevo a un crecimiento exponencial del tráfico cursado por las redes móviles saturando el espectro cada vez más, a pesar de la mayor eficiencia de las modulaciones móviles. Experimentando un factor diez en el crecimiento del tráfico entre los años de 2013 y 2019, alcanzando los 12 ExaBytes/mes. Si lo trasladamos al plano del usuario, éste pasará de consumir 650MB en 2013 a 2.5GB en 2019 cada mes.
+
+\figura{Bitmap/state/future-traffic}{width=.56\textwidth}{fig:future-dataTraffic}{Estimación tráfico de datos global cursado en redes móviles}
+
+
+%\figuraSideBySide{Bitmap/analysis/future-subscriptions-si}{width=\linewidth}%
+%	{Bitmap/analysis/future-traffic}{width=\linewidth}%
+%	{}%
+%	%{Source: ITU World Telecommunication/ICT Indicators database, Note * Estimate}%
+%	{Estimacición número de suscripciones y tráfico de datos global cursado en redes móviles}%
+%	{future-subscriptions-traffic}%
+
+\paragraph{}Estas expectativas de crecimiento harán evolucionar las redes. Este aumento sumado a los requerimientos cada vez mas exigentes por parte de las aplicaciones, son el motor que alimenta el cambio. En primer lugar la cobertura de las distintas tecnologías aumentará desde 2013 hasta 2019 en los siguientes porcentajes:
+\begin{itemize}
+\item \var{GSM/EDGE (2G)} desde un 80\% hasta un 85\% (>95\% en Europa).
+\item \var{WCDMA/HSPA (3G)} partiendo de un 60\% hasta el 90\%.
+\item \var{LTE (4G)} de una implantación del 20\% creciente hasta más del 65\% y cercana al 80\% en el caso de Europa.
+\end{itemize}
+Europa ha adoptado las tecnologías inalámbricas desde el minuto cero, por ello el grado de penetración es mayor aunque la contrapartida es la necesidad de proyectos de renovación y compatibilidad que otras áreas del mundo no han requerido pues han comenzado directamente con el despliegue de \ac{LTE} de las que actualmente existen 288 redes repartidas en 104 países \footnote{Fuente: GSA Mayo 2014}.
+
+La evolución de éstas redes se centrará en:
+\begin{description}
+\item[Agregación de portadoras] Cada portadora ocupa 10Mhz, podemos combinar varias portadoras para mejorar la eficiencia espectral, desde 2 para alcanzar velocidades de 150Mbps, o agregar 3 portadoras de 20Mhz para lograr 60Mhz de espectro agregado que soporta una tasa de bajada de 450Mbps, si la categoría de los equipos involucrados es nueve. Con estas técnicas podemos pasar de una eficiencia espectral de 3.5 
+\(
+	\frac{bit}{s\cdot Hz}
+\)
+%$bit/(s\cdot Hz)$
+en el enlace de subida para la versión 8, a 15
+\(
+	\frac{bit}{s\cdot Hz}
+\)
+para la versión 10: \ac{LTE-A}.
+
+\item[Difusión] Aunque la especificación \ac{MBMS}, ya existía en redes \ac{UMTS} \cite{umtsBroadcast}, se espera que sea en la red \ac{LTE} donde alcance pilotos comerciales. La aprovechamiento del espectro radica en que se entrega contenido simultáneamente a varios usuarios bajo solamente un flujo \ac{LTE}, además se permitirá al operador predefinir el nivel de calidad dimensionando la tasa de \textit{bits} para adecuarse a distintas resoluciones y tipos de contenido. 
+
+\item[Voz de alta resolución] La red \ac{LTE} ha sido diseñada para la optimización de transferencia de paquetes de datos, por lo tanto deja fuera los circuitos conmutados por los que tradicionalmente iba la voz, en lugar se sustituye el núcleo de red por un sistema \ac{IMS} que permite su evolución mediante actualizaciones de \textit{software}. Sin embargo el tráfico de voz como hemos visto es insignificante pero su codificación (utilizando \textit{chipsets} que soporten \ac{VoLTE)} utiliza eficientemente el espectro y está abierta a nuevas optimizaciones.
+
+\item[Aprovechamiento de otras zonas del espectro] Más conocido como \textit{refarming}, es el proceso por el cual se utiliza una banda del espectro para usos diferentes de los que inicialmente fueron asignados. Para dar soporte a todo el tráfico que se prevé que cursen las redes \ac{LTE} es necesario mover y utilizar las frecuencias dónde se dan las mejores condiciones de propagación para entre otros beneficios, evitar retransmisiones. El proceso se conoce como dividendo digital del que en una primera versión  se estudió la banda entorno a los 900Mhz (la mejor propagación), pero para 2015 la \ac{ITU} está preparando un segundo dividendo en este caso centrado sobre los 700Mhz \cite{refarming700}.
+\end{description}
+
+Nos movemos a un concepto de red heterogénea sin fisuras, dónde para mejorar el rendimiento y la capacidad se necesita: coordinación, formar la red de acceso con nodos que consuman poca energía (micro, pico, \wifi{}) y soluciones de interior localizadas.
+
+Una solución para conseguir este propósito pasa por evolucionar la capa de la macro célula integrando células más pequeñas. Para proveer al usuario de una experiencia sin fisuras en estas redes heterogéneas, todas la capas, dominios y nodos de red tienen que estar unidos y sincronizados con un grado sin precedentes, muy cercano al enfoque de \ac{CN}. Se necesita por tanto coordinación entre las pequeñas células y las macro que las contienen, gestión común de red y gestión del tráfico y movilidad de usuarios.
+
+%\begin{minipage}[t]{.6\textwidth}%
+%\paragraph{Coordinación a nivel radio} Siguiendo las especificaciones de \ac{UMTS}: traspaso suave, célula combinadas e introduciendo la tecnología de \ac{CoMP} para el canal de subida, se consigue doblar las tasas de datos, en situaciones en las que varias células de distintas antenas están próximas.%
+%\end{minipage}%
+%\begin{minipage}[t]{.4\textwidth}%
+%\centering%
+%\includegraphics[width=.8\linewidth]{Imagenes/Bitmap/analysis/combinedCell}%	
+	%\figuraNota{Bitmap/analysis/combinedCell}{width=.76\linewidth}%
+	%{Fuente: Piloto LTE software comercial}%
+	%{Tráfico de datos global cursado en redes móviles}% 
+	%{a}%
+%\end{minipage}%
+
+\begin{center}%
+	\begin{minipage}[b]{.5\textwidth}%
+\paragraph{Coordinación a nivel radio}Siguiendo las especificaciones de \ac{UMTS}: traspaso suave, célula combinadas e introduciendo la tecnología de \ac{CoMP} para el canal de subida, se consigue doblar las tasas de datos, en situaciones en las que varias células de distintas antenas están próximas. A la derecha podemos ver un ejemplo de usar o no esta coordinación.%
+\\[17pt]
+	\end{minipage}%
+	\begin{minipage}[t]{.5\textwidth}%
+		\centering%
+		
+		\includegraphics[width=.9\linewidth]{Imagenes/Bitmap/state/combinedCell}%
+		
+{\footnotesize\sf Piloto LTE con software comercial}%
+	\end{minipage}%
+\end{center}%
+
+
+\paragraph{Coordinación entre la capa de células} Para doblar la capacidad de la red en una ciudad, necesitaríamos añadir 9 células pequeñas por cada célula macro que tengamos. Sin embargo si existe una coordinación entre todas ellas, sólo necesitamos añadir 5 o 3 células, esto a parte de dejar sitio para incrementar la capacidad, nos resuelve el problema de posicionar tantas células y la interconexión a la red.
+
+\figura{Bitmap/state/coordinatedCell}{width=.96\textwidth}{fig:coordinatedCell}{Número de células necesarias para dar la misma capacidad en función de su interoperabilidad}
+
+\paragraph{Gestión del tráfico y movilidad de usuarios} Se incluyen tecnologías para de una manera coordinada traspasar usuarios entre tecnologías de acceso radio. A parte de las tecnologías de acceso \ac{3GPP}, se incluye \wifi{} ya que es una tecnología más entre las ofertadas para banda ancha móvil. Así podemos esperar comportamientos en los que un usuario cambia de \ac{LTE} a \wifi{} sólo cuando le ofrece una mejor experiencia, en vez de cuando está inmediatamente disponible tal y como ocurre ahora.
+
+\paragraph{Gestión de red común} Obliga a tener una sola arquitectura de red y unos \ac{KPI} que se recojan y sean visibles al resto.
+
+
+\begin{center}%
+\begin{minipage}[t]{.5\textwidth}%
+	\centering%
+	\includegraphics[width=.9\linewidth]{Imagenes/Bitmap/state/rds}%
+		
+{\footnotesize\sf Red acceso pico-célula: LTE FDD 20Mhz}%
+\end{minipage}%
+\begin{minipage}[b]{.5\textwidth}%
+\paragraph{Soluciones de interior} Algunos edificios son puntos de concentración de usuarios que sobrecargan la red llegando a interferir entre ellos, con la dificultad añadida de la pobre cobertura dentro de estos recintos. Para ello se pueden instalar pico-células cuyo camino de salida sea el enlace de banda ancha fijo que posea el edificio. Estas pico-células forman lo que se conoce como un \ac{RDS}. A la derecha podemos ver ejemplo de dimensionamiento en un edificio de 24 plantas con 2500m\textsuperscript{2} de superficie cada una.%
+	\end{minipage}%
+\end{center}%
+                                                                                      
+%-------------------------------------------------------------------
+\section{Redes Cognitivas}
+\label{sec:cognitiveNetworks}
+%-------------------------------------------------------------------
+
+CN
+
+
+%-------------------------------------------------------------------
+\section{Radio Cognitiva en teléfonos inteligentes}
+\label{sec:CRsmartphone}
+%-------------------------------------------------------------------
+
+Hemos visto que la evolución de las redes 4G (\ac{LTE}) prevé mecanismos para evitar la concentración de tráfico localizado mediante el uso de difusión, despliegue de células mas pequeñas, coordinación entre células y gestión centralizada del tráfico. Estas palancas de actuación aunque no parecen estar orientadas bajo una perspectiva cognitiva sí que comparten algunos de sus principios y su finalidad que es evitar el colapso del espectro. La tendencia, según los últimos congresos celebrados \cite{cnPhoneCongress}  sugieren que la infraestructura de acceso a las redes móviles tenga cada vez más características de la radio cognitiva \cite{cnPhoneCongressLast}. En realidad Ericcson recomienda para la próxima generación de redes para teléfonos móviles (5G) el que haya una compartición flexible del espectro: \ac{DAS} en frecuencias altas \cite{5gAccess} que son más indicadas para la masificación y localización debido a su pobre propagación. \\
+Al ser una nueva zona del espectro para redes telefónicas, permite realizar nuevas técnicas (como radio cognitiva) permitiendo una compatibilidad hacia \ac{LTE} en la zona baja del espectro dónde se mantendrían las modulaciones y acceso al medio actuales evitando costes de actualización. En las frecuencias altas la red de transporte entre nodos de las estaciones bases se puede realizar también de forma inalámbrica en la zona alta del espectro que es más ancha aumentando la eficiencia si se comparte igualmente de forma dinámica.
+
+Como vemos es un campo fuertemente investigado por fabricantes de equipos de telecomunicaciones, universidades y también por fabricantes de terminales como Nokia quién tiene un espacio \textit{web} dedicado a sus investigaciones \cite{cnPhoneNokia} de entre los que cabe destacar un artículo \cite{cnPhoneNokiaArticle} en el que se versa sobre comunicaciones \ac{D2D} mediante \ac{LTE} dentro de una célula estudiando el impacto sobre el usuario primario (la célula) se demuestra que la capacidad observada en toda la célula aumenta.\\
+Es obvio que estas nuevas técnicas afectan a las operadoras \cite{cnPhoneCarrierPerspective} con ventajas e inconvenientes. Entre las ventajas es la que incrementar parte del espectro en redes existentes, o la de acceder a nuevos mercados con mayor facilidad, ya que entre las desventajas tenemos que el valor del espectro se devalúa y aumenta la interferencia debido a los usuarios secundarios. En media la capacidad aumenta y los costes de red disminuyen. El proyecto \bsq{SENDORA} \cite{cnPhoneSendora} utiliza una \ac{WSN} para identificar zonas del espectro sin usar en ese momento.\\
+
+Otros proyectos que podemos mencionar la tesis \cite{cnPhoneVirginia} en la que se hacen técnicas \ac{DAS} entre una placa \bsq{BeagleBoard} junto con un \sphone{} \android{} y un ordenador. El dispositivo \android{} habilita las funciones de sensado, pasarela y en general a realizar tareas que ésta no puede por motivos computacionales. Así como el proyecto fin de carrera \cite{cnPhoneEtsit} en la que se diseñan escenarios de cambio de tecnología de comunicación entre un emisor y un receptor ante eventos de indisponibilidad.\\
+En la misma línea podemos mencionar el proyecto \bsq{Serval} \cite{cnPhoneServal} que recrea la red de transporte de una operadora mediante enlaces \wifi{} cifrados, habilitando las comunicaciones en caso de catástrofe o de inexistencia de red debido al alto coste.
+
+%-------------------------------------------------------------------
+%\section*{\NotasBibliograficas}
+%-------------------------------------------------------------------
+%\TocNotasBibliograficas
+
+%Citamos algo para que aparezca en la bibliografía\ldots
+%\citep{ldesc2e}
+
+%\medskip
+
+%Y también ponemos el acrónimo \ac{CVS} para que no cruja.
+
+%Ten en cuenta que si no quieres acrónimos (o no quieres que te falle la compilación en ``release'' mientras no tengas ninguno) basta con que no definas la constante \verb+\acronimosEnRelease+ (en \texttt{config.tex}).
+
+
+%-------------------------------------------------------------------
+%\section*{\ProximoCapitulo}
+%-------------------------------------------------------------------
+%\TocProximoCapitulo
+
+
+% Variable local para emacs, para  que encuentre el fichero maestro de
+% compilación y funcionen mejor algunas teclas rápidas de AucTeX
+%%%
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "../Tesis.tex"
+%%% End:

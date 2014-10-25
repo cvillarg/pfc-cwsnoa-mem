@@ -258,6 +258,10 @@
 
 @entry{LTE,4G,\emph{Long Term Evolution}}
 
+@entry{LTE-A, ,\emph{LTE Advanced}}
+
+@entry{VoLTE, ,\emph{Voice over LTE}}
+
 @entry{UUID, ,\emph{Universally unique identifier}}
 
 @entry{AP, ,\emph{Access point}}
@@ -283,3 +287,39 @@
 @entry{SS7, , \emph{Signalling System no. 7}}
 
 @entry{CB, ,\emph{Connectivity Brokerage}}
+
+@entry{IT, ,\emph{Information technology}}
+
+@entry{ISP, ,\emph{Internet Service Provider}
+
+@entry{WAP, ,\emph{Wireless Application Protocol}}
+
+@entry{SMS, ,\emph{Short Message Service}}
+
+@entry{HTTP, ,\emph{HyperText Transfer Protocol}}
+
+@entry{NFC, ,\emph{Near Field Communication}}
+
+@entry{MBMS, ,\emph{Multimedia Broadcast Multicast Service}}
+
+@entry{IMS, ,\emph{IP Multimedia Subsystem}}
+
+@entry{CoMP, ,\emph{Coordinated MultiPoint}}
+
+@entry{3GPP, ,\emph{3rd Generation Partnership Project}}
+
+@entry{KPI, ,\emph{Key Performance Indicator}}
+
+@entry{RDS, ,\emph{Radio Dot System}}
+
+@entry{SDK, ,\emph{Software Development Kit}}
+
+@entry{NDK, ,\emph{Native Development Kit}}
+
+@entry{AOSP, ,\emph{Android Open Source Project}}
+
+@entry{GNU, ,\emph{GNU's Not Unix}}
+
+@entry{D2D, ,\emph{Device-to-device}}
+
+@entry{DSA, ,\emph{Dynamic Spectrum Access}}
