@@ -26,7 +26,7 @@ Nuestra arquitectura se ha diseñado siguiendo pinceladas del modelo
 recomendaciones puesto que no implementamos el objeto \texttt{CompNet}
 (distintas redes cooperando para por ejemplo mitigar la interferencia)
 y que no tenemos acceso a otros planos que no sea el de aplicación. Al
-tener \textit{hardware} sin posibilidad de cambios y al tener un
+tener un \textit{hardware} fijo, sin posibilidad de cambios y al tener un
 control limitado de éste (sólo las partes que \android{} nos permite)
 se desvanece la posibilidad de selecionar proactivamente la
 modulación, la codificación o el nivel de potencia en la
@@ -61,12 +61,12 @@ entre capas, puede ser fácilmente añadida a la arquitectura final.
 	\end{enumerate}
 \end{enumerate}
 
-A continuación haremos una breve descripción de los diferentes bloques que hemos definido en la arquitectura. Al ser los procesos entidades que hacen uso más de un bloque se ha preferido dejar para más adelante (sección~\ref{sec:procesosRed}) su explicación una vez vista la arquitectura. Así se obtienen varios puntos de vista que ayudan a comprender el funcionamiento.
+A continuación haremos una breve descripción de los diferentes bloques que hemos definido en la arquitectura que conforman el nodo cognitivo. Al ser los procesos entidades que hacen uso más de un bloque se ha preferido dejar para más adelante (sección~\ref{sec:procesosRed}) su explicación una vez vista la arquitectura. Así se obtienen varios puntos de vista que ayudan a comprender el funcionamiento del nodo.
 
-\subsection{Interfaz Aplicación - Módulo Cognitivo}
+\subsection{Interfaz Aplicación - Módulo cognitivo}
 El apellido cognitivo supone una abstracción en el modelo de comunicaciones de tal forma que el usuario (la aplicación) sea transparente a los parámetros, tiempos o detalles de la comunicación usada para transmitir los datos. Para lograr esta abstracción necesitamos un punto de ruptura que aisle y defina solamente la información estrictamente necesaria a intercambiar entre ambos agentes para poder recrear una \ac{CWSN}. En la sección~\ref{sec:api} se expone la definición de la \ac{API} que debe cumplir el desarrollador de las distintas aplicaciones.\\
 
-Al definir una interfaz permitimos que terceros puedan desarollar sus propias aplicaciones que usen de este servicio para montar sus comunicaciones, podemos decir que es una interfaz tipo cliente-servidor, donde se permite dar soporte simultáneo a varias aplicaciones, esto es posible gracias al \var{Gestor de Aplicaciones} que explicamos en la siguiente sección.
+Al definir una interfaz permitimos que terceros puedan desarrollar sus propias aplicaciones que usen de este servicio para montar sus comunicaciones, podemos decir que es una interfaz tipo cliente-servidor, donde se permite dar soporte simultáneo a varias aplicaciones. Esto es posible gracias al \var{Gestor de Aplicaciones} que explicamos en la siguiente sección.
 %----------
 
 %\subsection{Sensor Manager}
@@ -107,7 +107,7 @@ directa gracias a el módulo \var{Ejecutor}.\\
 % que utiliza al ejecutor para actuar y cumplir así lo que dice la politica.
 
 Para nuestro primer diseño sólo hemos definido una política cognitiva
-(ver sección~\ref{subsec:senseAndPolicy}). El módulo ejecutor sólo
+(ver sección~\ref{subsec:senseAndPolicy}). El módulo \var{Ejecutor} sólo
 realiza cambios de contexto, debido a
 las limitaciones en la plataforma para ajustar otros parámetros que
 finalmente han sido descartados del diseño.
@@ -153,13 +153,13 @@ Este módulo hace las labores de concentración, estructuración y perseverancia de
 	\end{itemize}
 \end{description}
 
-Estos datos son compartidos con el coordinador quién distribuye (sin
+Estos datos son compartidos con el coordinador quien distribuye (sin
 alterar, aunque podría implementarse un filtrado sin demasiadas complicaciones ya que se han
 reservado valores por defecto para permitir su ocultación) esta información. Nuestro repositorio es por tanto
 distribuido, de tal forma que todos tengan la misma foto aunque no
 tengan los mismos valores: los identificadores de los nodos en
-cada dispositivo varían, la clave que nos permite sincronizar todo el
-repositorio es la dirección \ac{MAC} de \bt{}.
+cada dispositivo varían, la clave que nos permite sincronizar los diferentes repositorios de los
+diferentes nodos recae en la dirección \ac{MAC} de \bt{}.
 
 %XXX-jblesa. Quita dummy y pon algo en español. XXX-cvillar ok, reestructurado un poquito.
 %----------
@@ -173,7 +173,7 @@ parámetros recogidos del entorno.
 
 %XXX-jblesa. A que modulos te refieres con ambos modulos? XXX-cvillar discovery & policy/optimizer/executor
 
-Este módulo no sólo recoge parámetros, si no que monitoriza el estado de las diferentes interfaces de comunicaciones, por ello parte de este módulo está muy ligado al controlador de la interfaz, sin embargo debido a que ciertas políticas necesitan que el optimizador evalue parámetros de interfaces de comunicaciones no activas, se ha sacado del diseño del controlador esta parte para añadirla al modulo \var{Sensado} y que pueda ser manejada en cualquier momento. En la sección~\ref{subsec:btControllerImpl} del siguiente capítulo completamos el por qué de ésto. 
+Este módulo no sólo recoge parámetros, si no que monitoriza el estado de las diferentes interfaces de comunicaciones, por ello parte de este módulo está muy ligado al controlador de la interfaz. Sin embargo debido a que ciertas políticas necesitan que el optimizador evalue parámetros de interfaces de comunicaciones no activas, se ha sacado del diseño del controlador esta parte para añadirla al modulo \var{Sensado} y que pueda ser manejada en cualquier momento. En la sección~\ref{subsec:btControllerImpl} del siguiente capítulo completamos el por qué de ésto. 
 %----------
 
 \subsection{Gestor de Interfaces}
@@ -181,17 +181,17 @@ Este módulo es el punto de salida del módulo o servicio cognitivo hacia los cont
 
 En el se implementan todas las funciones de encaminamiento que son necesarias transmitir a los controladores pues estos no conocen nada del plano cognitivo, son meras palancas de acción. En este módulo también implementamos el submódulo \var{Acceso} encargado de compartir con el resto de nodos parte de nuestro repositorio que es enviado por el canal \var{VCC}. 
 
-El diseño del canal \var{VCC} encargado de transmitir toda la información de control y gestión de la \ac{CWSN}, se hubica en la misma red por la que circulan los datos, a diferencia de otros sistemas como el \ac{SS7} \cite{ss7} por razones de simplicidad. De hecho comparten ambos tráficos el mismo canal, la manera de distinguirlos reside en el valor de la etiqueta \var{MessageType}. Sin embargo, la arquitectura no cierra las puertas a que el plano de datos y el de control estén sean transmitidos en distintas interfaces de comunicación, por ejemplo datos en \wifi{} y señalización en \bt{}.
+El diseño del canal \var{VCC} encargado de transmitir toda la información de control y gestión de la \ac{CWSN}, se hubica en la misma red por la que circulan los datos, a diferencia de otros sistemas como el \ac{SS7} \cite{ss7} por razones de simplicidad. De hecho comparten ambos tráficos el mismo canal, la manera de distinguirlos reside en el valor de la etiqueta \textit{MessageType}. Sin embargo, la arquitectura no cierra las puertas a que el plano de datos y el de control estén sean transmitidos en distintas interfaces de comunicación, por ejemplo datos en \wifi{} y señalización en \bt{}.
 
 %----------
 
 \subsection{Interfaz Módulo Cognitivo - Controlador}
 \subsubsection{Comunicación hacia controlador: invocación de métodos}
-La forma de comunicarse con el controlador de la interfaz es mediante la invocación de métodos del propio controlador. Al basarse en una programación en objetos, el módulo o servicio cognitivo tiene una referencia a cada controlador que le permite invocar sus métodos declarados como públicos permitiendo disparar procesos, para homogeneizar y que el servicio interactue de forma similar con todas las interfaces, sus controladores deben implementar una serie de métodos que desencadenen un proceso que al final tenga una respuesta parecida. Estos métodos son asíncronos cuya llamada no devuelve ningún valor, es a través de la interfaz entre las capas pero en el otro sentido como obtenemos la resuesta. Entre la serie de métodos que un controlador debe implementar, los indispensables al ser comunes a todos son:
+La forma de comunicarse con el controlador de la interfaz de comunicación es mediante la invocación directa de métodos del propio controlador. Para homogeneizar la interacción entre servicio y controlador haciendo que ésta se produzca de forma similar con todas las interfaces, sus respectivos controladores deben implementar una serie de métodos cuya funcionalidad se adecue a las singularidades pero que mantenga unos puntos de entrada y salida a poder ser iguales. Se ha dedicido que estos métodos sean llamadas asíncronas que no devuelvan ningún valor. La respuesta se obtiene en el \var{Gestor de Interfaces} una vez el proceso desencadenado en el controlador decide comunicar algo gracias su \var{Gestor de Estados}. Los métodos que un controlador debe implementar para cumplir con la interfaz en este sentido son:
 \begin{description}
-	\item[start()] \hfill \\Este método nos permite configurar el controlador teniendo en cuenta los requerimientos que tenga el módulo o servicio cognitivo.
-	\item[stop()]\hfill \\Gracias a él se liberan todos los recursos (menos los relacionados con el módulo \var{discovery}).
-	\item[write()]\hfill \\Para escribir cualquier tipo de información sobre la red:
+	\item[start()]\hfill {\sc Método de inicialización}\\[7pt]Este método nos permite configurar el controlador teniendo en cuenta los requerimientos que tenga el módulo o servicio cognitivo.
+	\item[stop()]\hfill{\sc Método de destrucción}\\[7pt]Gracias a él se liberan todos los recursos (menos los relacionados con el módulo \var{Sensado} para permitir que aunque no este activa se sigan obteniendo datos de sensado del espectro).
+	\item[write()]\hfill{\sc Método para enviar datos o señalización}\\[7pt]Para escribir cualquier tipo de información sobre la red:
 	\begin{itemize}
 		\item\bsq{Plano de datos}: canal de datos.
 		\item\bsq{Plano de control}: canal \var{VCC}.
@@ -201,7 +201,7 @@ La forma de comunicarse con el controlador de la interfaz es mediante la invocac
 
 \subsubsection{Comunicación hacia módulo: Gestor de estados}
 \label{subsubsec:stateManager}
-O \textit{Gestor de Estados}, es una interfaz de comunicación uniderecional desde los distintos controladores hacia el servicio para expresar el estado en el que se encuentran éstas. Estos mensajes son consecuencia de procesos bien disparados por el servicio al invocar métodos del controlador (módulo \var{Ejecutor} y \var{Gestor de Interfaces}) o bien originados en el propio controlador al tratarse de un evento de red.
+Permite establecer una comunicación uniderecional basada en mensajes desde los distintos controladores hacia el servicio en cualquier momento de tiempo. Estos mensajes son consecuencia de procesos bien disparados por el servicio al invocar métodos del controlador (desde el módulo \var{Ejecutor} y/o \var{Gestor de Interfaces}) o bien originados en el propio controlador al tratarse de un evento de red, reflejando el estado en el que se encuentra el controlador.
 
 \paragraph{WiFi} Los diferentes estados y eventos en los que pueden estar la interfaz \wifi{}:%\\
 \smTableInit{\textit{Wi-Fi State Manager}}
@@ -228,7 +228,7 @@ Esta información recibida por cada controlador se mapea con los eventos y estado
 \section{API: Definición, Cómo montar una aplicación sobre el servicio cognitivo}
 %-------------------------------------------------------------------
 \label{sec:api}
-En esta sección se explica cada detalle de la interfaz Aplicación - Módulo Cognitivo en ambos sentidos. Su cumplimiento es necesario para desarollar una aplicación que interactue de forma correcta con el módulo o servicio cognitivo. La forma de interactuar con éste se basa en, como se verá en \ref{sec:detallesImplementacion}, el intercambio de mensajes a través de los objetos \textit{Messenger} y \textit{Handler} provistos por \android{}. Estos mensajes provocan el disparo de ciertos procesos en el servicio que responderá, si procede, en cuanto el resultado esté listo. Son llamadas por tanto asíncronas. De igual modo, el servicio entregará mensajes a las aplicaciones en cualquier momento sin que estás hayan solicitado nada.\\
+En esta sección se explica cada detalle de la interfaz Aplicación - Módulo cognitivo en ambos sentidos. Su cumplimiento es necesario para desarollar una aplicación que interactue de forma correcta con el módulo o servicio cognitivo. La forma de interactuar con éste se basa en, como se verá en \ref{sec:detallesImplementacion}, el intercambio de mensajes a través de los objetos \textit{Messenger} y \textit{Handler} provistos por \android{}. Estos mensajes provocan el disparo de ciertos procesos en el servicio que responderá, si procede, en cuanto el resultado esté listo. Son llamadas por tanto asíncronas. De igual modo, el servicio entregará mensajes a las aplicaciones en cualquier momento sin que estás hayan solicitado nada.\\
 
 La aplicación que haga uso del modelo no necesita cumplir más requisitos que la de manejar los distintos mensajes que le entrege el servicio en cualquier instante de tiempo y la de almacenar la lista de nodos formada por el par (identificador, nombre) entregada por el servicio y modificada en cada evento que lo requiera. La confección de algunos mensajes de la \ac{API} requieren que sean informados con algunos valores de la lista de nodos, por lo que la aplicación debe tener accesible esta lista ya que no hay una manera activa de pedirla al servicio.
 
@@ -663,36 +663,34 @@ Y para vaciar la cola de mensajes en cualquier momento deberemos enviar este otr
 \section{Procesos de red}
 %-------------------------------------------------------------------
 \label{sec:procesosRed}
-Cuando ocurren eventos en la red estos son manejados por los distintos nodos según sea su tipo, propagando la información necesaria para que toda la red pueda reconstruir la misma perspectiva sobre la actual situación. Veremos quién dispara y el por qué de estos eventos, cómo se informa y en qué casos a las aplicaciones montadas sobre el servicio del nodo cognitivo. Esta sección viene muy relacionada con la sección \ref{sec:api} ya que dónde empieza o finaliza la acción es con mensajes intercambiados de la \ac{API}. 
-
-\comp{Relatar los diferentes procesos que ocurren en el servicio, quién los dispara y como se transmiten al resto de nodos y las apps que estén montadas}
+Cuando ocurren eventos en la red estos son manejados por los distintos nodos según sea su tipo, propagando la información necesaria para que toda la red pueda reconstruir la misma perspectiva sobre la actual situación. Veremos quién dispara y el por qué de estos eventos, cómo se informa y en qué casos a las aplicaciones montadas sobre el servicio del nodo cognitivo. Como ya se comentó, los procesos atañen a más de un bloque de la arquitectura. A menudo la \ac{API} del servicio  (sección~\ref{sec:api}: interfaz Aplicación - Módulo cognitivo) se ve invulcrada pues es donde empieza o finaliza la acción de estos procesos.
 %------------------------------
 \subsection{Registro de una aplicación en el servicio cognitivo}
 \label{subsec:serviceRegisterProcess}
-\begin{codeInvolved}
-\begin{files}
-\textbf{Service}: m2service (manejador de mensajes entre servicio y aplicaciones)
-\end{files}
-\end{codeInvolved}
-Para que una aplicación pueda registrarse de forma correcta en el servicio debe cumplir una cierta inicialización consistente en el intercambio de tres mensajes. El primero servirá para que el servicio incluya a la aplicación en su base de clientes. El segundo para que la aplicación le informe de sus parámetros y el tercero será una confirmación por parte del servicio hacia la aplicación o aplicaciones informando de todos los parámetros de éste tras la inclusión de la nueva aplicación.
+%\begin{codeInvolved}
+%\begin{files}
+%\textbf{Service}: m2service (manejador de mensajes entre servicio y aplicaciones)
+%\end{files}
+%\end{codeInvolved}
+Para que una aplicación pueda registrarse de forma correcta en el servicio debe cumplir una cierta inicialización consistente en el intercambio de tres mensajes. El primero (\Scst{REGISTER\_CLIENT}) servirá para que el servicio incluya a la aplicación en su base de clientes. El segundo (\Scst{REGISTER\_EXCHANGE}) para que la aplicación le informe de sus parámetros y el tercero (también denominado \Scst{REGISTER\_EXCHANGE}) será una confirmación por parte del servicio hacia la aplicación o aplicaciones informando de todos los parámetros de éste tras la inclusión de la nueva aplicación.
 
 %XXX-jblesa quita handshaking y ponlo en español. XXX-cvillar handshaking = inicialización??
 
-Como hemos visto ya en la \ac{API} (ver sección \ref{sec:api}), tras
-la petición de atadura al servicio, que inicializará a éste si no
-estuviese arracando ya, obtendremos el \textit{Messenger} del
-servicio, indispensable para poder comunicarnos con él. A continuación
-debemos mandar un primer mensaje para registrar nuestra aplicación en
-el servicio, donde éste, registrará nuestro messenger para habilitar
-la comunicación en sentido contrario y nos incluirá en su lista de
-aplicaciones registradas. Los detalles de este mensaje pueden verse en
-la tabla~\ref{tab:registerClientMessage}
+%Como hemos visto ya en la \ac{API} (ver sección \ref{sec:api}), tras
+%la petición de atadura al servicio, que inicializará a éste si no
+%estuviese arracando ya, obtendremos el \textit{Messenger} del
+%servicio, indispensable para poder comunicarnos con él. A continuación
+%debemos mandar un primer mensaje para registrar nuestra aplicación en
+%el servicio, donde éste, registrará nuestro messenger para habilitar
+%la comunicación en sentido contrario y nos incluirá en su lista de
+%aplicaciones registradas. Los detalles de este mensaje pueden verse en
+%la tabla~\ref{tab:registerClientMessage}
 
 %XXX-jblesa pon bind en español XXX-cvillar ... sí y cómo? atadura??
 
-El siguiente mensaje (ver tabla~\ref{tab:registerExchangeMessage}) que debemos enviar, informaremos acerca de nuestros parámetros de aplicación como son: nuestro papel, un entero cuyo valor \bsq 0 corresponde a papel secundario y el valor \bsq 1 corresponde al papel primario y nuestro código de aplicación, útil para que el servicio nos entregue sólo los mensajes que nos atañen.
+%El siguiente mensaje (ver tabla~\ref{tab:registerExchangeMessage}) que debemos enviar, informaremos acerca de nuestros parámetros de aplicación como son: nuestro papel, un entero cuyo valor \bsq 0 corresponde a papel secundario y el valor \bsq 1 corresponde al papel primario y nuestro código de aplicación, útil para que el servicio nos entregue sólo los mensajes que nos atañen.
 
-Este mensaje ha sido separado del anterior para poder reutilizarlo e introducirlo en el flujo descrito en~\ref{subsec:apiUpdateParams} o~\ref{subsec:updateSettings}. Con esta información el servicio dependiendo del punto en que se encuentre actuará de una forma u otra.
+La petición de atadura junto al envío de estos mensajes arrancarán y configuran el módulo cognitivo, los dos primeros mensajes están separados para poder reutilizar el segundo mensaje para incluirlo en el flujo descrito en~\ref{subsec:apiUpdateParams} o~\ref{subsec:updateSettings} de manera aislada. Con la información enviada el servicio dependiendo del punto en que se encuentre actuará de una forma u otra: %Al terminar nos responderá con el tercer mensaje que refleja la situación la que se encontraba el servicio antes de recibir la información por parte de la aplicación.
 
 \subsubsection{CWSN no establecida}
 \umlsdInit
@@ -707,9 +705,9 @@ Este mensaje ha sido separado del anterior para poder reutilizarlo e introducirl
 	\mess{srv}{Register exchange}{app}
 \umlsdEnd{Handshake CWSN no configurada y servicio no inicilizado}{endHandshakingNotInCWSN}
 
-Esta situación, (la más común) es cuando nuestra petición de \textit{bind} ha arrancado el servicio y por lo tanto estamos en una situación inicial o ya hay aplicaciones montadas sobre éste pero no hay conectividad con otros nodos, en otras palabras, estamos solos en la red. Un ejemplo cuando el servicio no está arrancado podemos verlo en la figura~\ref{fig:endHandshakingNotInCWSN}
+Esta situación, (la más común) es cuando nuestra petición de atadura ha arrancado el servicio y por tanto estamos en una situación inicial o ya hay aplicaciones montadas sobre éste pero no hay conectividad con otros nodos, en otras palabras, estamos solos en la red. Un ejemplo cuando el servicio no está arrancado podemos verlo en la figura~\ref{fig:endHandshakingNotInCWSN}
 
-En esta situación, configuraremos de nuevo la interfaz, actualizaremos los parámetros pasados en el anterior mensaje y lanzaremos nuevamente los procesos de registro en la red para intentar establecer una \ac{CWSN}. Al finalizar éstos, el servicio devolverá (a todas las aplicaciones montadas) la información acerca de todos los parámetros y el estado actual de la red (ver listas de la sección~\ref{subsec:apiStart}). Puede verse el detalle de este mensaje en la tabla~\ref{tab:endHandshakingNotCWSNMessage}
+En esta situación configuraremos la interfaz no importando si ya lo estuviese. Actualizaremos los parámetros pasados en el anterior mensaje y lanzaremos nuevamente los procesos de registro en la red para intentar establecer una \ac{CWSN}. Al finalizar éstos (ver sección~\ref{subsec:configInterface}) el servicio devolverá (a todas las aplicaciones registradas) la información acerca de todos los parámetros y el estado actual de la red (ver listas de la sección~\ref{subsec:apiStart}). En la tabla~\ref{tab:endHandshakingNotCWSNMessage} puede verse el detalle de este tercer mensaje que finaliza el proceso de inicialización y que nos permite conocer el estado en el que se encontraba el servicio antes de recibir la información por parte de la aplicación.
 
 \subsubsection{CWSN previamente configurada}
 \umlsdInit[h!]
@@ -722,7 +720,7 @@ En esta situación, configuraremos de nuevo la interfaz, actualizaremos los parám
 	\mess{srv}{Register exchange}{app}
 \umlsdEnd{Handshake CWSN configurada}{endHandshakingInCWSN}
 
-Puede darse el caso que, en este punto del proceso, ya haya aplicaciones montadas sobre el servicio y estén cooperando en una \ac{CWSN}. En este caso el servicio no tiene que configurar nada y se limita a ver si puede satisfacer las necesidades que le acaba de transmitir la nueva aplicación que acaba de registrar, es decir, cambiará el papel del nodo a primario si este era secundario, un cambio en sentido contrario será ignorado. Una vez hecho esto devolverá en exclusiva a la aplicación solicitante los parámetros del servicio (ver tabla~\ref{tab:serviceSettings}) y el estado de la interfaz. La estructura del mensaje devuelto puede apreciarse en la tabla~\ref{tab:endHandshakingInCWSNMessage}
+Puede darse el caso que, en este punto del proceso, ya haya aplicaciones montadas sobre el servicio y estén cooperando en una \ac{CWSN}. En este caso el servicio no tiene que configurar nada y se limita a ver si puede satisfacer las necesidades que le acaba de transmitir la nueva aplicación que acaba de registrar, es decir, cambiará el papel del nodo a primario si este era secundario, un cambio en sentido contrario será ignorado. Una vez hecho esto devolverá en exclusiva a la aplicación solicitante los parámetros del servicio (ver tabla~\ref{tab:serviceSettings}) y el estado de la interfaz. En la tabla~\ref{tab:endHandshakingInCWSNMessage} se observa la estructura del tercer mensaje que completa la configuración.
 
 %------------------------------
 \subsection{Configuración de la interfaz de comunicación}
@@ -732,16 +730,15 @@ Puede darse el caso que, en este punto del proceso, ya haya aplicaciones montada
 Tras recibir el \textit{handshaking} de registro de la aplicación, el servicio si no se encuentra colaborando en una \ac{CWSN}, procede a la configuración de una interfaz de comunicación, esta configuración se realiza en una \textit{AsyncTask} de \android{} que permite descargar la \textit{UI-Thread} evitando errores del tipo \textit{ANR ``Application Not Responding''} ya que parte de la tarea se ejecuta en segundo plano, además este tipo de tarea habilita mecanismos de paso de información entre ambas hebras. Antes de configurar una interfaz pediremos a los controladores de las otras interfaces que liberen los recursos (llamando a su método \textit{stop}) para  poder partir de una situación deseable.
 }
 %%---
-Tras recibir el \textit{handshaking} de registro de la aplicación, el servicio si no se encuentra colaborando en una \ac{CWSN}, procede a la configuración de una interfaz de comunicación que se realiza en segundo plano. Antes de empezar la configuración una interfaz pediremos a los controladores de las otras interfaces que liberen los recursos (llamando a su método \textit{stop}) para partir de una situación con mínimos recursos utilizados.
-
+Tras recibir el segundo mensaje de la negociación entre aplicación y módulo cognitivo, si éste no se encuentra colaborando en una \ac{CWSN} procede a la configuración de una interfaz de comunicación que se realiza en segundo plano. Antes de empezar la configuración una interfaz pediremos a los controladores de las otras interfaces que liberen los recursos para que el proceso use la menor cantidad de memoria posible.
  
 \subsubsection{Wi-Fi: servicio y controlador}
-\begin{codeInvolved}
-\begin{files}
-\textbf{Service}: SetupWifiInterface (AsyncTask)\\
-\textbf{WifiController}: stop(), start() / StatusReceiver\_wifi (BroadcastReceiver)
-\end{files}
-\end{codeInvolved}
+%\begin{codeInvolved}
+%\begin{files}
+%\textbf{Service}: SetupWifiInterface (AsyncTask)\\
+%\textbf{WifiController}: stop(), start() / StatusReceiver\_wifi (BroadcastReceiver)
+%\end{files}
+%\end{codeInvolved}
 %%diseño+implementacion
 \comp{I+D: 
 La interfaz \wifi{} permite configurarse en varias modalidades como:
@@ -777,21 +774,22 @@ tipo de nodo que seamos:
 \paragraph{Nodo coordinador} Arrancamos un par de hebras, una para tráfico TCP que admita conexiones fiables y otra para el tráfico UDP que escuche y capture paquetes, si todo se ha configurado bien enviamos un mensaje análogo al párrafo anterior y quedamos a la espera de capturar paquetes.
 }
 %---
-La interfaz \wifi{} permite configurarse en varias modalidades como: Infraestructura, Tethering o Ad-hoc. En la actualidad sólo está implementado el modo infraestructura por los problemas descritos en \ref{sec:analisisWifi}. Una vez lanzada la tarea en segundo plano, intentamos liberar los recursos que vamos a solicitar si éstos estuvieran reservados por llamadas anteriores y no se hubiesen liberado aún.\\
-La configuración comienza encendiendo la interfaz con la ayuda de la \ac{API} de \android{}, si no lo estuviese ya. Esperamos a que se encienda mediante una espera de consulta activa o \textit{polling}. Una vez levantada intentamos contectarnos a la red \wifi{} que nos hayan pasado como parámetro (mediante el \ac{SSID}), desconectándonos del punto de acceso actual si no fuese el mismo. Si no nos han pasado ningún parámetro dejamos al sistema \android{} que elija el \ac{AP} mas conveniente. Mientras se establece la conexión a un punto de acceso esperamos mediante \textit{polling} con límite de tiempo seleccionable desde las preferencias en la sección de \textit{test}. Si agotamos el tiempo y no hemos sido capaces de conectarnos, devolvemos un valor \false{} que provoca el envío de mensaje a todas las aplicaciones del tipo \Scst{REGISTER\_EXCHANGE} con el campo \Scst{EXTRA} ``errorSetupInterface'' a \true{}. Si por el contrario nuestro \textit{BroadcastReceiver} ha podido capturar la acción de conexión al citado punto de acceso o ya estamos conectados a éste continuamos estableciendo los canales de comunicación que dependen del tipo de nodo que seamos:
+La interfaz \wifi{} permite configurarse en varias modalidades como: Infraestructura, \textit{Tethering} o \adhoc{}. Aunque sólo está implementado el modo infraestructura debido a los problemas descritos en \ref{sec:analisisWifi} y que complican la implementación del modelo a distintos terminales. 
 
-\paragraph{Nodo normal} Necesitamos tener un canal de comunicación permanentemente a la espera para tráfico TCP recibido desde el coordinador. Una vez establecido terminamos la configuración enviando un mensaje de tipo \Scst{REGISTER\_EXCHANGE} con el campo \Scst{EXTRA} ``errorSetupInterface'' a \false{} y el resto de campos descritos en la tabla~\ref{tab:endHandshakingNotCWSNMessage} y lanzamos el proceso de registro en la red (sección~\ref{subsec:enterInNetwork}).
+Una vez lanzada la tarea en segundo plano intentamos liberar los recursos que vamos a solicitar por si éstos estuvieran reservados por llamadas anteriores y no se hubiesen liberado aún. La configuración comienza encendiendo la interfaz con la ayuda de la \ac{API} de \android{}, si no lo estuviese ya. Una vez terminada la espera para levantar la interfaz, intentamos contectarnos a la red \wifi{} que nos hayan pasado como parámetro (mediante el \ac{SSID}), desconectándonos del punto de acceso actual si no fuese el mismo. Si por el contrario, no nos han pasado ningún parámetro dejamos al sistema \android{} que elija el \ac{AP} más conveniente. Esperamos mientras se establece la conexión a el punto de acceso, sin embargo para evitar un retraso excesivo (seleccionable desde el menú de preferencias, sección~\ref{sec:app}) podemos salir de esta espera. Si agotamos el tiempo y no hemos sido capaces de conectarnos, devolvemos un valor \false{} que provoca el envío de un mensaje a todas las aplicaciones del tipo \Scst{REGISTER\_EXCHANGE} con el campo \Scst{EXTRA} ``errorSetupInterface'' a \true{}. Si por el contrario nuestro \textit{BroadcastReceiver} ha podido capturar la acción de conexión al citado punto de acceso o ya estamos conectados a éste continuamos estableciendo los canales de comunicación que dependen del tipo de nodo que seamos:
+
+\paragraph{Nodo normal} Necesitamos tener un canal de comunicación permanentemente a la espera para tráfico \ac{TCP} recibido desde el coordinador. Una vez establecido terminamos la configuración enviando un mensaje de tipo \Scst{REGISTER\_EXCHANGE} con el campo \Scst{EXTRA} ``errorSetupInterface'' a \false{} y el resto de campos descritos en la tabla~\ref{tab:endHandshakingNotCWSNMessage} y lanzamos el proceso de registro en la red (sección~\ref{subsec:enterInNetwork}).
 
 \paragraph{Nodo coordinador} Necesitamos tener dos canales de comunicación, uno para tráfico proveniente de nodos ya en la red, este tráfico necesitamos que sea fiable por lo que será un canal \ac{TCP} y otro canal para recibir avisos de nuevos nodos que se quieran incorporar a la red, este tráfico por motivos de implementación no puede ser fiable por lo que tendremos que recurrir a tráfico \ac{UDP}. Al terminar de establecer los canales enviamos un mensaje análogo al párrafo anterior y quedamos a la espera de capturar paquetes.
 
 
 \subsubsection{Bluetooth: servicio y controlador}
-\begin{codeInvolved}
-\begin{files}
-\textbf{Service}: SetupBTinterface (AsyncTask)\\
-\textbf{BluetoothController}: stop(), start(), connect(), setState() / StatusReceiver\_bt (BroadcastReceiver)
-\end{files}
-\end{codeInvolved}
+%\begin{codeInvolved}
+%\begin{files}
+%\textbf{Service}: SetupBTinterface (AsyncTask)\\
+%\textbf{BluetoothController}: stop(), start(), connect(), setState() / StatusReceiver\_bt (BroadcastReceiver)
+%\end{files}
+%\end{codeInvolved}
 %%diseño+implementacion
 \comp{D+I:
 Como en el controlador de \wifi{} empezamos (en segundo plano) liberando si no estuviesen ya cada uno de los recursos, en \bt{} coexisten, dependiendo del tipo de nodo, tres tipos de hebras: la que acepta conexiones (\textit{AcceptThread}), la que lanza la conexión (\textit{ConnectThread}) y la que mantiene la conexión entre el esclavo y el maestro (\textit{ConnectedThread}), de este tipo podemos tener más de una.
@@ -804,73 +802,74 @@ Encendemos la interfaz \bt{} si no estuviese encendida ya, mediante una petición
 }
 %------
 
-Como en la configuración del controlador de \wifi{} empezamos liberando si no estuviesen ya cada uno de los recursos. Encendemos la interfaz \bt{} si no estuviese encendida ya, mediante una petición al sistema \android{} y esperamos mediante \textit{polling} a que finalice. A continuación, procedemos a configurar las hebras del controlador según el tipo de nodo:
+Como en la configuración del controlador de \wifi{} empezamos liberando si no estuviesen ya cada uno de los recursos. Encendemos la interfaz \bt{} si no estuviese encendida ya, mediante una petición al sistema \android{} y esperamos a que finalice. A continuación, procedemos a configurar las hebras del controlador según el tipo de nodo:
 
-\paragraph{Nodo normal} Por motivos de implementación este tipo de nodo se comporta como esclavo en la comunicación \bt{} por lo que necesita aceptar conexiones, como sólo esperamos un maestro cuando se consigue una conexión liberamos este recurso de aceptación de conexiones. Como ya hemos configurado la interfaz enviamos el mensaje final del \textit{handshaking} (ver tabla~\ref{tab:endHandshakingNotCWSNMessage}) con las instrucciones que hemos visto ya.
+\paragraph{Nodo normal} Por motivos de implementación este tipo de nodo se comporta como esclavo en la comunicación \bt{} por lo que necesita aceptar conexiones, como sólo esperamos un maestro cuando se consigue una conexión liberamos este recurso de aceptación de conexiones. Como ya hemos configurado la interfaz enviamos el tercer mensaje de la negociación (ver tabla~\ref{tab:endHandshakingNotCWSNMessage}) con las instrucciones que hemos visto ya.
 
-\paragraph{Nodo coordinador} Por motivos de implementacion este tipo de nodo se debe comportar como maestro en la comunicación \bt{}, no necesita aceptar conexiones, pero si disparar éstas. Para ello, recogemos de la base de datos los nodos inactivos y para cada uno de ellos lanzamos una conexión gracias al método \textit{connect()}. Este método coge como parámetros la dirección \ac{MAC} con la cual queremos establecer una conexión y el número de intentos que vamos a intentar para establecer la conexión (a parte de otras constantes como el UIID).\\ 
-Como en \bt{} es fácil que falle el establecimiento, intentamos minimizar este riesgo mediante el reintento de la conexión. En el momento que conseguimos establecer el canal de comnunicación trasladamos este canal al manejador de conexiones del controlador que tendrá tantos canales como nodos haya en la red. Estos canales son cifrados y fiables por diseño de \android{}.\\
-Cada vez que se consigue o se falla en el establecimiento del canal, el controlador comunica al servicio esta información que es utilizada para saber cuando hemos de establecer el canal de comunicación con el siguente nodo.
+\paragraph{Nodo coordinador} Por motivos de implementacion este tipo de nodo se debe comportar como maestro en la comunicación \bt{}, no necesita aceptar conexiones, pero sí disparar éstas. Para ello obtenemos del \var{Repositorio} los nodos inactivos y para cada uno de ellos lanzamos una conexión. El proceso de conexión necesita conocer la dirección \ac{MAC} con la cual queremos establecer una conexión y el número de intentos que vamos a intentar para establecer la conexión (a parte de otras constantes como el \ac{UIID}).\\ 
+Como en \bt{} es fácil que falle el establecimiento, intentamos minimizar este riesgo mediante el reintento de la conexión. En el momento que conseguimos establecer el canal de comnunicación trasladamos este canal al manejador de conexiones del controlador que tendrá tantos canales como nodos haya en la red. Estos canales son cifrados y fiables por diseño de \android{}. Cada vez que se consigue o se falla en el establecimiento del canal, el controlador comunica al servicio esta información que es utilizada para saber cuando hemos de establecer el canal de comunicación con el siguente nodo.
 
-Una vez hemos acabado con la lista de nodos inactivos habremos terminado de configurar la interfaz y procederemos al envío del último mensaje del \textit{handshaking} con el formato visto en la tabla~\ref{tab:endHandshakingNotCWSNMessage}
+Una vez hemos acabado con la lista de nodos inactivos habremos terminado de configurar la interfaz y procederemos al envío del último mensaje de la negociación.
 
 
 %------------------------------
 \subsection{Registro de un nodo en la red}
 \label{subsec:enterInNetwork}
 
-Según la interfaz en la que nos encontremos se alterna el papel de quién da el primer paso. Así en \bt{} el nodo normal espera una conexión entrante y en \wifi{} es el coordinador quién espera un paquete \ac{UDP} enviado desde un nodo normal.
+Según la interfaz en la que nos encontremos se alterna el papel de quién es el que da el primer paso. Así en \bt{} el nodo normal espera una conexión entrante y en \wifi{} es el coordinador quién espera un paquete \ac{UDP} enviado desde un nodo normal.
 \subsubsection{Wi-Fi}
-\begin{codeInvolved}
-\begin{files}
-\textbf{WifiController}: SendHelloPacket (AsyncTask), UDPlistener (Thread), stopSendingHelloPacket(), setState()\\
-\textbf{Service}: mHandlerWf, sendInfoNewNodeOnNetwork()\\
-\textbf{Database}: eventNewDeviceIPCoordinator(), newDeviceEventNormal(), modifyNode()
-\end{files}
-\end{codeInvolved}
+%\begin{codeInvolved}
+%\begin{files}
+%\textbf{WifiController}: SendHelloPacket (AsyncTask), UDPlistener (Thread), stopSendingHelloPacket(), setState()\\
+%\textbf{Service}: mHandlerWf, sendInfoNewNodeOnNetwork()\\
+%\textbf{Database}: eventNewDeviceIPCoordinator(), newDeviceEventNormal(), modifyNode()
+%\end{files}
+%\end{codeInvolved}
 %%diseño+implementación
 \comp{D+I:
 Tras la configuración de la interfaz por parte de un nodo normal, éste inicia otro proceso que comienza a enviar paquetes cada 800 milisegundos hasta llegar a un máximo de 20. La razón de enviar una ráfaga de paquetes radica en que al ser trafico broadcast/multicast los puntos de acceso pueden menospreciarlo (incluso bloquearlo) y el mismo dispositivo \android{} puede que no esté escuchando siempre en este tipo de direcciones. De hecho cuando se apaga la pantalla, el driver de \wifi{} se reconfigura automáticamente para dejar de escuchar a la dirección de broadcast, por ello una ráfaga de 20 paquetes espaciados en el tiempo aumenta las posibilidades de recepción e interpretación de estos paquetes por parte del coordinador. Si al finalizar el envío de la ráfaga no consiguiésemos ninguna respuesta el proceso de registro terminará enviando hacia el servicio el estado {\small (EVENT\_HELLO\_NOT\_REACHED)} que será interpretado por éste informando a todas las aplicaciones registradas del fallo del proceso indicando que no ha sido posible establecer una \ac{CWSN} {\small (EVENT\_INTERFACE\_CANNOT\_CONNECT)}.\\
 }
 %------
 
-Tras la configuración de la interfaz por parte de un nodo normal, éste inicia otro proceso que comienza a enviar una ráfaga de paquetes espaciados en el tiempo, la razón radica en que al ser trafico \textit{broadcast/multicast} tanto los puntos de acceso pueden menospreciarlo (incluso bloquearlo) como el mismo dispositivo \android{} puede que no esté escuchando siempre en este tipo de direcciones.\\
-De hecho cuando se apaga la pantalla, el driver de \wifi{} se reconfigura automáticamente para dejar de escuchar a la dirección de \textit{broadcast}, por ello una ráfaga espaciada en el tiempo aumenta las posibilidades de recepción e interpretación de estos paquetes por parte del coordinador. Si al finalizar el envío de la ráfaga no consiguiésemos ninguna respuesta el proceso de registro terminará enviando hacia el servicio el estado \Scst{EVENT\allowbreak\_HELLO\allowbreak\_NOT\allowbreak\_REACHED} que será interpretado por éste informando a todas las aplicaciones registradas del fallo del proceso indicando que no ha sido posible establecer una \ac{CWSN}. En este caso, el evento facilitado a las aplicaciones se transforma en \Scst{EVENT\allowbreak\_INTERFACE\allowbreak\_CANNOT\allowbreak\_CONNECT} que concentra el mismo tipo de evento en distintos controladores, uniformando la respuesta.\\
+Tras la configuración de la interfaz por parte de un nodo normal, éste inicia otro proceso por el que comienza a enviar una ráfaga de paquetes espaciados en el tiempo. La razón radica en que el tráfico \textit{broadcast/multicast} puede ser menospreciado tanto por los puntos de acceso \wifi{} que pueden bloquearlo, como por el mismo dispositivo \android{} puede que no esté escuchando siempre en este tipo de direcciones.De hecho cuando se apaga la pantalla, el driver de \wifi{} se reconfigura automáticamente para dejar de escuchar a la dirección de difusión. 
 
-Este tipo de paquetes lo denominamos \textit{``HelloPacket''} y su contenido es:
-
+En vista de ello una ráfaga espaciada en el tiempo aumenta las posibilidades de recepción e interpretación de estos paquetes por parte del coordinador. Este tipo de paquetes lo denominamos \textit{``HelloPacket''} su estructura puede verse en la tabla~\ref{tab:hellopacket} en el siguiente capítulo. Si al finalizar el envío de la ráfaga no consiguiésemos ninguna respuesta el proceso de registro terminará enviando hacia el servicio el estado \Scst{EVENT\allowbreak\_HELLO\allowbreak\_NOT\allowbreak\_REACHED} que será interpretado por éste informando a todas las aplicaciones registradas del fallo del proceso indicando que no ha sido posible establecer una \ac{CWSN}. En este caso, el evento facilitado a las aplicaciones se transforma en \Scst{EVENT\allowbreak\_INTERFACE\allowbreak\_CANNOT\allowbreak\_CONNECT} que concentra el mismo tipo de evento en distintos controladores, uniformando la respuesta.
+\comp{esto a implementación:\\
 \protobufTableInit{Estructura mensaje registro en la red \wifi{}}
-  \item[Tipo de paquete] Valor ``HELLO'' del enumerado ``packetType''
-	\item[Hello packet] Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Tipo de paquete''
+  \item[\fbox{\colorbox{green}{Tipo de paquete}}]\hfill\\[3pt] Valor ``HELLO'' del enumerado ``packetType''
+	%\\\rule{2cm}{0.4pt}
+	\item[\fbox{Hello packet}]\hfill\\[3pt] Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Tipo de paquete''
+	%\\\noindent\rule{\textwidth}{0.4pt}
 	\begin{description}
-		\item[Nombre del nodo en la red] Una \String{}  con el nombre del nodo en la red
-		\item[Papel del nodo] Una \String{} cuyo valor \bsq{p} es interpretado como primario y \bsq{s} como secundario (\bsq{u} para valor desconido)
-		\item[Tipo de nodo] Una \String{} cuyos valores pueden ser: \bsq{n} normal, \bsq{c} coordinador (\textcolor{notImplemented}{\bsq{t} coordinador temporal en \bt{} [sin implementar]}, \bsq{u} para valor desconocido)
-		\item[Dirección MAC] Una \String{} cuyo valor es la dirección MAC de \bt{}, clave que identifica al nodo de manera unívoca
+		\item[\fbox{Nombre del nodo en la red}]\hfill\\[3pt] Una \String{}  con el nombre del nodo en la red
+		\item[\fbox{Papel del nodo}]\hfill\\[3pt] Una \String{} cuyo valor \bsq{p} es interpretado como primario y \bsq{s} como secundario (\bsq{u} para valor desconido)
+		\item[\fbox{Tipo de nodo}]\hfill\\[3pt] Una \String{} cuyos valores pueden ser: \bsq{n} normal, \bsq{c} coordinador (\textcolor{notImplemented}{\bsq{t} coordinador temporal en \bt{} [sin implementar]}, \bsq{u} para valor desconocido)
+		\item[\fcolorbox{blue}{red}{Dirección MAC}]\hfill\\[3pt] Una \String{} cuyo valor es la dirección MAC de \bt{}, clave que identifica al nodo de manera unívoca
 	\end{description}
 \protobufTableEnd{Campos del paquete ``HelloPacket''}{helloPacket}
+}
 
-
-Si por el contrario uno de los paquetes llega a destino y es manejado por el coordinador, éste interpretará el contenido dentro del mismo controlador. Esta ruptura del modelo de capas tiene como objetivo evitar propagar información al servicio de paquetes que no encajen con la estructura y campos requeridos desechando otros paquetes. El controlador entiende como manejar estos paquetes pero no el resto. Si capturamos un \textit{``HelloPacket''} generaremos un evento hacia el servicio de nuevo nodo en la red \Scst{EVENT\_ENTERED\_IN\_NETWORK} con la información leída del paquete. 
+Si por el contrario uno de los paquetes llega a destino y es manejado por el coordinador, se procerá a la interpretación del contenido dentro del mismo controlador. Esta ruptura del modelo de capas tiene como objetivo evitar propagar información al servicio de paquetes que no encajen con la estructura y campos requeridos. El controlador entiende cómo manejar estos paquetes pero no el resto. Si capturamos un \textit{``HelloPacket''} generaremos un evento hacia el servicio de nuevo nodo en la red \Scst{EVENT\_ENTERED\_IN\_NETWORK} con la información leída del paquete. 
 
 \figura{Vectorial/design/entradaRed-wf-coord}{width=.7\textwidth}{fig:entradaRed-wf-coord}{Flujograma de los procesos desencadenados en el coordinador al introducir un nodo en \wifi{}}
 
-Este evento llega al \textit{handler} de \wifi{} en el servicio, dónde
+Este evento llega al \var{Gestor de interfaces} (mas concretamente al \textit{handler} de \wifi{}), donde
 lo primero que hacemos es ver si el nodo ya está registrado en la red
 (este paso es necesario ya que tenemos varios envíos del mismo paquete
-por parte del mismo nodo). Si ya está registrado ignoramos este
-evento, pues es una copia de otro anterior durante una guarda de
-tiempo. La motivación de esta guarda recae en que en \wifi{} no se
+por parte del mismo nodo). Si ya está registrado ignoramos durante una guarda de
+tiempo este evento, pues es una copia de otro anterior. La motivación de esta guarda recae en que en \wifi{} no se
 detecta inmediatamente que un nodo se ha caído de la red, sólo nos
 podemos dar cuenta cuando intentamos enviarle algo y obtenemos un
 error. Puede darse la situación de que un nodo se registre, se caiga e
 intente registrarse de nuevo. Si en este lapsus nadie ha intentado
 ponerse en contacto con él, el resto de nodos seguirán creyendo que el
-nodo esta en la red. Si ignorasemos este evento el nodo que está intentado cerrar su registro en la red no tiene manera de saber que en realidad a ojos de los demás nodos él ya está registrado en la red, creyendo que su \textit{``HelloPacket''} no ha llegado a destino resultando una situación de falso fallo. Si no estaba activo en la red, lo marcamos como activo (insertándolo, si no estuviese ya, en la base de datos con la información facilitada por el controlador)
+nodo esta en la red. Si ignorasemos este evento permanentemente, el nodo que está intentado cerrar su registro en la red no tiene manera de saber que en realidad a ojos de los demás nodos él ya está registrado en la red, creyendo que su \textit{``HelloPacket''} no ha llegado a destino resultando una situación de falso fallo. Si no estaba activo en la red, lo marcamos como activo (insertándolo, si no estuviese ya, en el \var{Repositorio} con la información facilitada por el controlador) y ponemos en marcha la guarda.
 Acto seguido el coordinador informará a éste nodo del resto de nodos que ya hay en la red y al resto de nodos de la red se les informará del nuevo nodo. Por su parte el coordinador informará a las aplicaciones registradas que ha habido un nuevo nuevo nodo en la red y facilitará la lista de nodos.
 
-La información de señalización que se envía y que representa\footnote{Notar que el campo ``Dirección IP'' puede no ser informado por no estar disponible en ese momento o ser inecesario} al nodo la podemos ver en la tabla~\ref{itm:infoNode}
+La información de señalización que se envía y que representa%\footnote{Notar que el campo ``Dirección IP'' puede no ser informado por no estar disponible en ese momento o ser inecesario} 
+al nodo la podemos ver en la tabla~\ref{itm:infoNode}, esta información está encapsulada en un mensaje de señalización junto con otra información relevante al evento.
 
+\comp{esto a implementación:\\
 \protobufTableInit{Estructura mensaje representación de un Nodo (serialización)}
 	\item[Nombre del nodo en la red] Una \String{}  con el nombre del nodo en la red.
 	\item[Papel del nodo] Una \String{} cuyo valor \bsq{p} es interpretado como usuario primario y \bsq{s} como secundario (\bsq{u} para valor desconocido).
@@ -879,8 +878,11 @@ La información de señalización que se envía y que representa\footnote{Notar que 
 	\item[Dirección IP] Una \String{} cuyo valor representa la dirección IP (formato IP4) del nodo.
 	\item[Dirección MAC del coordinador] Una \String{} que contiene la dirección MAC de \bt{} del coordinador del nodo que estamos enviando la información.
 \protobufTableEnd{Representación de un nodo necesaria para recrear el mapa de red, contenido del mensaje de señalización}{infoNode}
+}
 
-Al recibir esta información el nodo normal, su controlador ya le habrá informado al servicio que está recibiendo datos. Este evento le sirve al servicio para ver que ha sido registrado en la red y genera el mismo un evento de entrada en la red \Scst{EVENT\_ENTERED\_IN\_NETWORK} que sirve para homogeneizar el flujo y que sea idéntico al de \bt{}, este evento sirve para parar el envío de \textit{``HelloPacket''}. Al terminar de recibir el mensaje de señalización antes de procesarlo, tendremos que comprobrar que el nodo coordinador ya está incluido en la base de datos y si no incluir su dirección \ac{MAC} para obtener el identificador de nodo. El esquema de base de datos nos exige conocer a priori el identificador del nodo para poder traducir las direcciones \ac{MAC} de \bt{}. A medida que vamos procesando el mensaje vamos sustituyendo los valores anteriores (o de relleno si el nodo coordinador no estaba incluido en la base de datos) por los nuevos extraidos del mensajes de señalización. En este momento el nodo normal informará a las aplicaciones de que ha entrado en la red gracias a mensajes vistos en~\ref{subsec:serviceInformation} con el evento \Scst{EVENT\_INTERFACE\_NEW\_NODE} (visto en~\ref{tab:events}) y anunciará la lista de nodos quién es el coordinador. \comp{es oportuno decir que por motivos de eficiencia, solo hacemos una pasada por el mensaje} 
+Mientras el nodo normal está recibiendo esta información, su controlador correspondiente le habrá informado a través del \var{Gestor de Estados} de la situación de recibir datos. Este evento le sirve al módulo cognitivo para saber que ha sido registrado en la red. Con lo que él mismo genera un evento de entrada en la red \Scst{EVENT\_ENTERED\_IN\_NETWORK} que sirve para homogeneizar el flujo y que sea idéntico al de \bt{}. Además este evento sirve para parar el envío de \textit{``HelloPacket''}. 
+
+Al terminar de recibir el mensaje de señalización antes de procesarlo tendremos que comprobrar que el nodo coordinador está incluido ya en el \var{Repositorio}. La razón es que necesitamos conocer el identificador del nodo para poder recrear el mapa de red, por lo que si el coordinador no estaba ya incluido, incluimos al menos su dirección \ac{MAC} que se obtiene haciendo un procesamiento mínimo del mensaje, así logramos obtener el identificador el nodo. A medida que vamos procesando el mensaje más profundamente, vamos sustituyendo los valores antiguos del \var{Repositorio} (y de relleno si el nodo coordinador no estaba incluido) por los nuevos valores extraídos del mensaje de señalización. En este momento el nodo normal informará a las aplicaciones de que ha entrado en la red gracias a mensajes vistos en~\ref{subsec:serviceInformation} con el evento \Scst{EVENT\_INTERFACE\_NEW\_NODE} (visto en~\ref{tab:events}) y anunciará la lista de nodos y quién es el coordinador. \comp{es oportuno decir que por motivos de eficiencia, solo hacemos una pasada por el mensaje} 
 
 \subsubsection{Bluetooth}
 \begin{codeInvolved}
@@ -930,11 +932,11 @@ Entre las acciones a ejecutar por el nodo que sale de la red tenemos que dependi
 
 En esta interfaz tenemos una conexión intermitente, que se desplega y se retrae en los momentos en los que hay comunicación. En esta situación ante eventualidades no tenemos el mismo tiempo de reacción como lo podemos tener en \bt{}. En el caso de salida voluntaria necesitamos un mecanismo que informe que un nodo va a abandonar la red.
 
-Este mecanismo consiste en el envío de un paquete llamado \textit{``ByePacket''} que contiene la dirección \ac{MAC} del nodo que abandona la red. El envío de este paquete puede ser sobre \ac{TCP} o \ac{UDP}. En el caso de que el envío sea desde el nodo coordinador, sólo podremos mandarlo sobre \ac{TCP} ya que los nodos normales no escuchan sobre \ac{UDP} como hemos visto en \ref{subsec:configInterface}\\
+Este mecanismo consiste en el envío de un paquete llamado \textit{``ByePacket''} (ver detalle en figura~\ref{itm:byePacket}) que contiene la dirección \ac{MAC} del nodo que abandona la red. El envío de este paquete puede ser sobre \ac{TCP} o \ac{UDP}. En el caso de que el envío sea desde el nodo coordinador, sólo podremos mandarlo sobre \ac{TCP} ya que los nodos normales no escuchan sobre \ac{UDP} como hemos visto en \ref{subsec:configInterface}\\
 %%diseño+impletacion
 \comp{D+I:
 Este envío se realiza gracias a otra \textit{AsyncTask} que al finalizar libera los recursos del controlador cerrando la vida de la aplicación por completo.
-}
+%}
 %%--
 
 \protobufTableInit{Estructura mensaje desregistro en la red \wifi{}}
@@ -944,7 +946,7 @@ Este envío se realiza gracias a otra \textit{AsyncTask} que al finalizar libera 
 		\item[Dirección MAC] Una \String{} cuyo valor es la dirección MAC de \bt{}, clave que identifica al nodo de manera unívoca.
 	\end{description}
 \protobufTableEnd{Campos del paquete ``ByePacket''}{byePacket}
-
+}
 Las acciones a ejecutar por los nodos que se quedan en la red son:
 
 \figura{Vectorial/design/salidaRed-event}{width=.7\textwidth}{fig:salidaRed-event}{Flujo evento pérdida de nodo manejado disparado por evento del controlador desde los nodos que se quedan en la red}
@@ -954,7 +956,7 @@ Las acciones a ejecutar por los nodos que se quedan en la red son:
 
 \figura{Vectorial/design/salidaRed-signaling}{width=.7\textwidth}{fig:salidaRed-signaling}{Flujo evento pérdida de nodo disparado por señalización manejado desde un nodo normal}
 
-\paragraph{Nodo coordinador} Al recibir el paquete \textit{``ByePacket''} se generará el evento de pérdida de nodo que se entregará al servicio. Marcaremos este nodo como inactivo y veremos si aún quedan nodos en la red, si la respuesta es afirmativa enviaremos un mensaje de señalización a cada nodo restante en la red informando de la pérdida, así ellos podrán recomponer el mapa de red e informar a sus aplicaciones, informamos también a nuestras aplicaciones registradas del evento y de la nueva lista de nodos. Si la respuesta es negativa, nos limitamos a informar a las aplicaciones registradas del evento de pérdida y del evento de salida de la red.
+\paragraph{Nodo coordinador} Al recibir el paquete \textit{``ByePacket''} se generará el evento de pérdida de nodo que se entregará al servicio. Marcaremos este nodo como inactivo y veremos si aún quedan nodos en la red, si la respuesta es afirmativa enviaremos un mensaje de señalización (cuyo detalle se explica en la figura~\ref{itm:lostNode}) a cada nodo restante en la red informando de la pérdida, así ellos podrán recomponer el mapa de red e informar a sus aplicaciones, informamos también a nuestras aplicaciones registradas del evento y de la nueva lista de nodos. Si la respuesta es negativa, nos limitamos a informar a las aplicaciones registradas del evento de pérdida y del evento de salida de la red.
 
 
 %XXX-jblesa. En todos los apartados cambiaria Normal y Coordinador por
@@ -1029,7 +1031,7 @@ Con respecto a los parámetros exclusivos del servicio, la forma de actualizarlos
  
 La actualización de estos parámetros (tanto cuando sólo actualizamos los de aplicación o todos) viene condicionada a si estamos cooperando ya en una red o no. Si no estamos en ninguna red los valores pasados sobreescribiran los existentes. En cambio si estamos en una situación de red, los parámetros ``papel del nodo'' y ``periodo tarea cognitiva'' pueden no ser actualizados. Su actualización depende por tanto del valor actual, si es más restrictivo se podrán actualizar. Es decir para el ``papel del nodo'' sólo actualizaremos si el cambio pedido es a ``nodo primario'' y para ``periodo tarea cognitiva'' sólo actualizaremos si el periodo requerido es más pequeño que el actual.  Con respecto al parámetro ``tipo de nodo'', una vez se está en una \ac{CWSN} no se permiten cambios ya que dejaríamos a la red sin coordinador o añadiriamos otro coordinador, situaciones que no son de interés. Lo anterior no aplica, salvo el cambio de tipo de nodo, en la situación en que sólo hay una aplicación registrada, situación en la que actualizaremos los parámetros al no haber conflicto. \\
 
-Con respecto a la actualización de estos parámetros al resto de nodos, una vez validados y actualizados según las reglas descritas, si son de interés general (``nombre del nodo'', ``papel del nodo'') son enviados al coordinador para que este los distribuya como una actualización más del mapa de red.
+Con respecto a la actualización de estos parámetros al resto de nodos, una vez validados y actualizados según las reglas descritas, si son de interés general (``nombre del nodo'', ``papel del nodo'') son enviados al coordinador (ver detalle del mensaje en figura~\ref{itm:updateToCoordinator}) para que este los distribuya como una actualización más del mapa de red (estructura del mensaje de red detallada en figura~\ref{itm:updateParams}).
 
 En \bt{} puede darse la situación de que si somos un nodo normal los demás nodos nos vean con parámetros antiguos, esto es debido a que si actualizamos nuestros parámetros fuera de una \ac{CWSN}, estos obviamente no son propagados a la red, al ser incluidos en la red por el coordinador, que ya nos conoce de veces anteriores, no tiene manera de saber que hemos actualizado los parámetros. Como impera la minimización del número de mensajes pasados por la red, éste no nos preguntará, sino que sacará una copia de los parámetros de su base de datos, que serán los mismos que tendrá el resto de la red, pues son la copia desactualizada y distribuida del coordinador. Esta situación es muy poco frecuente por lo que teniendo en mente la minimización del tamaño de mensajes y el número de éstos, se ha preferido no implementar mecanismos que hagan mantener actualizados en todo momento los parámetros del nodo (``nombre del nodo'', ``papel del nodo'' y ``tipo de nodo'' aunque este último es deducible por el contexto) en favor de una mayor eficiencia de red. Esta situación no ocurre en \wifi{} ya que la forma de registro en la red conlleva el envío de un paquete para registrarse en el que enviamos toda la información del nodo, por lo que sobre \wifi{} se puede actualizar en cualquier momento y sobre \bt{} sólo en momentos de cooperación en red. No obstante la situación de desactualización se soluciona cuando hay un cambio de contexto con interfaz destino \wifi{}.
 

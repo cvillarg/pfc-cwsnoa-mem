@@ -15,14 +15,14 @@ Este capítulo es complementario al de diseño, existe una delgada línea entre dis
 \end{resumen}
 
 %-------------------------------------------------------------------
-\section{Detalles de implementación}
+\section{Detalles de implementación de la arquitectura cognitiva}
 %-------------------------------------------------------------------
 \label{sec:detallesImplementacion}
 
 Para la implementación de los distintos bloques de la arquitectura se han elegido los mecanismos que mayor grado de independencia obtienen ayudando a estructurar los procesos en capas y tener puntos de intercomunicación entre éstos fuertmente marcados. La programación basada en objetos y el paso de mensajes entre distinas entidades ayudan a resolver las directrices de modularidad marcadas en diseño.
 
 \subsection{Interfaz aplicación servicio (cliente-servidor)}
-Como se vió en análisis~\ref{sec:android}, de entre las formas de recrear la interfaz cliente-servidor necesaria para la confección de un servicio con ataduras, escogemos aquella que se realiza a través de un \textit{Messenger}. De esta forma la interfaz no declara métodos para su llamada desde el cliente, si no que la interacción con el servicio se basa en el intercambio de mensajes que son recogidos en su método \textit{handleMessage()} declarado en su \textit{Handler}. Por consiguiente tenemos una interfaz mucho más flexible y actualizable a cambio de estar abierta a errores (mensajes intercambiados sin fijarse a las reglas previamente declaradas), además de proveer de un entorno multihebra seguro al encolar las solicitudes de los diferentes clientes y ser entregadas al servicio en orden una vez que se haya atendido a la petición mediante la hebra que maneja el \textit{Handler}.  
+Como se vió en análisis~\ref{sec:android}, de entre las formas de recrear la interfaz cliente-servidor necesaria para la confección de un servicio con ataduras, escogemos aquella que se realiza a través de un \textit{Messenger}. De esta forma la interfaz no declara métodos para su llamada desde el cliente, si no que la interacción con el servicio se basa en el intercambio de mensajes que son recogidos en su método \textit{handleMessage()} declarado en su \textit{Handler}. Por consiguiente tenemos una interfaz mucho más flexible y actualizable a cambio de estar abierta a errores (mensajes intercambiados sin fijarse a las reglas de la \ac{API} del servicio). Además de proveer de un entorno multihebra seguro al encolar las solicitudes de los diferentes clientes y ser entregadas al servicio en orden una vez que se ha atendido a la petición mediante la hebra que maneja el \textit{Handler}.  
 La interfaz o el objeto \textit{IBinder} se construye gracias al
 método \textit{getBinder()} del objeto \textit{Messenger} creado
 gracias al \textit{Handler} implementado en el servicio.
@@ -30,7 +30,7 @@ gracias al \textit{Handler} implementado en el servicio.
 %XXX-jblesa La referencia sec:android no funciona. Quita bound service
 %y ponlo en español. Quita thread-safe y ponlo en español XXX-cvillar ok
 
-A su vez las aplicaciones deben declarar su propio \textit{Handler} para poder recibir mensajes desde el servicio, para ello se deberá informar al servicio cúal es el objeto \textit{Messenger} de la aplicación. Así habilitamos también en sentido contrario la comunicación habilitando al servicio que nos comunique datos en cualquier instante de tiempo, al igual estos envíos de información serán encolados por lo que la aplicación no debe preever mecanismos \textit{multi-thread} para atender al servicio.  
+A su vez las aplicaciones deben declarar su propio \textit{Handler} para poder recibir mensajes desde el servicio, para ello se deberá informar al servicio cúal es el objeto \textit{Messenger} de la aplicación. Así habilitamos también en sentido contrario la comunicación habilitando al servicio que nos comunique datos en cualquier instante de tiempo, al igual estos envíos de información serán encolados por lo que la aplicación no debe prever de mecanismos multihebra para atender al servicio.  
 
 %XXX-jblesa Quita multi-thread y ponlo en español XXX-cvillar ok.
 
@@ -38,10 +38,10 @@ A su vez las aplicaciones deben declarar su propio \textit{Handler} para poder r
 \subsection{Módulo o Servicio cognitivo}
 El servicio se constituye en dos clases con una relación de heredamiento entre ambas. La clase padre \class{CognitiveLayer\allowbreak\_common\allowbreak\_Service} que intenta encapsular las partes que todo servicio cognitivo tendría que satisfacer:
 \begin{itemize}
-	\item Métodos de inicialización de los componentes necesarios no específicos y su destrucción. (\textit{onCreate(), onDestroy()}).
+	\item Métodos de inicialización de los componentes necesarios no específicos y su destrucción, (\textit{onCreate(), onDestroy()}).
 	\item Inicialización del \textit{Handler} para la comunicación con las aplicaciones y manejo de mensajes de registro y no reconocidos.
 	\item Obtención de la referencia al repositorio.
-	\item Programación de la tarea periódica (optimizador) y la obtención de recursos para evitar que \android{} duerma al proceso en el trascurso desde la recepción de la alarma en un \textit{BroadcastReceiver} hasta la llamada a \textit{onStartCommand()} y la ejecución de ésta por completo.
+	\item Programación de la tarea periódica (forma parte del módulo \var{Optimizador}) y la obtención de recursos para evitar que \android{} duerma al proceso en el trascurso desde la recepción de la alarma en un \textit{BroadcastReceiver} hasta la llamada a \textit{onStartCommand()} y la ejecución de ésta por completo.
 \end{itemize} 
 
 Dejando las acciones específicas y propias de cada \ac{CWSN} para la clase hija \class{CognitiveLayer\allowbreak\_specific\allowbreak\_Service}, entre las que destacamos:
@@ -63,12 +63,14 @@ para proveer del entorno necesario para llevar a cabo esa tarea.
 \comp{diseño? analisis?:
 El apellido cognitivo supone una abstración del modelo de comunicaciones. La aplicacicion que use de este modelo sólo tiene que entender del dato que quiere enviar o recibir y del destinatario de ese mensaje. En \android{} las aplicaciones son procesos que interactúan con el usuario, están formadas por varios componentes. Entre los distintos que nos provee \android{} el más adeacuado para montar nuestra arquitectura es el servicio. Permitiéndonos estructurar nuestro modelo de capas hubicando en este componente todo lo que tenga que ver con el establecimiento, control, transmisión y recepción de señalización y datos.
 }
-\paragraph{Programación tarea} Se basa en el sistema de alarmas de \android{} \cite{alarms}, este sistema es útil para realizar periodicamente operaciones sin tener en cuenta el ciclo de vida de la aplicación (en este caso el servicio cognitivo). Una alarma puede ser usada para lanzar \textit{Services} en conjunción con \textit{BroadcastReceivers}. Al dispararse la alarma gracias a la clase \class[android.app]{AlarmManager} y efectuarse el \textit{pendingIntent} descrito en ella, se ejecuta el método \textit{onReceive()} del \textit{BroadcastReceiver} (puesto en el \textit{intent}) este método se ejecuta en la hebra principal y si dura demasiado tiempo \android{} matará el proceso por ello este método debe ser ligero y lanzar por ejemplo un \textit{service}. Entre que se termina de ejecutar el método y empieza a ejecutar el servicio (en este caso) ocurre un espacio de tiempo \cite[p.~328-342]{busyCoder} en que nuestro dispositivo puede dormirse. Por lo tanto debemos adquirir en el método \textit{onReceive()} un \textit{wakelock} que impida que el dispositivo pueda dormirse en este espacio de tiempo y liberarlo una vez se ha terminado de ejecutar las operaciones deseadas.\\
+\paragraph{Programación tarea} Se basa en el sistema de alarmas de \android{} \cite{alarms}, este sistema es útil para realizar periodicamente operaciones sin tener en cuenta el ciclo de vida de la aplicación (en este caso el servicio cognitivo). Una alarma puede ser usada para lanzar \textit{Services} en conjunción con \textit{BroadcastReceivers}. Al dispararse la alarma gracias a la clase \class[android.app]{AlarmManager} y efectuarse el \textit{pendingIntent} descrito en ella, se ejecuta el método \textit{onReceive()} del \textit{BroadcastReceiver} (puesto en el \textit{intent}). Este método se ejecuta en la hebra principal y si dura demasiado tiempo \android{} matará el proceso por ello este método debe ser ligero y lanzar por ejemplo un \textit{Service}. Entre que se termina de ejecutar el método y empieza a ejecutar el servicio (en este caso) ocurre un espacio de tiempo \cite[p.~328-342]{busyCoder} en que nuestro dispositivo puede dormirse. Por lo tanto debemos adquirir en el método \textit{onReceive()} un \textit{wakelock} que impida que el dispositivo pueda dormirse en este espacio de tiempo y liberarlo una vez se ha terminado de ejecutar las operaciones deseadas.\\
 Para realizar esto, llamamos a un método (que debe ser estático para
-poder llamarlo sin ser objeto) de nuestro servicio (alojado en
-\textit{common}) que adquiere el cerrojo e inicia el servicio. Cuando
-un servicio es iniciado se crea, si no estuviese ya iniciado o
-vinculado (\textit{bound}), y se ejecuta el método \textit{onStartCommand()} una vez terminado no se produce a la destrucción hasta que se pare el servicio. Nuestro servicio permite ser vinculado para prestar conectividad en una \ac{CWSN} y permite ser iniciado para realizar operaciones de forma periódica. La vinculación la realizan otras aplicaciones, sin embargo la iniciación la realiza el mismo servicio gracias a la sucesión de alarmas que se programa cuando se crea el servicio (método \textit{onCreate()}). Como consecuencia, la extinción del servicio tiene que ser llevado a cabo por el mismo cuando detecte que no hay aplicaciones sobre él a las que dar soporte. El flujo de vida del servicio se ve alterado ya que al haber una iniciación, la falta de vinculación no detendrá al servicio, siendo preciso la llamada al método \textit{stopSelf()} cuando sea oportuno (ver~\ref{subsec:salidaRedImpl}).
+poder llamarlo sin tener referencia al objeto) de nuestro servicio (alojado en
+la clase \bsq{padre}) que adquiere el cerrojo e inicia el servicio, es decir ejecuta el método \textit{onStartCommand()}. 
+
+%Cuando un servicio es iniciado (se crea si no estuviese iniciado o
+%vinculado previamente) se ejecuta el método \textit{onStartCommand()} una vez terminada su ejecución, no se produce a la destrucción hasta que se pare el servicio. 
+Nuestro servicio permite ser vinculado para prestar conectividad en una \ac{CWSN} y permite ser iniciado para realizar operaciones de forma periódica. La vinculación la realizan las aplicaciones que se registran para cooperar en red.  Sin embargo la iniciación la realiza el mismo servicio gracias a la sucesión de alarmas que se programan al crearse el servicio (método \textit{onCreate()}). Como consecuencia, la extinción del servicio tiene que ser llevado a cabo por el mismo cuando detecte que no hay aplicaciones sobre él a las que dar soporte. El flujo de vida del servicio se ve alterado ya que al haber una iniciación, la falta de vinculación no detendrá al servicio, siendo preciso la llamada al método \textit{stopSelf()} cuando sea oportuno (ver~\ref{subsec:salidaRedImpl}).
 %-------------------
 \subsection{Repositiorio, capa de datos}
 Utilizamos la tecnología de base de datos de \texttt{Sqlite3} para implementar nuestro repositorio. La principal razón de esta elección es que se trata de una base de datos integrada en \android{} lista para usar que consume pocos recursos y se adapta bastante bien a casi todas las necesidades que pueda tener una aplicación móvil.\\ 
@@ -76,7 +78,7 @@ Utilizamos la tecnología de base de datos de \texttt{Sqlite3} para implementar n
 \figura{Vectorial/implementation/repository}{width=.76\textwidth}{fig:repositorio}{Repositorio, estructura interna}
 
 El modelo de capa de datos se basa en la propia base de datos \texttt{SQLiteDatabase} y un manejador para la creación, actualización, apertura y liberación de ésta: \texttt{MySQLiteHelper}, más una clase, que engloba a ambas y que abstrae aún más al servicio de la tecnología usada y de su tratamiento ya que ofrece la funcionalidad de introducir o hacer consultas sobre datos a través de métodos como si se tratase de un objeto más. Se trata de la clase \class[util]{CognitiveDataSource}. \android{} nos provee de una \ac{API} para la realización de \textit{insert, update, remove} o \textit{query} a través de métodos que toman como parámetros los distintos datos de una sentencia o nos permite lanzar en crudo la sentencia de base de datos. Esto último tiene como problema que si la sintaxis cambia en el lenguaje \ac{SQL} nuestra sentencia puede verse afectada, sin embargo si se realiza de la primera forma somos inmunes a los cambios en el lenguaje debido a que la sentencia se construye en tiempo de ejecución en base a la tecnología que se posea en ese momento.
-La manera de proveer datos a estos métodos es a través de \textit{arrays} de \Strings{} en el caso de consultas o eliminaciones o utilizando el objeto \texttt{ContentValues} para nuevas inserciones o actualizaciones. El resultado lo obtenemos en un objeto \texttt{Cursor}, la clase abstrae al servicio al preparar los datos para elaborar la sentencia y entrega los datos obtenidos del cursor en forma de objetos primitivos básicos o más complejos englobandolos en objetos de clase como:
+La manera de proveer datos a estos métodos es a través de \textit{arrays} de \Strings{} en el caso de consultas y eliminaciones o utilizando el objeto \texttt{ContentValues} para nuevas inserciones o actualizaciones. El resultado lo obtenemos en un objeto \texttt{Cursor}, la clase abstrae al servicio al preparar los datos para elaborar la sentencia y entrega los datos obtenidos del cursor en forma de objetos primitivos básicos o más complejos englobándolos en objetos de clase como:
 \begin{itemize}
 	\item \class[util]{Node}
 	\item \class[util]{Scan}
@@ -125,27 +127,30 @@ Entre los distintos campos hay varios con codificación fija:
 \ddbbTableEnd{Estructura tabla Scans}{tableScans}
 
 La tabla \var{Scans} (tabla~\ref{tab:tableScans}) hace referencia a los datos de sensado del entorno. La clave primaria está formada por el par (\textit{id\_node}, \textit{id\_scan}), de tal forma que no se permiten valores repetidos de este par. Vinculamos esta tabla con la tabla \var{Nodes} gracias a la clave foránea \textit{id\_node} que hace referencia al campo \textit{id\_node} de \var{Nodes} de tal forma que no se permite introducir datos del entorno de nodos que no existan y borrar nodos en la tabla \var{Nodes} si existen datos en la tabla \var{Scans} para no dejar huérfano el dato. La manera de introducir nuevos valores implica una consulta anterior para averiguar cúal es el número de \textit{id\_scan} que corresponde al nodo al que queremos vincular el dato. Este proceso está encapsulado en el método que se publica en la capa de datos siendo transparente al servicio.
+
+La precisión del intervalo guardado en el campo \textit{throughput} es un número real expresado en segundos y el campo \textit{rssi} expresa el valor en dBm en un número entero. 
 %----------------------
 
 
 \subsection{Mensajes enviados por la red}
 Estos mensajes son resultado en última instancia del súbmodulo
 \var{Gestor de Interfaces} que es el punto de salida del módulo cognitivo
-hacia los \bsq{controladores de interfaz} para su envío por el
-\var{canal de datos} o por el \var{VCC}.
+hacia los \bsq{Controladores de interfaz} para su envío por el
+canal de datos o por el canal \var{VCC}.
 
 %XXX-jblesa. No has hablado del VCC hasta ahora. Supongo que lo haras
 %cuando escribas las primeras secciones. XXX-cvillar, por este comentario imagino que debo matizarlo mejor en diseño. 
 
-La implementación esta basada en \textit{Protocol-Buffers} de Google \cite{protocolBuffers}. Los mensajes son construidos utilizando \ac{IDL}, un archivo donde definimos la estructura de estos mensajes. \textit{Protocol-Buffers} utiliza un entero para cada campo para evitar codificar el nombre del campo y así serilizar estructuras de datos de manera más eficaz. La manera de codificar este entero varia por la misma razón: desde el 1-15 se codifica con un \textit{byte}, del 16-2047 con dos y así en adelante. \textit{Protocol-Buffers} define una entidad llamada \bsq{\textit{Message}} que puede albergar campos de distintos tipos: int32, bool, bytes\ldots tipos más complejos como enumerados u otros mensajes anidados.\\
-Con esta \ac{IDL} que definimos en la clase \class[util]{Message} con extensión \texttt{.proto}, \textit{Protocol-Buffers} nos genera (gracias al compilador \texttt{protoc}) un \textit{parser} y todos los métodos necesarios para construir y serializar las estructuras de datos. Usamos la sentencia \Scst{option optimize\_for = LITE\_RUNTIME;} en nuestro archivo \ac{IDL} para indicar que nuestra maquina es limitada y así usar los menos recursos posibles a cambio de perder otras características como la rapidez.\\
+La implementación esta basada en \textit{Protocol-Buffers} de Google \cite{protocolBuffers}. Los mensajes son construidos utilizando \ac{IDL}, un archivo donde definimos la estructura de estos mensajes. \textit{Protocol-Buffers} utiliza un entero para cada campo para evitar codificar el nombre del campo y así serilizar estructuras de datos de manera más eficaz. La manera de codificar este entero varia por la misma razón: desde el 1-15 se codifica con un \textit{byte}, del 16-2047 con dos y así en adelante. \textit{Protocol-Buffers} define una entidad llamada \bsq{\textit{Message}} que puede albergar campos de distintos tipos: int32, bool, bytes\ldots, tipos más complejos como enumerados u otros mensajes anidados.
+
+Con esta \ac{IDL} que definimos en la clase \class[util]{Message} con extensión \texttt{.proto}, \textit{Protocol-Buffers} nos genera (gracias al compilador \texttt{protoc}) un intérprete del arbol de derivación creado para traducir los mensajes y todos los métodos necesarios para construir y serializar las estructuras de datos. Usamos la sentencia \Scst{option optimize\_for = LITE\_RUNTIME;} en nuestro archivo \ac{IDL} para indicar que nuestra maquina es limitada y así usar los menos recursos posibles a cambio de perder otras características como la rapidez.\\
 
 Para facilitar la traducción de los diferentes mensajes, se ha definido dos grandes mensajes para evitar anidar mensajes que no comparten un significado, lo que haría poco claro el modelo. El primer mensaje engloba todos los mensajes intercambiados en la \ac{CWSN}, [\var{NodeMessage}] y el otro engloba a los paquetes que se envían sobre \wifi{} para el registro y desregistro en la red, [\var{WifiPacket}]. Empezamos a interpretar un mensaje asumiendo (por probabilidad) que es del tipo \var{NodeMessage} si obtenemos un error del tipo \Scst{InvalidProtocolBufferException} significa que el mensaje recibido es del otro tipo. Para saber qué tipo de mensaje está contenido evaluamos \var{type} y \var{packetType} respectivamente. Estos campos no deben ser codificados con el mismo número, de ser así el proceso de traducción puede confudir ambos tipos de mensaje.\\
 %El punto de entrada en el proceso de \textit{parsing} para cada mensaje es la evaluación de \var{type} y \var{packetType} respectivamente, para evitar fallos en la interpretación y confundir ambos mensajes estos campos no pueden ser codificados con el mismo número.
 
 %XXX-jblesa parsing en español. XXX-cvillar parsing = traducción?
 
-En la figura~\ref{fig:messageProto} se plasma un mapa completo de la estructura de anidación de los diferentes mensajes que se han visto en los procesos de red (sección~\ref{sec:procesosRed} del capítulo de diseño). En color {\bf\color[RGB]{0,128,128}turquesa} se pintan el nombre de los campos que son opcionales y en {\bf negro} aquellos que son obligatorios. Los denominados con el prefijo \textit{list} en el tipo, aceptan más de un valor convirtiéndose en una lista del tipo denominado. Aunque se nos permite anidar más de un tipo de mensaje, la manera de interpretarlo está guidada por los campos donde se especifica qué tipo de mensaje contenemos, por ello cada mensaje anidado está marcado como opcional pero siempre debemos asegurar que está presente el mismo tipo de mensaje que el especificado en el campo que usamos como guía.
+En la figura~\ref{fig:messageProto} se plasma un mapa completo de la estructura de anidación de los diferentes mensajes que se han visto en los procesos de red (sección~\ref{sec:procesosRed} del capítulo de diseño). En color {\bf\color[RGB]{0,128,128}turquesa} se pintan el nombre de los campos que son opcionales y en {\bf negro} aquellos que son obligatorios. Los denominados con el prefijo \textit{list} en el tipo, aceptan más de un valor convirtiéndose en una lista del tipo denominado. Aunque se nos permite anidar más de un tipo de mensaje, la manera de interpretarlo está guidada por los campos donde se especifica que tipo de mensaje contenemos. Por ello cada mensaje anidado está marcado como opcional pero siempre debemos asegurar que está presente el mismo tipo de mensaje que el especificado en el campo que usamos como guía.
 
 \figura{Vectorial/implementation/message2}{width=.9\textwidth}{fig:messageProto}{Estructura anidada de mensajes de red sobre \textit{Protocol-Buffers}}
 %
@@ -159,15 +164,15 @@ Además para cumplir el requisito de proveer una serie de operaciones a otras apl
 \begin{description}
  \item [Extendiendo la clase Binder] Si el alcance se restringe a la misma aplicación y no se necesita comunicación entre procesos, está es la manera más sencilla de conseguir una referencia para llamar a todos los métodos publicos del servicio.
  \item [Usando un Messenger] Este objeto nos permite que el servicio preste soporte a otros procesos más allá del local y evitando condiciones de carrera entre las distintas peticiones ya que la hebra que maneja el \textit{Handler} recoge y encola las solicutudes. Las peticiones son en forma de mensaje por lo que no hay una interfaz que declare métodos propiamente dichos, si no que brinda una comunicación entre ambos por medio de paso de mensajes que son procesados en una cola.
- \item [Usando AIDL] Esta forma es la menos intervencionista por parte de \android{}, nos permite definir una \ac{API} propiamente dicha con la declaración de funcionalidad gracias a \ac{AIDL} que descompone los objetos en primitivas que pueden ser traspasadas entre procesos para desmpeñar \ac{IPC}. Es la única manera de proveer un servicio que acepte peticiones simultaneamente pero es responsabilidad del programador proveer una estructura \textit{multi-thread-safe} 
+ \item [Usando AIDL] Esta forma es la menos intervencionista por parte de \android{}, nos permite definir una \ac{API} propiamente dicha con la declaración de funcionalidad gracias a \ac{AIDL} que descompone los objetos en primitivas que pueden ser traspasadas entre procesos para desmpeñar \ac{IPC}. Es la única manera de proveer un servicio que acepte peticiones simultaneamente pero es responsabilidad del programador proveer una estructura multihebra segura. 
 \end{description}
 }
 %--------------------------
 
-\subsection{Interfaz de servicio de los controladores}
+\subsection{Interfaz Módulo cognitivo - Controlador}
 Esta comunicación está fuertemente marcada y se basa también en el paso de mensajes. Esto nos ayuda a colocar la funcionalidad en cada parcela e intercambiar exclusivamente y de forma estandarizada la información necesaria para llevar a cabo un proceso.
 
-En el servicio implementamos tantos \textit{Handlers} como controladores de interfaz tengamos, que pasamos como referencia a éstos. El controlador por tanto tiene una forma de remitir información de manera estandarizada sin conocer más datos del servicio, el cúal si que puede lanzar los procesos (llamar a métodos del controlador) al estar en un nivel jerárquico superior. El servicio recoge los diferentes mensajes enviados por el controlador que son entregados en orden y cuando se haya atendido a la petición anterior al basarse en la misma implementación que la interfaz aplicación servicio. Estos mensajes aglutinan tanto el evento que se produzca en la red como el estado de la interfaz.
+En el servicio implementamos tantos \textit{Handlers} como controladores de interfaz tengamos, que pasamos como referencia a éstos. El controlador por tanto tiene una forma de remitir información de manera estandarizada sin conocer más datos del servicio, el cúal si que puede lanzar los procesos (llamar a métodos del controlador) al usar la referencia implementada gracias a la programación basada en objetos. El servicio recoge los diferentes mensajes enviados por el controlador que son entregados en orden y una vez se ha atendido a la petición anterior. Este sistema es el mismo que el implementado en la interfaz Aplicación - Módulo cognitivo. Los mensajes aglutinan tanto el evento que se produzca en la red como el estado de la interfaz.
 
 \comp{Diseño:
 y los homogeneiza su respuesta entre los distintos controladores para que las distintas comunicaciones que tenga que hacer a las aplicaciones sean uniformes y transparentes a la interfaz de comunicación usada en ese momento. 
@@ -180,7 +185,7 @@ Estos mensajes pueden ser respuesta al lanzamiento de un proceso por parte del s
 Está formado por:
 \begin{itemize}
 	\item La clase \class{WifiController} que maneja las conexiones entrantes sobre \ac{IP} y centraliza todas las funciones de la interfaz para enviar y recibir datos, así como el descubrimiento y salida de la red.\\
-Contiene dos hebras encargadas de alojar \textit{sockets} utilizados en la comunicación y un gestor de estados (\textit{setState()}) que va recabando y enviando la información al servicio sobre el estado de la interfaz. Necesitamos alojar esto en una hebra pues son llamadas bloqueantes, no acotadas en el tiempo y el tiempo de ejecución no está delimitado, es decir, una vez salgamos del bloqueo vamos a querer bloquearnos otra vez para no perder ninguna conexión.
+Contiene dos hebras encargadas de alojar \textit{sockets} utilizados en la comunicación y un \var{Gestor de estados} que va recabando y enviando la información al servicio sobre el estado de la interfaz. Necesitamos alojar esto en una hebra pues son llamadas bloqueantes, no acotadas en el tiempo y el tiempo de ejecución no está delimitado, es decir, una vez salgamos del bloqueo vamos a querer bloquearnos otra vez para no perder ninguna conexión.
 
 	\item El \textit{ServiceIntent} \class[util]{SendoIP} que maneja las conexiones salientes sobre \ac{IP}. En este caso la implementación es sobre un servicio en vez de una hebra propiamente dicha. Esto es así porque los servicios están pensados para realizar una tarea sin que el componente que lo inicializó influya en su ciclo de vida y al revés. El envío de datos por la red es un ejemplo de esto y al ser una actividad acotada en el tiempo (no sabemos cuanto va a tardar, pero tiene delimitado un final) podemos encomendar esta tarea a un \textit{serviceIntent}, un servicio que se ejecuta en su propia hebra y que se autodestruye cuando ha terminado de ejecutar la tarea. Además las peticiones simultáneas a este tipo de servicios son encoladas y entregadas una vez ha terminado la anterior, asegurándonos que sólo tenemos un \textit{socket} abierto para el envío de datos y que no hay condiciones de carrera en el envío de distintos datos a distintos participantes.
  
@@ -191,11 +196,12 @@ Contiene dos hebras encargadas de alojar \textit{sockets} utilizados en la comun
           está ubicada dentro del servicio aunque no se aprovecha del
           ámbito en el que está, ya que no accede de manera directa a variables locales. 
 					De esta manera puede declararse independientemente en su archivo y funcionar 
-					de la misma manera. 
+					de la misma manera. En la configuración de la interfaz como proceso de red 
+					explicaremos los motivos del porqué usar una \textit{AsyncTask}.
 
 %XXX-jblesa Pon scope en español XXX-cvillar ok.
 
-	\item Un \textit{broadcastReceiver} \class{StatusReceiver\allowbreak\_wifi} encargado de recoger los eventos de conexión o cambios para sincronizar los procesos en el controlador. En la configuración de la interfaz como proceso de red explicaremos los motivos del porqué de una \textit{AsyncTask}.
+	\item Un \textit{BroadcastReceiver} \class{StatusReceiver\allowbreak\_wifi} encargado de recoger los eventos de conexión o cambios para sincronizar los procesos en el controlador.
 \end{itemize}
 
 \figura{Vectorial/implementation/wificontroller}{width=.76\textwidth}{fig:wifiController}{Controlador WiFi, estructura interna}
@@ -224,12 +230,16 @@ Como se ve ambos controladores tienen una arquitectura similar. El de \bt{} está
 
 \begin{itemize}
 	\item La clase \class{BluetoothController} manejadora del establecimiento y mantenimiento de las conexiones sobre un canal RFCOMM.
-Al igual que su homóloga implementa por la misma razón hebras que gobiernan los detalles de la comunicación. En concreto se usan tres tipos de hebras como veremos en la configuración de la interfaz, dos de ellas para conseguir el \textit{socket} sobre el que enviar y recibir datos y otra para alojar y controlar a éste.
+Al igual que su homóloga y por las mismas razones, implementa hebras que gobiernan los detalles de la comunicación. En concreto se usan tres tipos de hebras como veremos en la configuración de la interfaz: dos de ellas para conseguir el \textit{socket} sobre el que enviar y recibir datos y otra para alojar y controlar a éste.
 	\item La \textit{AsyncTask} para la configuración de la interfaz y del objeto  \texttt{{\small BluetoothController}}: \class{CognitiveLayer\allowbreak\_specific\allowbreak\_Service\allowbreak.SetupBTinterface}, imitando las mismas líneas marcadas en el controlador de \wifi{}.
-	\item Un \textit{broadcastReceiver} \class{StatusReceiver\allowbreak\_bluetooth} encargado de recoger los eventos de encendido o apagado, para sincronizar procesos.
+	\item Un \textit{BroadcastReceiver} \class{StatusReceiver\allowbreak\_bluetooth} encargado de recoger los eventos de encendido o apagado, para sincronizar procesos.
 \end{itemize}  
 
-De igual similitud el servicio debe seguir los mismos pasos para configurar este controlador. Los \textit{BroadcastReceiver} los tiene que inicializar el servicio para tener comunicación directa con éste, ya que necesita saber de los eventos ocurridos para distintos propósitos.  Así evitar meter una capa intermedia al referenciarlos directamente desde el servicio, lo que nos permite su observación a lo largo de toda la vida de éste. Si ligasemos su vida a la del controlador sólo serían observables cuando la interfaz en uso sea la de la interfaz en cuestión, ya que por motivos de eficiencia y minimización de recursos, el resto del controlador se libera al no ser utilizado.
+De igual similitud el servicio debe seguir los mismos pasos para configurar este controlador.\\
+
+Los \textit{BroadcastReceiver} los tiene que inicializar el servicio para tener comunicación directa con éste, ya que necesita saber de los eventos ocurridos para distintos propósitos.  Así se evita meter una capa intermedia al referenciarlos directamente desde el servicio, lo que nos permite su observación a lo largo de toda la vida de éste. Si ligasemos su vida a la del controlador sólo serían observables cuando la interfaz en uso sea la de la interfaz en cuestión. 
+
+El resto del controlador, menos los componentes del módulo \var{Sensado}, se libera al no ser utilizado por motivos de eficiencia y minimización de recursos.
 
 \comp{Analisis:
 en este caso la aplicación como sólo desea enviar un dato a través de la red cognitiva, si por ejemplo nuestra arquitectura cognitiva estuviese montada sobre una \textit{Activity} (un componente con interfaz gráfica que liga su ciclo de vida a su tiempo en pantalla) en primer lugar la aplicación dejaría de estar en pantalla, con lo cual corre el riesgo de ser destruida y 
@@ -247,7 +257,7 @@ las \textit{activities} ligan su ciclo de vida a la interacción en la pantalla, 
 %mano del proceso que en la su bloque.
 En esta sección relataremos los detalles de implemetanción de los procesos
 de red que implican a más de un bloque de la arquitectura. Al dotar de un contexto
-de proceso más que de bloque, se logra entender pequeños componentes de un bloque
+de proceso más que de bloque, se logra entender los pequeños componentes de un bloque
 que son usados por uno o más procesos.
 %XXX-jblesa Esta seccion no se entiende XXX-cvillar mejor?
 
@@ -259,8 +269,8 @@ que son usados por uno o más procesos.
 \textbf{Service}: m2service (manejador de mensajes entre servicio y aplicaciones)
 \end{files}
 \end{codeInvolved}
-
-En el registro de la aplicación en el servicio, guardamos el \textit{Messenger} de la aplicación (que viene informado en el campo \textit{replyTo} del primer mensaje de la pequeña negociación) en un \textit{HasMap} llamado \var{mClients} cuya clave es la representación en forma de \String{} del objeto \textit{Messenger} obtenida a a través del método \textit{toString()}, también registramos su código de aplicación en otros dos \textit{HashMap}:
+%XXX-cvillar el primer mensaje será explicado en la api en implementación, vincularlo desde ahi.
+Una vez recibido el primer mensaje \comp{FALTA VINCULACION}, el servicio procede a registrar la aplicación. Para ello guardamos el \textit{Messenger} de la aplicación (que viene informado en el campo \textit{replyTo} del primer mensaje de la pequeña negociación) en una matriz asociativa llamada \var{mClients} cuya clave es la representación en forma de \String{} del objeto \textit{Messenger} obtenida a a través del método \textit{toString()}, también registramos su código de aplicación en otros dos \textit{HashMap}:
 \begin{itemize} 
 \item \var{mOut\_app}: nos relaciona la clave de \var{mClients} con el código de aplicación. Al enviarnos la aplicación la petición (en la que va incluida su \textit{Messenger}) recuperamos su código de aplicación (gracias al \textit{Messenger}) para poder marcar el mensaje de datos saliente, sin necesidad de que la aplicación nos informe en cada petición de su código de aplicación. 
 \item \var{mIn\_app}: relaciona el código de aplicación con la clave \var{mClients}. Al recibir un mensaje leemos el código de aplicación que viene marcado, gracias a este \textit{HashMap} obtenemos la referencia a \var{mClients} donde obtenemos el \textit{Messenger} para poder entregar el mensaje de datos entrante a la aplicación correspondiente.
@@ -297,7 +307,7 @@ por parte del sistema.\\
 %XXX-jblesa pon callback en español. Has escrito ``espera
 %esperamos''.  Cambia de palabra. XXX-cvillar reestructurado.
 
-Para encender la interfaz \wifi{} procedemos a invocar el método \textit{setWifiEnabled(true)} de la clase \class[android.net.wifi]{WifiManager}, es una llamada asíncrona que desencadena los procesos para encender el \textit{driver} de \wifi{} y su anuncio mediante mensajes de \textit{broadcast} del sistema.
+Para encender la interfaz \wifi{} procedemos a invocar el método \textit{setWifiEnabled(true)} de la clase \class[android.net.wifi]{WifiManager}. Es una llamada asíncrona que desencadena los procesos para encender el \textit{driver} de \wifi{} y su anuncio al resto del sistema mediante mensajes de difusión.
 
 \paragraph{Nodo normal} Necesita configurar un \textit{ServerSocket} para
 permitir conexiones entrantes para recibir tráfico del
@@ -314,11 +324,11 @@ transmitir este valor por la \ac{CWSN}.
 
 \paragraph{Nodo coordinador} También necesitamos escuchar tráfico proveniente de los nodos normales, por lo que desplegamos un \textit{socket} que escuche en \ac{TCP} al igual que el nodo normal. Además para poder registrar nodos en la red, dónde éstos no conocen a priori la configuración ni su esquema, necesitamos escuchar en direcciones tipo:  \textit{multicast} o \textit{broadcast}.
 
-Para ello necesitamos de un \textit{MulticastSocket} para ampliar el rango de escucha más allá de nuestra propia dirección \ac{IP} en la red. Registramos el \textit{socket} en un grupo \textit{multicast} a través de la llamada al método \textit{joinGroup()} de la clase \class[java.net]{MulticastSocket} (clase heredada de {\small\texttt{DatagramSocket}}) pasando como parámetro la dirección \textit{multicast} deseada y adquirir un cerrojo para que este tipo de mensajes en la cola de \wifi{} no sean descartados y sean entregados en el \textit{socket}, para ello llamamos a \textit{createMulticastLock()} de la clase \class[android.net.wifi]{WifiManager}. Para escuchar en la dirección de \textit{broadcast}, llamamos al método \textit{setBroadcast()} de la misma clase, pasando como parámetro \true{}. El puerto de escucha de este \textit{socket} \ac{UDP} es el número siguiente a dónde escuchamos en \ac{TCP}.
+Para ello necesitamos de un \textit{MulticastSocket} para ampliar el rango de escucha más allá de nuestra propia dirección \ac{IP} en la red. Registramos el \textit{socket} en un grupo \textit{multicast} a través de la llamada al método \textit{joinGroup()} de la clase \class[java.net]{MulticastSocket} (clase heredada de {\small\texttt{DatagramSocket}}) pasando como parámetro la dirección \textit{multicast} deseada (bsq{224.2.76.24}, constante escrita en el código) y adquirir un cerrojo para que este tipo de mensajes no sean descartados de la cola de \wifi{} y sean entregados en el \textit{socket}. Esta es la razón de llamar a \textit{createMulticastLock()} de la clase \class[android.net.wifi]{WifiManager}. Para escuchar en la dirección de difusión, llamamos al método \textit{setBroadcast()} de la misma clase, pasando como parámetro \true{}. El puerto de escucha de este \textit{socket} \ac{UDP} es el número siguiente a donde escuchamos en \ac{TCP}.
    
 También necesitamos adquirir un cerrojo para prevenir al \textit{driver} de \wifi{} que deje de escuchar, el cerrojo encargado es el \textit{createWifiLock()} que le pasamos como parámetro la constante \Scst{WifiManager.WIFI\allowbreak\_MODE\allowbreak\_FULL\allowbreak\_HIGH\allowbreak\_PERF} para indicar que se debe mantener la interfaz despierta, es decir, que se sigan capturando paquetes y se mantenga una latencia baja en la respuesta cuando la pantalla esté apagada.\\
 
-Una vez terminada la configuración de la interfaz, ejecutamos en el método \textit{onPostExecute()} de la \textit{AsyncTask} ejecutado sobre la \textit{UI-Thread}, en vez de en segundo plano, el envío del mensaje de finalización del \textit{handshaking}.
+Una vez terminada la configuración de la interfaz, ejecutamos en el método \textit{onPostExecute()} de la \textit{AsyncTask} ejecutado sobre la \textit{UI-Thread}, en vez de en segundo plano, el envío del último mensaje de la negociación que indica la finalización de la configuración del servicio.
 
 \subsubsection{Bluetooth: servicio y controlador}
 \begin{codeInvolved}
@@ -341,7 +351,7 @@ La espera para levantar la interfaz \bt{} también se realiza mediante consulta a
 
 Para levantar la interfaz \bt{} obviamos la recomendación de \android{} que incita a preguntar al usuario a través de un diálogo para la activación del \bt{}. Como un requisito de la \ac{CR} es ser transparente al usuario, utilizamos la llamada asíncrona del método \textit{enable()} de la clase \class[android.bluetooth]{BluetoothAdapter}. Esto desencadena su encendido y anuncios posteriores del sistema informando que ya está levantada que capturamos gracias al \textit{BroadcastReceiver} de \bt{}.\\
 
-El método \textit{connect()} arranca una nueva hebra tras invocarse para asegurarse de que su procesamiento no bloquee al resto del programa. La razón de asegurar una ejecución en segundo plano reside en que este método es llamado en dos puntos de la arquitectura: al configurar la interfaz y al recibir un mensaje de \textit{workaround} para conectarse de manera manual a un nodo (ver sección:\ref{subsec:connectViaBT}). En el primer, caso este proceso ya está en segundo plano, pero en el segundo, si no se ejecutase en su propia hebra, se retrasaría el procesamiento de los mensajes encolados en el \textit{Handler} del servicio con las aplicaciones sin necesidad, ya que no hay que devolver ningún resultado.
+El método \textit{connect()} arranca una nueva hebra tras invocarse para asegurarse de que su procesamiento no bloquee al resto del programa. La razón de asegurar una ejecución en segundo plano reside en que este método es llamado en dos puntos de la arquitectura: al configurar la interfaz y al recibir un mensaje de \textit{workaround} para conectarse de manera manual a un nodo (ver sección~\ref{subsec:connectViaBT}). En el primer, caso este proceso ya está en segundo plano, pero en el segundo, si no se ejecutase en su propia hebra, se retrasaría el procesamiento de los mensajes encolados en el \textit{Handler} del servicio con las aplicaciones sin necesidad, ya que no hay que devolver ningún resultado.
 
 La llamada a este método comienza con la interrupción de la hebra tipo \textit{ConnectThread} (la que lanza la conexión) si estuviese ejecutándose por una llamada previa inacabada. Tras esto lanzamos una nueva instancia de la hebra y esperamos a que termine con la instrucción de Java \textit{join()}, por el mecanismo interno de estados del controlador si la conexión se ha producido con éxito se habrá modificado un \textit{flag} que nos permite terminar la ejecución del método, si no, reintentamos hasta que alcancemos el máximo de intentos (pasado como parámetro).
 
@@ -352,8 +362,54 @@ Una vez hemos terminado de lanzar las conexiones a los nodos indicados finalizam
 %------------------------------
 \subsection{Registro de un nodo en la red}
 \label{subsec:enterInNetwork}
+Un nodo se puede representar en una estructura de datos como la expresada en la tabla~\ref{itm:infoNode}\footnote{Notar que el campo ``Dirección IP'' puede no ser informado por no estar disponible en ese momento o ser inecesario}.
 
-Como vimos en diseño, la interfaz condiciona a quién tiene que dar el primer paso, esto se debe a restricciones de implementación.
+\protobufTableInit{Estructura mensaje representación de un Nodo (serialización)}
+	\item[Nombre del nodo en la red] Una \String{}  con el nombre del nodo en la red.
+	\item[Papel del nodo] Una \String{} cuyo valor \bsq{p} es interpretado como usuario primario y \bsq{s} como secundario (\bsq{u} para valor desconocido).
+	\item[Tipo de nodo] Una \String{} cuyos valores pueden ser: \bsq{n} normal, \bsq{c} coordinador  (\textcolor{notImplemented}{\bsq{t} coordinador temporal en Bluetooth [sin implementar]}, \bsq{u} para valor desconocido).
+	\item[Dirección MAC] Un \String{} cuyo valor es la dirección MAC en \bt{} del nodo, clave que identifica al nodo de manera unívoca.	
+	\item[Dirección IP] Una \String{} cuyo valor representa la dirección IP (formato IP4) del nodo.
+	\item[Dirección MAC del coordinador] Una \String{} que contiene la dirección MAC de \bt{} del coordinador del nodo que estamos enviando la información.
+\protobufTableEnd{Representación de un nodo necesaria para recrear el mapa de red, contenido del mensaje de señalización}{infoNode}
+
+Este mensaje está encapsulado en un mensaje de señalización (ver en la figura~\ref{fig:messageProto}), junto con otra información relevante para identificar el tipo de evento. Como hemos visto en diseño el coordinador manda dos tipos de mensaje: uno informado al nuevo nodo de el resto de nodos en la red (cuya estructura la podemos ver en la figura~\ref{itm:populationToNewNode}). El otro tipo corresponde a la información que recibe el resto de nodos acerca del nuevo dispositivo. El número de este tipo de mensajes es igual al número de dispositivos (sin contar a el coordinador) que había en la red antes de la nueva inclusión (ver detalle en la figura~\ref{itm:newNode}). 
+
+\protobufTableInit{Estructura mensaje población de red}
+	\item[\fbox{Tipo}]\hfill\\[3pt] Valor ``SIGNALING'' del enumerado ``MessageType''.
+	\item[\fbox{Desde}]\hfill\\[3pt] Una \String{} con la direción MAC de \bt{} del nodo (coordinador).
+	\item[\fbox{Mensaje de señalizacion}]\hfill\\[3pt]   Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Tipo'':
+	\begin{description}
+		\item[\fbox{Señal}]\hfill\\[3pt] Valor ``TOPOLOGY'' del enumerado ``SignalType''.
+		\item[\fbox{Mensaje de mapa de red}]\hfill\\[3pt] Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Señal'':
+			\begin{description}
+				\item[\fbox{Cambio}]\hfill\\[3pt] Valor ``ALL'' del enumerado ``TopologyChange''.  			
+					%\begin{description}
+						\item[\fbox{Representación de un nodo}]\hfill\\[3pt] Mensaje que representa al nodo (ver tabla~\ref{itm:infoNode}). Hay tantos mensajes internos de este tipo como dispositivos hay en la red.
+					%\end{description}				
+			\end{description}
+	\end{description}
+\protobufTableEnd{Campos del mensaje enviado al nuevo nodo con información del resto de dispositivos en la red}{populationToNewNode}
+
+
+\protobufTableInit{Estructura mensaje nuevo nodo en la red}
+	\item[\fbox{Tipo}]\hfill\\[3pt] Valor ``SIGNALING'' del enumerado ``MessageType''.
+	\item[\fbox{Desde}]\hfill\\[3pt] Una \String{} con la direción MAC de \bt{} del nodo (coordinador).
+	\item[\fbox{Mensaje de señalizacion}]\hfill\\[3pt]   Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Tipo'':
+	\begin{description}
+		\item[\fbox{Señal}]\hfill\\[3pt] Valor ``TOPOLOGY'' del enumerado ``SignalType''.
+		\item[\fbox{Mensaje de mapa de red}]\hfill\\[3pt] Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Señal'':
+			\begin{description}
+				\item[\fbox{Cambio}]\hfill\\[3pt] Valor ``NEW'' del enumerado ``TopologyChange''.  			
+					%\begin{description}
+						\item[\fbox{Representación de un nodo}]\hfill\\[3pt] Mensaje que representa al nuevo nodo en la red (ver tabla~\ref{itm:infoNode}).
+					%\end{description}				
+			\end{description}
+	\end{description}
+\protobufTableEnd{Campos del mensaje nuevo nodo en la red informado al resto de nodos}{newNode}
+
+\clearpage
+Como vimos en diseño, la interfaz condiciona a quién tiene que dar el primer paso, esto se debe a restricciones de implementación de las diferentes interfaces de comunicación. 
 
 \subsubsection{Wi-Fi}
 \begin{codeInvolved}
@@ -366,9 +422,24 @@ Como vimos en diseño, la interfaz condiciona a quién tiene que dar el primer pas
 
 Una red \wifi{} tiene más flexibilidad para recrear la tipología de red que se requiera. En el caso que sea del tipo infraestructura, es decir existe uno o varios puntos de acceso, la tipología que subyace es estrella. Al contrario que \bt{}, en \wifi{} esto alcanza a los dos primeros niveles de la pila de protocolos de comunicación, por lo que la tipología a efectos del programador de aplicaciones está enmascarada. Así, podemos tener desde conexiones \ac{PPP} hasta \textit{multicast} o \textit{broadcast}. La fiabilidad de este tipo de conexiones viene determinada por la elección del protoloco de transporte, haciendo incompatibles ciertos tipos. 
 
-Para el registro de un nodo normal en la red utilizamos un \textit{DatagramSocket} para enviar paquetes \ac{UDP}. La dirección a la que van dirigidos estos paquetes se alterna entre la dirección difusión de la red a la que estemos conectados y una dirección de \textit{multicast}: \bsq{224.2.76.24}. El motivo es intentar incrementar el éxito de llegada e interpretación de estos paquetes. Pueden presentarse fallos en el establecimiento de la ruta, por la corrupción de los datos del paquete cuya notificación no llega al \textit{socket} o por la menospreciación por parte del \ac{AP} o del propio sistema \android{} que no permite que el \textit{driver} de \wifi{} este siempre escuchando en la dirección de \textit{broadcast}.\\ Para ello enviamos una ráfaga de 20 paquetes espaciados 800 milisegundos, estos valores garantizan una buena acogida del nodo en la nueva red sin extender la latencia del proceso demasiado en caso de fallo. La alternancia de estos paquetes es 1 de cada 5 van dirigidos a la dirección de \textit{multicast}, el resto a la de difusión. El envío de estos paquetes se realiza, al ser un proceso largo, en segundo plano implementado como una \textit{AsyncTask}.
+Para el registro de un nodo normal en la red utilizamos un \textit{DatagramSocket} para enviar paquetes \ac{UDP}. La dirección a la que van dirigidos estos paquetes se alterna entre la dirección difusión de la red a la que estemos conectados y una dirección de \textit{multicast}: \bsq{224.2.76.24}. El motivo es intentar incrementar el éxito de llegada e interpretación de estos paquetes. Pueden presentarse fallos en el establecimiento de la ruta, por la corrupción de los datos del paquete cuya notificación no llega al \textit{socket} o por la menospreciación por parte del \ac{AP} o del propio sistema \android{} que no permite que el \textit{driver} de \wifi{} este siempre escuchando en la dirección de \textit{broadcast}.\\ Para ello enviamos una ráfaga de 20 paquetes espaciados 800 milisegundos, estos valores garantizan una buena acogida del nodo en la nueva red sin extender la latencia del proceso demasiado en caso de fallo. La alternancia de estos paquetes es 1 de cada 5 van dirigidos a la dirección de \textit{multicast}, el resto a la de difusión. El envío de estos paquetes se realiza, al ser un proceso largo, en segundo plano implementado como una \textit{AsyncTask}.\\
 
 %XXX-jblesa Este parrafo es ilegible. Pon muchos mas puntos. XXX-cvillar ok reestructurado.
+
+%Los paquetes enviados en ráfagas que son útiles para el registro en la red siguen la estructura que dicta la figura~\ref{itm:helloPacket}, son los denominados \textit{``HelloPacket''}.
+La estructura de los paquetes \textit{``HelloPacket''} puede verse en la figura~\ref{itm:helloPacket}, estos paquetes enviados en ráfagas sirven para registrarse en la red. 
+\protobufTableInit{Estructura mensaje registro en la red \wifi{}}
+  \item[\fbox{\colorbox{green}{Tipo de paquete}}]\hfill\\[3pt] Valor ``HELLO'' del enumerado ``packetType''
+	%\\\rule{2cm}{0.4pt}
+	\item[\fbox{Hello packet}]\hfill\\[3pt] Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Tipo de paquete''
+	%\\\noindent\rule{\textwidth}{0.4pt}
+	\begin{description}
+		\item[\fbox{Nombre del nodo en la red}]\hfill\\[3pt] Una \String{}  con el nombre del nodo en la red
+		\item[\fbox{Papel del nodo}]\hfill\\[3pt] Una \String{} cuyo valor \bsq{p} es interpretado como primario y \bsq{s} como secundario (\bsq{u} para valor desconido)
+		\item[\fbox{Tipo de nodo}]\hfill\\[3pt] Una \String{} cuyos valores pueden ser: \bsq{n} normal, \bsq{c} coordinador (\textcolor{notImplemented}{\bsq{t} coordinador temporal en \bt{} [sin implementar]}, \bsq{u} para valor desconocido)
+		\item[\fcolorbox{blue}{red}{Dirección MAC}]\hfill\\[3pt] Una \String{} cuyo valor es la dirección MAC de \bt{}, clave que identifica al nodo de manera unívoca
+	\end{description}
+\protobufTableEnd{Campos del paquete ``HelloPacket''}{helloPacket}
 
 \subsubsection{Bluetooth}
 \begin{codeInvolved}
@@ -381,7 +452,7 @@ Para el registro de un nodo normal en la red utilizamos un \textit{DatagramSocke
 
 La única topología de red permitida en una red \bt{} como vimos en
 \ref{subsec:bt-analisis}, es la de estrella, formada por un maestro y
-varios esclavos (las puntas de la estrella). Siguiendo este modelo podemos crear \textit{piconets} \cite{piconet}, identificadas por un \ac{UUID} necesario para entre otras cosas registrar los \textit{sockets} que van montados sobre un canal \textit{RFCOMM} \cite{rfcomm}. Por ello, es el nodo coordinador (el maestro) quién lanza las conexiones.
+varios esclavos (las puntas de la estrella). Siguiendo este modelo podemos crear \textit{piconets} \cite{piconet}, identificadas por un \ac{UUID} necesario para entre otras cosas registrar los \textit{sockets} que van montados sobre un canal \textit{RFCOMM} \cite{rfcomm}. Por ello, es el nodo coordinador (el maestro) quién lanza las conexiones y no necesitamos, como ocurre en \wifi{}, ningún mecanismo de registro por parte de los nodos normales.
 
 %XXX-jblesa. No funciona la ref bt-analisis XXX-cvillar ya funcionará cuando se añada el análisis
 
@@ -393,8 +464,33 @@ Tras recibir el mensaje de desregistro (ver tabla~\ref{tab:unregisterClientMenss
 
 Una vez no haya aplicaciones sobre el servicio procedemos a la destrucción del mismo como vimos en diseño en la sección~\ref{subsec:salidaNodoRed}, las acciones (tanto aviso como restauración de la situación inicial) a realizar las incluimos en el método \textit{onDestroy()}, un método que llama \android{} automáticamente cuando no hay referencias al servicio, es decir todas las peticiones de \textit{bind()} han sido correspondidas con sus \textit{unbind()} y si ha habido una inicialización del servicio con \textit{start()}, se ha llamado también al método \textit{stop()}, en este caso este método lo llamamos desde el mismo servicio a través de \textit{stopSelf()} cuando \var{mClients} pasa a no contener ninguna aplicación.\\
 
-El envío, en el caso de \wifi{} del paquete \textit{``ByePacket''} se realiza bajo una \textit{AsyncTask} finalizando esta con la destrucción del controlador. El envío se realiza mediante un bucle de conexiones \ac{TCP} a todos los nodos normales que haya en la red en caso de que el coordinador abandone la red. O sobre el envío bajo \ac{UDP} (aunque están implementadas ambas formas) al coordinador si es un nodo normal quien abandona la red.
+El envío, en el caso de \wifi{} del paquete \textit{``ByePacket''} se realiza bajo una \textit{AsyncTask} finalizando esta con la destrucción del controlador. El envío se realiza mediante un bucle de conexiones \ac{TCP} a todos los nodos normales que haya en la red en caso de que el coordinador abandone la red. O sobre el envío bajo \ac{UDP} (aunque están implementadas ambas formas) al coordinador si es un nodo normal quien abandona la red. En la figura~\ref{itm:byePacket} se refleja la estructura de este paquete.
 
+\protobufTableInit{Estructura mensaje desregistro en la red \wifi{}}
+  \item[\fbox{Tipo de paquete}]\hfill\\[3pt] Valor ``BYE'' del enumerado ``packetType''.
+	\item[\fbox{Bye packet}]\hfill\\[3pt] Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Tipo de paquete'':
+	\begin{description}
+		\item[\fbox{Dirección MAC}]\hfill\\[3pt] Una \String{} cuyo valor es la dirección MAC de \bt{}, clave que identifica al nodo de manera unívoca.
+	\end{description}
+\protobufTableEnd{Campos del paquete ``ByePacket''}{byePacket}
+
+Respecto al mensaje de señalización que envía el coordinador al resto de nodos cuando un dispositivo sale de la red, en la figura~\ref{itm:lostNode} se detallan los campos a incluir en el mensaje.
+
+\protobufTableInit{Estructura mensaje pérdida nodo en la red}
+	\item[\fbox{Tipo}]\hfill\\[3pt] Valor ``SIGNALING'' del enumerado ``MessageType''.
+	\item[\fbox{Desde}]\hfill\\[3pt] Una \String{} con la direción MAC de \bt{} del nodo (coordinador).
+	\item[\fbox{Mensaje de señalizacion}]\hfill\\[3pt]   Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Tipo'':
+	\begin{description}
+		\item[\fbox{Señal}]\hfill\\[3pt] Valor ``TOPOLOGY'' del enumerado ``SignalType''.
+		\item[\fbox{Mensaje de mapa de red}]\hfill\\[3pt] Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Señal'':
+			\begin{description}
+				\item[\fbox{Cambio}]\hfill\\[3pt] Valor ``LOST'' del enumerado ``TopologyChange''.  			
+					%\begin{description}
+						\item[\fbox{Representación de un nodo}]\hfill\\[3pt] Mensaje que representa al nodo que acaba de salir de la red (ver tabla~\ref{itm:infoNode}).
+					%\end{description}				
+			\end{description}
+	\end{description}
+\protobufTableEnd{Campos del mensaje pérdida de un nodo}{lostNode}
 
 %------------------------------
 \subsection{Actualización de parámetros en la red}
@@ -411,7 +507,39 @@ Como vimos en diseño, tenemos un conflicto en la separación de capas. Existe la 
 	\item La otra opción pasa por permitir que cualquier aplicación pueda cambiar estos valores, garantizando que estas actualizaciones no penalicen a otras aplicaciones que estén en ese momento en ejecución.
 \end{itemize}
 
-Nos hemos decantado por la segunda opción, por ello en diseño vimos que hay una manera especial de actualizar estos parámetros y un mecanismo para garantizar que no haya conflictos. Ello exige comunicar todos los parámetros del servicio a las aplicaciones cuando estas se registran y el almacenaje de estos parámetros en base de datos para independizar el archivo de preferencias que compete exclusivamente a la aplicación desarollada a la vez que el servicio, pero que este no debería tener acceso a él. 
+Nos hemos decantado por la segunda opción, por ello en diseño vimos que hay una manera especial de actualizar estos parámetros y un mecanismo para garantizar que no haya conflictos. Ello exige comunicar todos los parámetros del servicio a las aplicaciones cuando estas se registran y el almacenaje de estos parámetros en base de datos para independizar el archivo de preferencias que compete exclusivamente a la aplicación desarollada a la vez que el servicio, pero que éste no debería tener acceso a él.\\
+
+Se necesitan dos tipos de mensajes de red para implementar una actualización de parámetros. Primero el nodo normal ha de informar al coordinador del cambio de parámetros (ver figura~\ref{itm:updateToCoordinator}). Seguidamente el coordinador actualizará al resto de nodos estos nuevos parámetros, para ello distribuye el mensaje, cuyo detalle se ve en la figura~\ref{itm:updateParams}, a cada uno de los nodos de la red.
+
+\protobufTableInit{Estructura mensaje envío de parámetros al coordinador}
+  \item[\fbox{Tipo}]\hfill\\[3pt] Valor ``RESPONSE'' del enumerado ``MessageType''.
+	\item[\fbox{Mensaje de respuesta}]\hfill\\[3pt]   Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Tipo'':
+	\begin{description}
+		\item[\fbox{What}]\hfill\\[3pt] Valor ``INFO'' del enumerado ``AskType''.
+		\item[\fbox{Mensaje de información / Mensaje \var{INFO} \Scst{INFO}}]\hfill\\[3pt] Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``What'':
+		\begin{description}		
+			\item[\fbox{Nombre}]\hfill\\[3pt] Una \String{} con la representación del nombre del nodo.
+			\item[\fbox{Papel}]\hfill\\[3pt] Una \String{} cuyo valor \bsq{p} representa el papel de usuario primario y \bsq{s} identifica al usuario secundario.
+			\item[\fbox{Tipo de nodo}]\hfill\\[3pt] Una \String{} cuyos valores pueden ser: \bsq{n} normal o \bsq{c} coordinador.			
+		\end{description}
+	\end{description}
+\protobufTableEnd{Campos del mensaje información de parámetros al coordinador}{updateToCoordinator}
+
+\protobufTableInit{Estructura mensaje informe de la actualización de parámetros de un nodo}
+	\item[\fbox{Tipo}]\hfill\\[3pt] Valor ``SIGNALING'' del enumerado ``MessageType''.
+	\item[\fbox{Desde}]\hfill\\[3pt] Una \String{} con la direción MAC de \bt{} del nodo (coordinador).
+	\item[\fbox{Mensaje de señalizacion}]\hfill\\[3pt]   Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Tipo'':
+	\begin{description}
+		\item[\fbox{Señal}]\hfill\\[3pt] Valor ``TOPOLOGY'' del enumerado ``SignalType''.
+		\item[\fbox{Mensaje de mapa de red}]\hfill\\[3pt] Un contenedor que contiene al mensaje del tipo que se indicó en el campo ``Señal'':
+			\begin{description}
+				\item[\fbox{Cambio}]\hfill\\[3pt] Valor ``UPDATE'' del enumerado ``TopologyChange''.  			
+					%\begin{description}
+						\item[\fbox{Representación de un nodo / Mensaje Node}]\hfill\\[3pt] Mensaje que representa al nodo que ha actualizado sus parámetros (ver tabla~\ref{itm:infoNode}).
+					%\end{description}				
+			\end{description}
+	\end{description}
+\protobufTableEnd{Campos del mensaje informe de actualización de parámetros de un nodo hacia el resto}{updateParams}
 
 
 %------------------------------
@@ -495,11 +623,11 @@ En \bt{} se obtiene cada una de las hebras utilizadas en la conexión y se vuelca
 
 \begin{codeInvolved}
 \begin{files}
-\textbf{WifiController}: write(), \textbf{SendoIP} (ServiceIntent), \textbf{sentReceiver} (nested BroadcastReceiver)
+\textbf{WifiController}: write(), \textbf{SendoIP} (ServiceIntent), \textbf{sentReceiver} (BroadcastReceiver interno)
 \end{files}
 \end{codeInvolved} 
 
-En \wifi{} sin embargo, el bucle de establecimiento y volcado de datos al \textit{socket} nos haría esperar demasiado, pudiendo retrasar otras partes del flujo del programa causando problemas. En este caso dónde tenemos que levantar la conexión nos ayudamos de otra hebra en paralelo que haga esta misión (\textit{serviceIntent}) y recogemos su resultado (cuando esté) gracias a un \textit{broadcastReceiver} hubicado en el propio controlador. La acción que captura esta respuesta es \Scst{SendoIP\allowbreak.ACTION\allowbreak\_SENT} y en ella encapsulamos:
+En \wifi{} sin embargo, el bucle de establecimiento y volcado de datos al \textit{socket} nos haría esperar demasiado, pudiendo retrasar otras partes del flujo del programa causando problemas. En este caso dónde tenemos que levantar la conexión nos ayudamos de otra hebra en paralelo que haga esta misión (\textit{serviceIntent}) y recogemos su resultado (cuando esté) gracias a un \textit{BroadcastReceiver} hubicado en el propio controlador. La acción que captura esta respuesta es \Scst{SendoIP\allowbreak.ACTION\allowbreak\_SENT} y en ella encapsulamos:
 \begin{itemize}
 	\item Un valor booleano que indique si la escritura ha sido correcta o no.
 	\item Una \String{} que representa la dirección \ac{IP} dónde se ha escrito.
@@ -513,7 +641,7 @@ al servicio, reforzando nuestro modelo de capas. Para ello, hemos
 debido de almacenar al principio del proceso de envío los datos a
 enviar para poder devolverselos al servicio. Este almacenaje se
 realiza sobre un objeto \textit{Queue<byte[]>}. Así evitamos que en el
-anuncio capturado por el \textit{broadcastReceiver} se incluya el mensaje a escribir en la red, lo que hace que la respuesta sea más ligera.\\
+anuncio capturado por el \textit{BroadcastReceiver} se incluya el mensaje a escribir en la red, lo que hace que la respuesta sea más ligera.\\
 
 Por tanto, el método \textit{write()} del controlador \wifi{} al igual que su homólogo en \bt{} no devuelve nada pero termina en tiempos parecidos, ya que en uno se producen escrituras asíncronas y en el otro inicializaciones de \textit{serviceIntent} de la clase \class[util]{SendoIP}\\
 
@@ -538,7 +666,7 @@ Al ser una mezcla de una recepción y un envío de datos, los detalles de implemen
 
 Gracias al adaptador \wifi{} (\class[android.net.wifi]{WifiManager}) que nos facilita la plataforma \android{}, podemos obtener un objeto de la clase \class[android.net.wifi]{WifiInfo} a través del método \textit{getConnectionInfo()}. El objeto obtenido nos facilita entre otros el valor del \ac{RSSI}: \textit{getRssi()}.
 
-Como vimos en diseño, este valor también se puede obtener mediante los anuncios que envía el sistema \android{}, para ello registramos nuestro \textit{broadcastReceiver} empleado para \wifi{}: \class{StatusReceiver\_wifi}, a la acción \Scst{RSSI\allowbreak\_CHANGED\allowbreak\_ACTION}.
+Como vimos en diseño, este valor también se puede obtener mediante los anuncios que envía el sistema \android{}, para ello registramos nuestro \textit{BroadcastReceiver} empleado para \wifi{}: \class{StatusReceiver\_wifi}, a la acción \Scst{RSSI\allowbreak\_CHANGED\allowbreak\_ACTION}.
 
 \subsubsection{Parámetro del entorno: Intervalo promedio envío de mensajes}
 \begin{codeInvolved}
