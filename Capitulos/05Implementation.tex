@@ -249,7 +249,7 @@ Como vemos este campo viene informado con un valor booleano a \true{}, esto es l
 \subsubsection{API oculta: Forzar cambio de contexto}
 El mensaje (ver tabla~\ref{tab:wa_switch}) que permite forzar un cambio de contexto es el que sigue, no necesita ninguna información adicional porque se deduce del contexto. 
 \messageTableInit{\appToServ}{22=\footnotesize{WORKAROUND\_\\ CONTEXT\_CHANGE}}{\nc{}}{\nc{}}{\nc{}}{\messApp{}}
-\messageTableEnd{Mensaje \textit{workaround} cambio de interfaz de comunicación}{wa_switch}
+\messageTableEnd{Mensaje \workaroundCaption{} cambio de interfaz de comunicación}{wa_switch}
 
 %----------
 \subsubsection{API oculta: Almacenar y liberar datos encolados}
@@ -257,30 +257,30 @@ El mensaje que permite encolar un mensaje de datos directamente saltándonos el f
 
 \messageTableInit{\appToServ}{23=\scriptsize{WORKAROUND\_ PENDINGMESSAGE \_INJECTION}}{\nc{}}{\nc{}}{\textit{payload}}{\messApp{}}
 \messageTableExtra{addressedNodes}{Una lista de \integer{}s con los identificadores de los nodos destinatarios del mensaje}
-\messageTableEnd{Mensaje \textit{workaround} encolamiento de mensaje de datos}{wa_queue}
+\messageTableEnd{Mensaje \workaroundCaption{} encolamiento de mensaje de datos}{wa_queue}
 
 Para expresar el deseo de vaciar la cola de mensajes enviamos al servicio el mensaje formateado en la tabla~\ref{tab:wa_disposalqueue} que no necesita de ninguna información adicional para disparar el proceso.
 
 \messageTableInit{\appToServ}{24=\scriptsize{WORKAROUND\_ PENDINGMESSAGE \_DISPOSAL}}{\nc{}}{\nc{}}{\nc{}}{\messApp{}}
-\messageTableEnd{Mensaje \textit{workaround} vaciado cola de mensajes}{wa_disposalqueue}
+\messageTableEnd{Mensaje \workaroundCaption{} vaciado cola de mensajes}{wa_disposalqueue}
 
 %----------
 \subsubsection{API oculta: Mensaje de petición y respuesta}
 La estructura del mensaje que permite a un nodo normal guardar la respuesta que si es requerida sumunistrará es:
 
 \messageTableInit[!h]{\appToServ}{20 = \footnotesize{WORKAROUND\\ \_WHAT\_TO\_REPLY}}{\nc{}}{\nc{}}{\textit{reply}}{\messApp{}}
-\messageTableEnd{Mensaje \textit{workaround} salvado de respuesta}{wa_reply}
+\messageTableEnd{Mensaje \workaroundCaption{} salvado de respuesta}{wa_reply}
 
 En el campo \obj{} codificamos como una \String{} la respuesta.\\
 
 Sin embargo la aplicación, registrada en un nodo coordinador, que requiera esta información debe comunicar a su servicio este mensaje:
 \messageTableInit{\appToServ}{21 = \footnotesize{WORKAROUND\\ \_ASK\_RESPONSE}}{\nc{}}{\nc{}}{Identificador nodo}{\messApp{}}
-\messageTableEnd{Mensaje \textit{workaround} petición de respuesta}{wa_ask}
+\messageTableEnd{Mensaje \workaroundCaptionFem{} petición de respuesta}{wa_ask}
 
 Cuando el servicio ha conseguido la respuesta envía a todas las aplicaciones pues no tiene forma de deducir por el contexto al ser procesos no correleados, aunque aquí lo estamos viendo como uno solo. La respuesta viene codificada en el campo \obj{} del siguiente mensaje:
 
 \messageTableInit[!h]{\servToApps}{21 = \footnotesize{WORKAROUND\\ \_ASK\_RESPONSE}}{\nc{}}{\nc{}}{Respuesta del nodo preguntado}{\messApp{}}
-\messageTableEnd{Mensaje \textit{workaround} respuesta obtenida}{wa_ask_response}
+\messageTableEnd{Mensaje \workaroundCaptionFem{} respuesta obtenida}{wa_ask_response}
 
 
 %-------------------
@@ -616,7 +616,7 @@ La espera para levantar la interfaz \bt{} también se realiza mediante consulta a
 
 Para levantar la interfaz \bt{} obviamos la recomendación de \android{} que incita a preguntar al usuario a través de un diálogo para la activación del \bt{}. Un requisito de la \ac{CR} es ser transparente al usuario, por ello utilizamos la llamada asíncrona del método \textit{enable()} de la clase \class[android.bluetooth]{BluetoothAdapter}. Esto desencadena su encendido y anuncios posteriores del sistema, que capturamos también con el \textit{BroadcastReceiver}, informando que ya está levantada la interfaz \bt{}.\\
 
-El método \textit{connect()} arranca una hebra independiente para evitar que su procesamiento bloquee al resto del programa. La razón de asegurar una ejecución en segundo plano reside en que este método es llamado en dos puntos de la arquitectura: al configurar la interfaz y al recibir un mensaje de \textit{workaround} para conectarse de manera manual a un nodo (ver sección~\ref{subsec:connectViaBT}). En el primer caso este proceso ya está en segundo plano, pero en el segundo si no se ejecutase en su propia hebra, se retrasaría el procesamiento de los mensajes encolados en el \textit{Handler} del servicio con las aplicaciones sin necesidad, ya que no hay que devolver ningún resultado.
+El método \textit{connect()} arranca una hebra independiente para evitar que su procesamiento bloquee al resto del programa. La razón de asegurar una ejecución en segundo plano reside en que este método es llamado en dos puntos de la arquitectura: al configurar la interfaz y al recibir un mensaje para conectarse de manera manual a un nodo (ver sección~\ref{subsec:connectViaBT}). En el primer caso este proceso ya está en segundo plano, pero en el segundo si no se ejecutase en su propia hebra, se retrasaría el procesamiento de los mensajes encolados en el \textit{Handler} del servicio con las aplicaciones sin necesidad, ya que no hay que devolver ningún resultado.
 
 La llamada a este método comienza con la interrupción de la hebra tipo \textit{ConnectThread} (la que lanza la conexión) si estuviese ejecutándose por una llamada previa inacabada. Tras esto lanzamos una nueva instancia de la hebra y esperamos a que termine con la instrucción de Java \textit{join()}. Por el mecanismo interno de estados del controlador si la conexión se ha producido con éxito se habrá modificado un \textit{flag} que nos permite terminar la ejecución del método, si no, reintentamos hasta que alcancemos el máximo de intentos (pasado como parámetro).
 
