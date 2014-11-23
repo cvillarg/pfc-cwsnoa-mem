@@ -33,259 +33,7 @@ gracias al \textit{Handler} implementado en el servicio.
 A su vez las aplicaciones deben declarar su propio \textit{Handler} para poder recibir mensajes desde el servicio, para ello se deberá informar al servicio cuál es el objeto \textit{Messenger} de la aplicación. Así habilitamos también en sentido contrario la comunicación habilitando al servicio que nos comunique datos en cualquier instante de tiempo. Al igual, estos envíos de información serán encolados por lo que la aplicación no debe prever de mecanismos multihebra para atender al servicio.\\
 
 %XXX-jblesa Quita multi-thread y ponlo en español XXX-cvillar ok.
-A continuación vemos cómo se ha decidido estructurar la información y mediante que entidades construimos cada uno de las funciones vistas en diseño. Allí comentamos que cada mensaje va clasificado con una etiqueta, se trata del campo \textit{what} del mensaje que se codifica como un número \integer{}. En cada mensaje veremos qué número le corresponde.
 
-%-------------------------------------------------------------------
-\label{sec:apiImpl} %% API DEL SERVICIO %%
-%-------------------------------------------------------------------
-\subsubsection{Conectarse al módulo cognitivo}
-\label{subsubsec:apiStartImpl}
-Para poder entregar y recibir mensajes necesitamos una referencia al \textit{Messenger} del servicio. Esta referencia la obtenemos tras hacer una petición de unión o atadura llamando al método \textit{bindService()} con un \textit{Intent} a la clase:
-\begin{verbatim}
-es.upm.die.lsi.pfc.CWSNoA.CognitiveLayer_specific_Service.class
-\end{verbatim}
-En esta petición, también se pasa como parámetro un objeto de la clase \textit{ServiceConnection} que el sistema \android{} llama cuando ha establecido la conexión. \android{} arrancará el servicio si éste no lo estaba ya y nos devolverá como objeto \textit{IBinder} una instancia del \textit{Messenger} del servicio. 
-Por motivos de seguridad la aplicación que realice la petición de atadura requiere la declaración en su archivo \bsq{\textit{manifest}} la aceptación del permiso:
-\begin{verbatim}
-es.upm.die.lsi.pfc.CWSNoA.permission.COGNITIVE_SERVICE
-\end{verbatim}
-Este permiso informa al usuario final que usa la aplicación sobre las intervenciones en las interfaces de comnunicación sin la intervención de éste.\\
-
-El primer mensaje usado en la negociación tiene la siguiente estructura, no tiene ninguna información adicional más que el \textit{Messeger} de la aplicación para que el \var{Gestor del Aplicaciones} pueda registrarla de forma correcta. Esta información la ubicamos en el campo del mensaje \replyTo{}:
-
-\messageTableInit{\appToServ}{1 =\\ \footnotesize{REGISTER\_CLIENT}}{\nc{}}{\nc{}}{\nc{}}{\messApp{}}
-\messageTableEnd{Mensaje registro cliente}{registerClientMessage}
-
-El segundo mensaje utilizado en la negociación aporta información (ver tabla~\ref{tab:infoHandshaking}) sobre la aplicación. Ésta se codifica de la siguiente manera:
-\begin{itemize}
-	\item \textbf{Papel del nodo}, como un número \integer{}. El valor \bsq{0} indica que la aplicación usuaria es un usuario secundario y el valor \bsq{1} para indicar que se trata de un usuario primario. Este campo lo incluimos en el campo \argOne{} del mensaje.
-	\item \textbf{Código de la aplicación}, como una \String{}. Lo adjuntamos al mensaje como un campo \Scst{EXTRA} con la clave ``appCode''.
-\end{itemize}
-\messageTableInit{\appToServ}{3 =\\ \scriptsize{REGISTER\_EXCHANGE}}{Papel del nodo}{\nc}{\textit{null}}{\messApp{}}
-\messageTableExtra{appCode}{Una \String{} con el ``código de aplicación''}
-\messageTableEnd{Mensaje entrega parámetros de aplicación}{registerExchangeMessage}
-El campo \textit{obj} lo dejamos vacío o lo informamos como \textit{null}, en la secciones~\ref{subsubsec:darkApiUpdateParams} y~\ref{subsubsec:darkApiUpdateParamsImpl} veremos el porqué de este campo.\\
-
-Respecto al tercer mensaje que cierra la negociación, la forma de identificar la situación previa del servicio reside en el valor del campo \textit{obj} recibido, así:
-
-\paragraph{En situación red no existente}	Si el campo \textit{obj} es \false{} significa que no estábamos cooperando en una \ac{CWSN}, en este caso el mensaje recibido es:
-
-\messageTableInit{\servToApps}{3 =\\ \scriptsize{REGISTER\_EXCHANGE}}{Estado de la interfaz}{Interfaz}{\textbf{False}}{\nc{}}
-\messageTableExtra{nodeRole}{Un \integer{} que codifica el papel del nodo}
-\messageTableExtraAddrow{nodeType}{Un \integer{} con el tipo de nodo}
-\messageTableExtraAddrow{periodTask}{Un \double{} que representa el periodo tarea cognitiva en segundos}
-\messageTableExtraAddrow{nodeName}{Una \String{} con el nombre del nodo en la red}
-\messageTableExtraAddrow{errorSetupInterface}{Un valor booleano con el resultado de la configuración de la interfaz}
-\messageTableEnd{Mensaje finalización de la negociación: CWSN no establecida}{endHandshakingNotCWSNMessage}
-
-La forma de codificar los campos que no aparecen en la tabla~\ref{tab:endHandshakingNotCWSNMessage} es:
-\begin{itemize}
-	\item \textbf{Estado de la interfaz}, se codifica como un número \integer{} los siguientes estados:
-		\begin{enumerate}
-			\setcounter{enumi}{-1}
-			\item \Scst{INTERFACE\_STATE\_DOWN}, la interfaz de comunicación no está configurada.
-			\item \Scst{INTERFACE\_STATE\_IDLE}, la interfaz está configurada pero no estamos cooperando en red.
-			\item \Scst{INTERFACE\_STATE\_IDLE\_NETWORKING}, situación de reposo cooperando en \ac{CWSN}.
-			\item \Scst{INTERFACE\_STATE\_CONNECTING}, nos estamos conectando a otro nodo (sólo en \bt{}).
-			\item \Scst{INTERFACE\_STATE\_SENDING}, estamos enviado datos a través de la interfaz.
-			\item \Scst{INTERFACE\_STATE\_RECEIVING}, estamos recibiendo datos.
-		\end{enumerate}
-	\item \textbf{Interfaz} en el campo \argTwo{} del mensaje viene en forma de \integer{} la interfaz de comunicaiones usada. Usamos el enumerado \var{Interfaces} ubicado en la clase \class{CognitiveLayer\_common\_Service} para codificar como:
-	\begin{itemize}
-		\item \bsq{0} la interfaz \bt{}.
-		\item \bsq{1} la interfaz \wifi{}.
-		\item \textcolor{notImplemented}{\bsq{2} la interfaz \textit{Mobile}, no implementado.}
-		\item \bsq{-1} desconocido, valor devuelto en el transcurso de cambio de contexto.
-	\end{itemize}
-	\item \textbf{Papel de nodo}, misma codificación que en el segundo mensaje. Se utiliza un tipo enumerado para esta función denominado \var{Role} ubicado en la clase \class[util]{Node}, esta representación es interna al servicio, el cual codifica este valor en el número \integer{} que corresponda cuando esta información sale de su ámbito. 
-	\item \textbf{Tipo de nodo}, utiliza el enumerado \var{Type} en la misma clase. Sus valores codificados son:
-		\begin{itemize}
-			\item \bsq{0} para nodo normal.
-			\item \bsq{1} representa al nodo coordinador.
-			\item \textcolor{notImplemented}{\bsq{2} para la figura del subcoordinador temporal en \bt{}, finalmente no implementada} 
-			\item \bsq{-1} para un valor desconocido en caso de error.
-		\end{itemize}
-\end{itemize}
-
-\paragraph{En situación de red previa} En cambio si el valor recibido es \true{} significa que el servicio ya estaba colaborando en una \ac{CWSN} por lo que no es necesario realizar ninguna configuración obteniendo una respuesta en exclusiva y casi inmediata a la aplicación que inició la negociación. El formato del mensaje recibido es:
-
-\messageTableInit{\servToApp}{3 =\\ \scriptsize{REGISTER\_EXCHANGE}}{Estado de la interfaz}{Interfaz}{\textbf{True}}{\nc{}}
-\messageTableExtra{nodeRole}{Un \integer{} que codifica el papel del nodo}
-\messageTableExtraAddrow{nodeType}{Un \integer{} con el tipo de nodo}
-\messageTableExtraAddrow{periodTask}{Un \double{} que representa el periodo tarea cognitiva en segundos}
-\messageTableExtraAddrow{nodeName}{Una \String{} con el nombre del nodo en la red}
-\messageTableExtraAddrow{appCode}{Una \String{} que identifica al código de la aplicación}
-\messageTableExtraAddrow{nodeIdList}{\textit{Array} de \integers{} con los identificadores de los nodos}
-\messageTableExtraAddrow{nodeNameList}{\textit{Array} de \String{} con los nombres de los nodos}
-\messageTableEnd{Mensaje finalización de la negociación: CWSN establecida}{endHandshakingInCWSNMessage}
-La codificación empleada en los campos que difieren en este mensaje es:
-\begin{itemize}
-	\item \textbf{Código de aplicación}, aunque está explicado en la tabla~\ref{tab:endHandshakingInCWSNMessage}, este campo no aparecía en el mensaje anterior. Este campo codificado como una \String{}, lo recuperamos con la clave ``appCode''.
-	\item \ListaNodosDescription{}
-\end{itemize}
-
-%----------
-\subsubsection{Incluir a nodos a la red en Bluetooth}
-La información sobre el nodo al que queremos conectarnos la incluimos en el campo \obj{} del mensaje. Este campo acepta dos tipos de codificación:
-
-\begin{itemize}
- \item Una \String{} con la dirección MAC de \bt{} del nodo.
- \item Un \integer{} con el identificador el nodo. Este identificador nos lo facilita el servicio por ejemplo en sus mensajes de información (ver secciones~\ref{subsubsec:apiInfo} y~\ref{subsubsec:apiInfoImpl}).
-\end{itemize}
-
-\messageTableInit{\appToServ}{12 = \footnotesize{CONNECT\_TO\\\_VIA\_BT}}{\nc{}}{\nc{}}{nodo al que conectarse}{\nc{}}
-\messageTableEnd{Mensaje conectarse a un nodo en \bt{} }{connectToBT}
-
-%----------
-\subsubsection{Recibir datos de otros nodos}
-El contenido del mensaje se encuentra en el campo \obj{} del mensaje recibido. Por otra parte, el identificador del nodo que nos ha enviado el mensaje, se encuentra en un campo \Scst{EXTRA} que recuperamos con la clave ``device\_id'':
-
-\messageTableInit{\servToApp}{8 =\\ \scriptsize{INCOMING\_CONTENT}}{\nc{}}{\nc{}}{\textit{payload}}{\nc{}}
-\messageTableExtra{device\_id}{Un \integer{} que identifica al nodo que ha enviado el mensaje}
-\messageTableEnd{Mensaje datos recibidos}{incomingContent}
-
-%----------
-\subsubsection{Enviar mensajes de datos a otros nodos}
-La \String{} que queremos enviar la alojamos en el campo \obj{} del mensaje. La lista de nodos destinatarios la codificamos como una instancia del objeto \textit{ArrayList<Integer>} que adjuntamos como un campo \Scst{EXTRA} del mensaje con la clave ``addressedNodes''. También debemos incluir el objeto \textit{Messenger} de la aplicación en el campo \replyTo{}. Con esta información podemos formar el siguiente mensaje:
-
-\messageTableInit{\appToServ}{4 =\\ \scriptsize{OUTGOING\_CONTENT}}{\nc{}}{\nc{}}{\textit{payload}}{\messApp{}}
-\messageTableExtra{addressedNodes}{Una lista de \integer{}s con los identificadores de los nodos destinatarios del mensaje}
-\messageTableEnd{Mensaje para el envío de datos}{outgoingContent}
-
-%----------
-\subsubsection{Confirmación entrega de datos a otros nodos}
-En el mensaje de confirmación alojamos en el campo \argOne{} el número de mensajes que se han escrito de forma correcta, en el \argTwo{} el número de ellos que han fallado en la entrega y en el \obj{} el contenido que fue enviado. Si el campo \argTwo{} tiene un valor mayor que cero, entonces adjuntamos la lista de nodos que como hemos visto es una pareja de dos \textit{arrays} ligados que nos devuelve el identificador y el nombre del nodo:
-\messageTableInit{\servToApp}{6 =\\ \scriptsize{OUTGOING\_CONTENT \_RESULT}}{número mensajes escritos OK}{número mensajes escritos NOK}{\textit{payload}}{\nc{}}
-\messageTableExtra{IdsNotDelivered}{Un \textit{array} de \integer{s} con los identificadores de los nodos a los cuales no les ha llegado el mensaje}
-\messageTableExtraAddrow{NamesNotDelivered}{Un \textit{array} de \String{} con los nombres de los nodos a los cuales no les ha llegado el mensaje}
-\messageTableEnd{Mensaje resultado envío de datos presentado a la aplicación}{outgoingContentResultApp}
-
-%----------
-\subsubsection{Confirmación entrega de datos encolados}
-Además de los subconjuntos de la lista de nodos que se adjuntan como campos \Scst{EXTRA} del mensaje, en los campos \argOne{} y \argTwo{} adjuntamos el cardinal de estas listas. En el campo \obj{} adjuntamos el contenido del mensaje de datos. Formateamos esta información en la tabla~\ref{tab:queuedMessage} que representa el informe previo al envío del mensaje de datos.
-
-\messageTableInit{\servToApp}{11= \scriptsize{QUEUED\_MESSAGE}}{número enviados}{número no enviados}{\textit{payload}}{\nc{}}
-\messageTableExtra{IdsTriedToSend}{Un \textit{array} de \integer{s} con los identificadores de los nodos los cuales siguen en red}
-\messageTableExtraAddrow{NamesTriedToSend}{Un \textit{array} de \String{} con los nombres de los nodos siguen en red}
-\messageTableExtraAddrow{IdsNotDelivered}{Un \textit{array} de \integer{s} con los identificadores de los nodos que no hemos enviado el mensaje por no encontrarse en la red}
-\messageTableExtraAddrow{NamesNotDelivered}{Un \textit{array} de \String{} con los nombres de los nodos que no hemos enviado el mensaje por no encontrarse en la red}
-\messageTableEnd{Mensaje informe previo a la salida de mensaje encolado}{queuedMessage}
-
-%----------
-\subsubsection{Información sobre el servicio cognitivo}
-\label{subsubsec:apiInfoImpl}
-
-El mensaje de información que envía el servicio a las aplicaciones estructura la información de la siguiente manera.
-
-El campo \obj{} alberga un valor booleano, si tiene el valor \true{} significa que esta información implica un cambio en la lista de nodos. En este caso incluimos los dos \textit{arrays} que representan a la lista de nodos formada por el par (identificador, nombre). La codificación de los campos recuperados con las claves ``interfaz'' y ``state'' es la ya vista en otros mensajes, la codificación que nos queda por explicar es la del campo cuya clave es ``event''. Su semántica ya la vimos en la tabla~\ref{tab:infoGatheredFromService}, a ésta le asignamos la codificación en números \integer{s} como sigue:\begin{enumerate}
-	\setcounter{enumi}{-1}
-	\item\Scst{EVENT\_INTERFACE\_NO\_CHANGES}, este evento es la ausencia de evento. Hay cambios en el estado de la interfaz que no son provocados por un evento, para estas casuísticas el evento que le asignamos es el de \bsq{no cambio}.	
-	\item\Scst{EVENT\_INTERFACE\_NEW\_NODE}, este evento surge cuando el coordinador nos conecta a la red. Se genera en ambos extremos (en el coordinador y el nodo normal que empieza a formar parte de la red).
-	\item\Scst{EVENT\_INTERFACE\_LOST\_NODE}, se genera al perder la comunicación con un nodo (entre coordinador y normal, aparece este evento al igual que el anterior en ambos extremos).
-	\item\Scst{EVENT\_INTERFACE\_CANNOT\_CONNECT}, surge en el nodo que ha intentado conectarse a otro y no ha podido.
-	\item\Scst{EVENT\_INTERFACE\_ALREADY\_CONNECTED}, surge cuando el coordinador intenta conectarse a un nodo al cual ya está conectado (sólo en \bt{}). 
-	\item\Scst{EVENT\_INTERFACE\_SWITCH\_TO\_BT}, evento que surge cuando recibimos o disparamos (coordinador) el cambio de contexto hacia \bt{}.
-	\item\Scst{EVENT\_INTERFACE\_SWITCH\_TO\_WIFI}, evento que surge cuando recibimos o disparamos (coordinador) el cambio de contexto hacia \wifi{}.
-	\item\textcolor{notImplemented}{\Scst{EVENT\_INTERFACE\_SWITCH\_TO\_MOBILE}, no implementado, de manera análoga cuando la interfaz de destino es la móvil.}
-	\item\Scst{EVENT\_INTERFACE\_END\_SWITCHING}, se genera al terminar el cambio de contexto.
-	\item\Scst{EVENT\_UPDATE\_LIST\_NODES}, cuando es necesaria una actualización de la lista de nodos que no haya sido provocada por algún evento anterior.
-\end{enumerate}
-
-La estructura de la tabla~\ref{tab:serviceInformation} aglutina toda la información este mensaje.
-
-\messageTableInit[!h]{\servToApps}{9 = \scriptsize{SERVICE\\\_INFORMATION}}{interfaz}{\nc{}}{modificación lista nodos}{\nc{}}
-\messageTableExtra{coordinator}{Una \String{} con el nombre del nodo coordinador. Si somos el nodo coordinador este campo viene informado a \textit{null}}
-\messageTableExtraAddrow{triggerNodeName}{Una \String{} con el nombre del nodo que ha disparado el evento. Si no existe tal nodo no se incluye este campo en el mensaje}
-\messageTableExtraAddrow{state}{Un \integer{} con el estado de la interfaz}
-\messageTableExtraAddrow{event}{Un \integer{} con el evento producido en la red}
-\messageTableExtraAddrow{nodeIdList}{Un \textit{array} de \integers{} con los identificadores de los nodos que forman la red en estos momentos}
-\messageTableExtraAddrow{nodeNameList}{Un \textit{array} de \String{} con los nombres de los nodos que forman la población actual}
-\messageTableEnd{Mensaje información evento/estado por parte del servicio}{serviceInformation}
-
-
-%----------
-\subsubsection{Mensajes de error: incumplimiento de la API del servicio}
-Los diferentes códigos de error tienen la siguiente codificación en números \integer{s}, estos códigos se formatean en el campo \argOne{} del mensaje (ver tabla~\ref{tab:errorMessage}) que se envía a las aplicaciones:
-\begin{enumerate}
-	\item\Scst{CODE\_ERROR\_ILLEGAL\_ARGUMENT}
-	\item\Scst{CODE\_ERROR\_NODE\_NO\_EXISTS}
-	\item\Scst{CODE\_ERROR\_INTERNAL}
-	\item\Scst{CODE\_ERROR\_NOT\_IN\_NETWORK}
-	\item\Scst{CODE\_ERROR\_MESSAGE\_NOT\_RECOGNIZED}
-	\item\Scst{CODE\_ERROR\_ILLEGAL\_PAYLOAD}
-\end{enumerate}
-\messageTableInit{\servToApp}{10 =\\ \scriptsize{ERROR\_MESSAGE}}{código de error}{\nc{}}{Descripción del error}{\nc{}}
-\messageTableEnd{Mensaje de error recibido del servicio}{errorMessage}
-
-%----------
-\subsubsection{Actualización de parámetros de aplicación}
-\label{susubbsec:apiUpdateParamsImpl}
-Al ser éste un subproceso sacado de la negociación desde el punto de vista de la implementación no hemos de añadir nada más.
-
-%----------
-\subsubsection{Desconectarse del servicio cognitivo}
-El mensaje que permite al \var{Gestor de Aplicaciones} borrarnos de su base de clientes es el que sigue:
-
-\messageTableInit{\appToServ}{2 =\\ \footnotesize{UNREGISTER \_CLIENT}}{\nc{}}{\nc{}}{\nc{}}{\messApp{}}
-\messageTableEnd{Mensaje desregistro cliente}{unregisterClientMenssage}
-
-Para liberar en totalidad la atadura al servicio, se debe realizar la llamada al método \textit{unbindService()}, pasándole como parámetro el objeto de conexión \textit{ServiceConnection}. Una vez liberarda, \android{} nos avisa en la instancia del objeto usado en la conexión.
-
-%\subsubsection*{API oculta del servicio}
-
-
-%----------
-\subsubsection{API oculta: Actualización de parámetros del servicio cognitivo}
-\label{subsubsec:darkApiUpdateParamsImpl}
-La estructura de mensaje que permite la actualización en bloque tanto de los parámetros de aplicación como los del servicio tiene la peculiaridad en su campo \obj{}:
-\messageTableInit{\appToServ}{3 =\\ \scriptsize{REGISTER\_EXCHANGE}}{papel del nodo}{tipo de nodo}{\textbf{True}}{\messApp{}}
-\messageTableExtra{appCode}{Una \String{} con el código de aplicación}
-\messageTableExtraAddrow{nodeName}{Una \String{} con el nuevo nombre del nodo en la red}
-\messageTableExtraAddrow{periodTask}{Un \double{} con el nuevo periodo medido en segundos de la tarea cognitiva a ejecutar}
-\messageTableEnd{Actualización de todos los parámetros del servicio}{updateAllParamsMessage}
-
-Como vemos este campo viene informado con un valor booleano a \true{}, esto es la clave que permite al servicio reconocer y efectuar un flujo distinto que actualice en su \var{Repositorio} estos valores. La codificación de los distintos campos se aprecia en la tabla~\ref{tab:updateAllParamsMessage} u obedece las mismas reglas vistas en otros mensajes.
-%----------
-\subsubsection{API oculta: Forzar cambio de contexto}
-El mensaje (ver tabla~\ref{tab:wa_switch}) que permite forzar un cambio de contexto es el que sigue, no necesita ninguna información adicional porque se deduce del contexto. 
-\messageTableInit{\appToServ}{22=\footnotesize{WORKAROUND\_\\ CONTEXT\_CHANGE}}{\nc{}}{\nc{}}{\nc{}}{\messApp{}}
-\messageTableEnd{Mensaje \workaroundCaption{} cambio de interfaz de comunicación}{wa_switch}
-
-%----------
-\subsubsection{API oculta: Almacenar y liberar datos encolados}
-El mensaje que permite encolar un mensaje de datos directamente saltándonos el flujo normal se formatea igual que un mensaje de datos (ver tabla~\ref{tab:outgoingContent}) salvo por la etiqueta: campo \textit{what}. En la tabla~\ref{tab:wa_queue} se ilustra este mensaje.
-
-\messageTableInit{\appToServ}{23=\scriptsize{WORKAROUND\_ PENDINGMESSAGE \_INJECTION}}{\nc{}}{\nc{}}{\textit{payload}}{\messApp{}}
-\messageTableExtra{addressedNodes}{Una lista de \integer{}s con los identificadores de los nodos destinatarios del mensaje}
-\messageTableEnd{Mensaje \workaroundCaption{} encolamiento de mensaje de datos}{wa_queue}
-
-Para expresar el deseo de vaciar la cola de mensajes enviamos al servicio el mensaje formateado en la tabla~\ref{tab:wa_disposalqueue} que no necesita de ninguna información adicional para disparar el proceso.
-
-\messageTableInit{\appToServ}{24=\scriptsize{WORKAROUND\_ PENDINGMESSAGE \_DISPOSAL}}{\nc{}}{\nc{}}{\nc{}}{\messApp{}}
-\messageTableEnd{Mensaje \workaroundCaption{} vaciado cola de mensajes}{wa_disposalqueue}
-
-%----------
-\subsubsection{API oculta: Mensaje de petición y respuesta}
-La estructura del mensaje que permite a un nodo normal guardar la respuesta que si es requerida sumunistrará es:
-
-\messageTableInit[!h]{\appToServ}{20 = \footnotesize{WORKAROUND\\ \_WHAT\_TO\_REPLY}}{\nc{}}{\nc{}}{\textit{reply}}{\messApp{}}
-\messageTableEnd{Mensaje \workaroundCaption{} salvado de respuesta}{wa_reply}
-
-En el campo \obj{} codificamos como una \String{} la respuesta.\\
-
-Sin embargo la aplicación, registrada en un nodo coordinador, que requiera esta información debe comunicar a su servicio este mensaje:
-\messageTableInit{\appToServ}{21 = \footnotesize{WORKAROUND\\ \_ASK\_RESPONSE}}{\nc{}}{\nc{}}{Identificador nodo}{\messApp{}}
-\messageTableEnd{Mensaje \workaroundCaptionFem{} petición de respuesta}{wa_ask}
-
-Cuando el servicio ha conseguido la respuesta envía a todas las aplicaciones pues no tiene forma de deducir por el contexto al ser procesos no correleados, aunque aquí lo estamos viendo como uno solo. La respuesta viene codificada en el campo \obj{} del siguiente mensaje:
-
-\messageTableInit[!h]{\servToApps}{21 = \footnotesize{WORKAROUND\\ \_ASK\_RESPONSE}}{\nc{}}{\nc{}}{Respuesta del nodo preguntado}{\messApp{}}
-\messageTableEnd{Mensaje \workaroundCaptionFem{} respuesta obtenida}{wa_ask_response}
-
-
-%-------------------
-% FIN API
-%-------------------
 \subsection{Módulo o Servicio cognitivo}
 El servicio se constituye en dos clases con una relación de heredamiento entre ambas. La clase padre \class{CognitiveLayer\allowbreak\_common\allowbreak\_Service} que intenta encapsular las partes que todo servicio cognitivo tendría que satisfacer:
 \begin{itemize}
@@ -511,6 +259,262 @@ en este caso la aplicación como sólo desea enviar un dato a través de la red cog
 Dejamos la activity para:
 las \textit{activities} ligan su ciclo de vida a la interacción en la pantalla, son componentes con interfaz gráfica. Una vez el usuario quita el foco de la aplicación la \textit{activity} es candidata o se produce a su destrucción.
 }
+
+\section{API del servicio: interfaz Aplicación - Módulo cognitivo}
+%-------------------------------------------------------------------
+\label{sec:apiImpl} %% API DEL SERVICIO %%
+%-------------------------------------------------------------------
+
+A continuación vemos cómo se ha decidido estructurar la información y mediante qué entidades construimos cada uno de las funciones de la interfaz vistas en diseño. Allí comentamos que cada mensaje va clasificado con una etiqueta, se trata del campo \textit{what} del mensaje que se codifica como un número \integer{}. En cada mensaje veremos qué número le corresponde.
+
+\subsection{Conectarse al módulo cognitivo}
+\label{subsubsec:apiStartImpl}
+Para poder entregar y recibir mensajes necesitamos una referencia al \textit{Messenger} del servicio. Esta referencia la obtenemos tras hacer una petición de unión o atadura llamando al método \textit{bindService()} con un \textit{Intent} a la clase:
+\begin{verbatim}
+es.upm.die.lsi.pfc.CWSNoA.CognitiveLayer_specific_Service.class
+\end{verbatim}
+En esta petición, también se pasa como parámetro un objeto de la clase \textit{ServiceConnection} que el sistema \android{} llama cuando ha establecido la conexión. \android{} arrancará el servicio si éste no lo estaba ya y nos devolverá como objeto \textit{IBinder} una instancia del \textit{Messenger} del servicio. 
+Por motivos de seguridad la aplicación que realice la petición de atadura requiere la declaración en su archivo \bsq{\textit{manifest}} la aceptación del permiso:
+\begin{verbatim}
+es.upm.die.lsi.pfc.CWSNoA.permission.COGNITIVE_SERVICE
+\end{verbatim}
+Este permiso informa al usuario final que usa la aplicación sobre las intervenciones en las interfaces de comnunicación sin la intervención de éste.\\
+
+El primer mensaje usado en la negociación tiene la siguiente estructura, no tiene ninguna información adicional más que el \textit{Messeger} de la aplicación para que el \var{Gestor del Aplicaciones} pueda registrarla de forma correcta. Esta información la ubicamos en el campo del mensaje \replyTo{}:
+
+\messageTableInit{\appToServ}{1 =\\ \footnotesize{REGISTER\_CLIENT}}{\nc{}}{\nc{}}{\nc{}}{\messApp{}}
+\messageTableEnd{Mensaje registro cliente}{registerClientMessage}
+
+El segundo mensaje utilizado en la negociación aporta información (ver tabla~\ref{tab:infoHandshaking}) sobre la aplicación. Ésta se codifica de la siguiente manera:
+\begin{itemize}
+	\item \textbf{Papel del nodo}, como un número \integer{}. El valor \bsq{0} indica que la aplicación usuaria es un usuario secundario y el valor \bsq{1} para indicar que se trata de un usuario primario. Este campo lo incluimos en el campo \argOne{} del mensaje.
+	\item \textbf{Código de la aplicación}, como una \String{}. Lo adjuntamos al mensaje como un campo \Scst{EXTRA} con la clave ``appCode''.
+\end{itemize}
+\messageTableInit{\appToServ}{3 =\\ \scriptsize{REGISTER\_EXCHANGE}}{Papel del nodo}{\nc}{\textit{null}}{\messApp{}}
+\messageTableExtra{appCode}{Una \String{} con el ``código de aplicación''}
+\messageTableEnd{Mensaje entrega parámetros de aplicación}{registerExchangeMessage}
+El campo \textit{obj} lo dejamos vacío o lo informamos como \textit{null}, en la secciones~\ref{subsubsec:darkApiUpdateParams} y~\ref{subsubsec:darkApiUpdateParamsImpl} veremos el porqué de este campo.\\
+
+Respecto al tercer mensaje que cierra la negociación, la forma de identificar la situación previa del servicio reside en el valor del campo \textit{obj} recibido, así:
+
+\paragraph{En situación red no existente}	Si el campo \textit{obj} es \false{} significa que no estábamos cooperando en una \ac{CWSN}, en este caso el mensaje recibido es:
+
+\messageTableInit{\servToApps}{3 =\\ \scriptsize{REGISTER\_EXCHANGE}}{Estado de la interfaz}{Interfaz}{\textbf{False}}{\nc{}}
+\messageTableExtra{nodeRole}{Un \integer{} que codifica el papel del nodo}
+\messageTableExtraAddrow{nodeType}{Un \integer{} con el tipo de nodo}
+\messageTableExtraAddrow{periodTask}{Un \double{} que representa el periodo tarea cognitiva en segundos}
+\messageTableExtraAddrow{nodeName}{Una \String{} con el nombre del nodo en la red}
+\messageTableExtraAddrow{errorSetupInterface}{Un valor booleano con el resultado de la configuración de la interfaz}
+\messageTableEnd{Mensaje finalización de la negociación: CWSN no establecida}{endHandshakingNotCWSNMessage}
+
+La forma de codificar los campos que no aparecen en la tabla~\ref{tab:endHandshakingNotCWSNMessage} es:
+\begin{itemize}
+	\item \textbf{Estado de la interfaz}, se codifica como un número \integer{} los siguientes estados:
+		\begin{enumerate}
+			\setcounter{enumi}{-1}
+			\item \Scst{INTERFACE\_STATE\_DOWN}, la interfaz de comunicación no está configurada.
+			\item \Scst{INTERFACE\_STATE\_IDLE}, la interfaz está configurada pero no estamos cooperando en red.
+			\item \Scst{INTERFACE\_STATE\_IDLE\_NETWORKING}, situación de reposo cooperando en \ac{CWSN}.
+			\item \Scst{INTERFACE\_STATE\_CONNECTING}, nos estamos conectando a otro nodo (sólo en \bt{}).
+			\item \Scst{INTERFACE\_STATE\_SENDING}, estamos enviado datos a través de la interfaz.
+			\item \Scst{INTERFACE\_STATE\_RECEIVING}, estamos recibiendo datos.
+		\end{enumerate}
+	\item \textbf{Interfaz} en el campo \argTwo{} del mensaje viene en forma de \integer{} la interfaz de comunicaiones usada. Usamos el enumerado \var{Interfaces} ubicado en la clase \class{CognitiveLayer\_common\_Service} para codificar como:
+	\begin{itemize}
+		\item \bsq{0} la interfaz \bt{}.
+		\item \bsq{1} la interfaz \wifi{}.
+		\item \textcolor{notImplemented}{\bsq{2} la interfaz \textit{Mobile}, no implementado.}
+		\item \bsq{-1} desconocido, valor devuelto en el transcurso de cambio de contexto.
+	\end{itemize}
+	\item \textbf{Papel de nodo}, misma codificación que en el segundo mensaje. Se utiliza un tipo enumerado para esta función denominado \var{Role} ubicado en la clase \class[util]{Node}, esta representación es interna al servicio, el cual codifica este valor en el número \integer{} que corresponda cuando esta información sale de su ámbito. 
+	\item \textbf{Tipo de nodo}, utiliza el enumerado \var{Type} en la misma clase. Sus valores codificados son:
+		\begin{itemize}
+			\item \bsq{0} para nodo normal.
+			\item \bsq{1} representa al nodo coordinador.
+			\item \textcolor{notImplemented}{\bsq{2} para la figura del subcoordinador temporal en \bt{}, finalmente no implementada} 
+			\item \bsq{-1} para un valor desconocido en caso de error.
+		\end{itemize}
+\end{itemize}
+
+\paragraph{En situación de red previa} En cambio si el valor recibido es \true{} significa que el servicio ya estaba colaborando en una \ac{CWSN} por lo que no es necesario realizar ninguna configuración obteniendo una respuesta en exclusiva y casi inmediata a la aplicación que inició la negociación. El formato del mensaje recibido es:
+
+\messageTableInit{\servToApp}{3 =\\ \scriptsize{REGISTER\_EXCHANGE}}{Estado de la interfaz}{Interfaz}{\textbf{True}}{\nc{}}
+\messageTableExtra{nodeRole}{Un \integer{} que codifica el papel del nodo}
+\messageTableExtraAddrow{nodeType}{Un \integer{} con el tipo de nodo}
+\messageTableExtraAddrow{periodTask}{Un \double{} que representa el periodo tarea cognitiva en segundos}
+\messageTableExtraAddrow{nodeName}{Una \String{} con el nombre del nodo en la red}
+\messageTableExtraAddrow{appCode}{Una \String{} que identifica al código de la aplicación}
+\messageTableExtraAddrow{nodeIdList}{\textit{Array} de \integers{} con los identificadores de los nodos}
+\messageTableExtraAddrow{nodeNameList}{\textit{Array} de \String{} con los nombres de los nodos}
+\messageTableEnd{Mensaje finalización de la negociación: CWSN establecida}{endHandshakingInCWSNMessage}
+La codificación empleada en los campos que difieren en este mensaje es:
+\begin{itemize}
+	\item \textbf{Código de aplicación}, aunque está explicado en la tabla~\ref{tab:endHandshakingInCWSNMessage}, este campo no aparecía en el mensaje anterior. Este campo codificado como una \String{}, lo recuperamos con la clave ``appCode''.
+	\item \ListaNodosDescription{}
+\end{itemize}
+
+%----------
+\subsection{Incluir a nodos a la red en Bluetooth}
+La información sobre el nodo al que queremos conectarnos la incluimos en el campo \obj{} del mensaje. Este campo acepta dos tipos de codificación:
+
+\begin{itemize}
+ \item Una \String{} con la dirección MAC de \bt{} del nodo.
+ \item Un \integer{} con el identificador el nodo. Este identificador nos lo facilita el servicio por ejemplo en sus mensajes de información (ver secciones~\ref{subsubsec:apiInfo} y~\ref{subsubsec:apiInfoImpl}).
+\end{itemize}
+
+\messageTableInit{\appToServ}{12 = \footnotesize{CONNECT\_TO\\\_VIA\_BT}}{\nc{}}{\nc{}}{nodo al que conectarse}{\nc{}}
+\messageTableEnd{Mensaje conectarse a un nodo en \bt{} }{connectToBT}
+
+%----------
+\subsection{Recibir datos de otros nodos}
+El contenido del mensaje se encuentra en el campo \obj{} del mensaje recibido. Por otra parte, el identificador del nodo que nos ha enviado el mensaje, se encuentra en un campo \Scst{EXTRA} que recuperamos con la clave ``device\_id'':
+
+\messageTableInit{\servToApp}{8 =\\ \scriptsize{INCOMING\_CONTENT}}{\nc{}}{\nc{}}{\textit{payload}}{\nc{}}
+\messageTableExtra{device\_id}{Un \integer{} que identifica al nodo que ha enviado el mensaje}
+\messageTableEnd{Mensaje datos recibidos}{incomingContent}
+
+%----------
+\subsection{Enviar mensajes de datos a otros nodos}
+La \String{} que queremos enviar la alojamos en el campo \obj{} del mensaje. La lista de nodos destinatarios la codificamos como una instancia del objeto \textit{ArrayList<Integer>} que adjuntamos como un campo \Scst{EXTRA} del mensaje con la clave ``addressedNodes''. También debemos incluir el objeto \textit{Messenger} de la aplicación en el campo \replyTo{}. Con esta información podemos formar el siguiente mensaje:
+
+\messageTableInit{\appToServ}{4 =\\ \scriptsize{OUTGOING\_CONTENT}}{\nc{}}{\nc{}}{\textit{payload}}{\messApp{}}
+\messageTableExtra{addressedNodes}{Una lista de \integer{}s con los identificadores de los nodos destinatarios del mensaje}
+\messageTableEnd{Mensaje para el envío de datos}{outgoingContent}
+
+%----------
+\subsection{Confirmación entrega de datos a otros nodos}
+En el mensaje de confirmación alojamos en el campo \argOne{} el número de mensajes que se han escrito de forma correcta, en el \argTwo{} el número de ellos que han fallado en la entrega y en el \obj{} el contenido que fue enviado. Si el campo \argTwo{} tiene un valor mayor que cero, entonces adjuntamos la lista de nodos que como hemos visto es una pareja de dos \textit{arrays} ligados que nos devuelve el identificador y el nombre del nodo:
+\messageTableInit{\servToApp}{6 =\\ \scriptsize{OUTGOING\_CONTENT \_RESULT}}{número mensajes escritos OK}{número mensajes escritos NOK}{\textit{payload}}{\nc{}}
+\messageTableExtra{IdsNotDelivered}{Un \textit{array} de \integer{s} con los identificadores de los nodos a los cuales no les ha llegado el mensaje}
+\messageTableExtraAddrow{NamesNotDelivered}{Un \textit{array} de \String{} con los nombres de los nodos a los cuales no les ha llegado el mensaje}
+\messageTableEnd{Mensaje resultado envío de datos presentado a la aplicación}{outgoingContentResultApp}
+
+%----------
+\subsection{Confirmación entrega de datos encolados}
+Además de los subconjuntos de la lista de nodos que se adjuntan como campos \Scst{EXTRA} del mensaje, en los campos \argOne{} y \argTwo{} adjuntamos el cardinal de estas listas. En el campo \obj{} adjuntamos el contenido del mensaje de datos. Formateamos esta información en la tabla~\ref{tab:queuedMessage} que representa el informe previo al envío del mensaje de datos.
+
+\messageTableInit{\servToApp}{11= \scriptsize{QUEUED\_MESSAGE}}{número enviados}{número no enviados}{\textit{payload}}{\nc{}}
+\messageTableExtra{IdsTriedToSend}{Un \textit{array} de \integer{s} con los identificadores de los nodos los cuales siguen en red}
+\messageTableExtraAddrow{NamesTriedToSend}{Un \textit{array} de \String{} con los nombres de los nodos siguen en red}
+\messageTableExtraAddrow{IdsNotDelivered}{Un \textit{array} de \integer{s} con los identificadores de los nodos que no hemos enviado el mensaje por no encontrarse en la red}
+\messageTableExtraAddrow{NamesNotDelivered}{Un \textit{array} de \String{} con los nombres de los nodos que no hemos enviado el mensaje por no encontrarse en la red}
+\messageTableEnd{Mensaje informe previo a la salida de mensaje encolado}{queuedMessage}
+
+%----------
+\subsection{Información sobre el servicio cognitivo}
+\label{subsubsec:apiInfoImpl}
+
+El mensaje de información que envía el servicio a las aplicaciones estructura la información de la siguiente manera.
+
+El campo \obj{} alberga un valor booleano, si tiene el valor \true{} significa que esta información implica un cambio en la lista de nodos. En este caso incluimos los dos \textit{arrays} que representan a la lista de nodos formada por el par (identificador, nombre). La codificación de los campos recuperados con las claves ``interfaz'' y ``state'' es la ya vista en otros mensajes, la codificación que nos queda por explicar es la del campo cuya clave es ``event''. Su semántica ya la vimos en la tabla~\ref{tab:infoGatheredFromService}, a ésta le asignamos la codificación en números \integer{s} como sigue:\begin{enumerate}
+	\setcounter{enumi}{-1}
+	\item\Scst{EVENT\_INTERFACE\_NO\_CHANGES}, este evento es la ausencia de evento. Hay cambios en el estado de la interfaz que no son provocados por un evento, para estas casuísticas el evento que le asignamos es el de \bsq{no cambio}.	
+	\item\Scst{EVENT\_INTERFACE\_NEW\_NODE}, este evento surge cuando el coordinador nos conecta a la red. Se genera en ambos extremos (en el coordinador y el nodo normal que empieza a formar parte de la red).
+	\item\Scst{EVENT\_INTERFACE\_LOST\_NODE}, se genera al perder la comunicación con un nodo (entre coordinador y normal, aparece este evento al igual que el anterior en ambos extremos).
+	\item\Scst{EVENT\_INTERFACE\_CANNOT\_CONNECT}, surge en el nodo que ha intentado conectarse a otro y no ha podido.
+	\item\Scst{EVENT\_INTERFACE\_ALREADY\_CONNECTED}, surge cuando el coordinador intenta conectarse a un nodo al cual ya está conectado (sólo en \bt{}). 
+	\item\Scst{EVENT\_INTERFACE\_SWITCH\_TO\_BT}, evento que surge cuando recibimos o disparamos (coordinador) el cambio de contexto hacia \bt{}.
+	\item\Scst{EVENT\_INTERFACE\_SWITCH\_TO\_WIFI}, evento que surge cuando recibimos o disparamos (coordinador) el cambio de contexto hacia \wifi{}.
+	\item\textcolor{notImplemented}{\Scst{EVENT\_INTERFACE\_SWITCH\_TO\_MOBILE}, no implementado, de manera análoga cuando la interfaz de destino es la móvil.}
+	\item\Scst{EVENT\_INTERFACE\_END\_SWITCHING}, se genera al terminar el cambio de contexto.
+	\item\Scst{EVENT\_UPDATE\_LIST\_NODES}, cuando es necesaria una actualización de la lista de nodos que no haya sido provocada por algún evento anterior.
+\end{enumerate}
+
+La estructura de la tabla~\ref{tab:serviceInformation} aglutina toda la información este mensaje.
+
+\messageTableInit[!h]{\servToApps}{9 = \scriptsize{SERVICE\\\_INFORMATION}}{interfaz}{\nc{}}{modificación lista nodos}{\nc{}}
+\messageTableExtra{coordinator}{Una \String{} con el nombre del nodo coordinador. Si somos el nodo coordinador este campo viene informado a \textit{null}}
+\messageTableExtraAddrow{triggerNodeName}{Una \String{} con el nombre del nodo que ha disparado el evento. Si no existe tal nodo no se incluye este campo en el mensaje}
+\messageTableExtraAddrow{state}{Un \integer{} con el estado de la interfaz}
+\messageTableExtraAddrow{event}{Un \integer{} con el evento producido en la red}
+\messageTableExtraAddrow{nodeIdList}{Un \textit{array} de \integers{} con los identificadores de los nodos que forman la red en estos momentos}
+\messageTableExtraAddrow{nodeNameList}{Un \textit{array} de \String{} con los nombres de los nodos que forman la población actual}
+\messageTableEnd{Mensaje información evento/estado por parte del servicio}{serviceInformation}
+
+
+%----------
+\subsection{Mensajes de error: incumplimiento de la API del servicio}
+Los diferentes códigos de error tienen la siguiente codificación en números \integer{s}, estos códigos se formatean en el campo \argOne{} del mensaje (ver tabla~\ref{tab:errorMessage}) que se envía a las aplicaciones:
+\begin{enumerate}
+	\item\Scst{CODE\_ERROR\_ILLEGAL\_ARGUMENT}
+	\item\Scst{CODE\_ERROR\_NODE\_NO\_EXISTS}
+	\item\Scst{CODE\_ERROR\_INTERNAL}
+	\item\Scst{CODE\_ERROR\_NOT\_IN\_NETWORK}
+	\item\Scst{CODE\_ERROR\_MESSAGE\_NOT\_RECOGNIZED}
+	\item\Scst{CODE\_ERROR\_ILLEGAL\_PAYLOAD}
+\end{enumerate}
+\messageTableInit{\servToApp}{10 =\\ \scriptsize{ERROR\_MESSAGE}}{código de error}{\nc{}}{Descripción del error}{\nc{}}
+\messageTableEnd{Mensaje de error recibido del servicio}{errorMessage}
+
+%----------
+\subsection{Actualización de parámetros de aplicación}
+\label{susubbsec:apiUpdateParamsImpl}
+Al ser éste un subproceso sacado de la negociación desde el punto de vista de la implementación no hemos de añadir nada más.
+
+%----------
+\subsection{Desconectarse del servicio cognitivo}
+El mensaje que permite al \var{Gestor de Aplicaciones} borrarnos de su base de clientes es el que sigue:
+
+\messageTableInit{\appToServ}{2 =\\ \footnotesize{UNREGISTER \_CLIENT}}{\nc{}}{\nc{}}{\nc{}}{\messApp{}}
+\messageTableEnd{Mensaje desregistro cliente}{unregisterClientMenssage}
+
+Para liberar en totalidad la atadura al servicio, se debe realizar la llamada al método \textit{unbindService()}, pasándole como parámetro el objeto de conexión \textit{ServiceConnection}. Una vez liberarda, \android{} nos avisa en la instancia del objeto usado en la conexión.
+
+\subsection{API oculta del servicio}
+Los mensajes que permiten lanzar procesos de forma manual, siguen la misma estructura ya vista en los mensajes anteriores.
+
+%----------
+\subsubsection{API oculta: Actualización de parámetros del servicio cognitivo}
+\label{subsubsec:darkApiUpdateParamsImpl}
+La estructura de mensaje que permite la actualización en bloque tanto de los parámetros de aplicación como los del servicio tiene la peculiaridad en su campo \obj{}:
+\messageTableInit{\appToServ}{3 =\\ \scriptsize{REGISTER\_EXCHANGE}}{papel del nodo}{tipo de nodo}{\textbf{True}}{\messApp{}}
+\messageTableExtra{appCode}{Una \String{} con el código de aplicación}
+\messageTableExtraAddrow{nodeName}{Una \String{} con el nuevo nombre del nodo en la red}
+\messageTableExtraAddrow{periodTask}{Un \double{} con el nuevo periodo medido en segundos de la tarea cognitiva a ejecutar}
+\messageTableEnd{Actualización de todos los parámetros del servicio}{updateAllParamsMessage}
+
+Como vemos este campo viene informado con un valor booleano a \true{}, esto es la clave que permite al servicio reconocer y efectuar un flujo distinto que actualice en su \var{Repositorio} estos valores. La codificación de los distintos campos se aprecia en la tabla~\ref{tab:updateAllParamsMessage} u obedece las mismas reglas vistas en otros mensajes.
+%----------
+\subsubsection{API oculta: Forzar cambio de contexto}
+El mensaje (ver tabla~\ref{tab:wa_switch}) que permite forzar un cambio de contexto es el que sigue, no necesita ninguna información adicional porque se deduce del contexto. 
+\messageTableInit{\appToServ}{22=\footnotesize{WORKAROUND\_\\ CONTEXT\_CHANGE}}{\nc{}}{\nc{}}{\nc{}}{\messApp{}}
+\messageTableEnd{Mensaje \workaroundCaption{} cambio de interfaz de comunicación}{wa_switch}
+
+%----------
+\subsubsection{API oculta: Almacenar y liberar datos encolados}
+El mensaje que permite encolar un mensaje de datos directamente saltándonos el flujo normal se formatea igual que un mensaje de datos (ver tabla~\ref{tab:outgoingContent}) salvo por la etiqueta: campo \textit{what}. En la tabla~\ref{tab:wa_queue} se ilustra este mensaje.
+
+\messageTableInit{\appToServ}{23=\scriptsize{WORKAROUND\_ PENDINGMESSAGE \_INJECTION}}{\nc{}}{\nc{}}{\textit{payload}}{\messApp{}}
+\messageTableExtra{addressedNodes}{Una lista de \integer{}s con los identificadores de los nodos destinatarios del mensaje}
+\messageTableEnd{Mensaje \workaroundCaption{} encolamiento de mensaje de datos}{wa_queue}
+
+Para expresar el deseo de vaciar la cola de mensajes enviamos al servicio el mensaje formateado en la tabla~\ref{tab:wa_disposalqueue} que no necesita de ninguna información adicional para disparar el proceso.
+
+\messageTableInit{\appToServ}{24=\scriptsize{WORKAROUND\_ PENDINGMESSAGE \_DISPOSAL}}{\nc{}}{\nc{}}{\nc{}}{\messApp{}}
+\messageTableEnd{Mensaje \workaroundCaption{} vaciado cola de mensajes}{wa_disposalqueue}
+
+%----------
+\subsubsection{API oculta: Mensaje de petición y respuesta}
+La estructura del mensaje que permite a un nodo normal guardar la respuesta que si es requerida sumunistrará es:
+
+\messageTableInit[!h]{\appToServ}{20 = \footnotesize{WORKAROUND\\ \_WHAT\_TO\_REPLY}}{\nc{}}{\nc{}}{\textit{reply}}{\messApp{}}
+\messageTableEnd{Mensaje \workaroundCaption{} salvado de respuesta}{wa_reply}
+
+En el campo \obj{} codificamos como una \String{} la respuesta.\\
+
+Sin embargo la aplicación, registrada en un nodo coordinador, que requiera esta información debe comunicar a su servicio este mensaje:
+\messageTableInit{\appToServ}{21 = \footnotesize{WORKAROUND\\ \_ASK\_RESPONSE}}{\nc{}}{\nc{}}{Identificador nodo}{\messApp{}}
+\messageTableEnd{Mensaje \workaroundCaptionFem{} petición de respuesta}{wa_ask}
+
+Cuando el servicio ha conseguido la respuesta envía a todas las aplicaciones pues no tiene forma de deducir por el contexto al ser procesos no correleados, aunque aquí lo estamos viendo como uno solo. La respuesta viene codificada en el campo \obj{} del siguiente mensaje:
+
+\messageTableInit[!h]{\servToApps}{21 = \footnotesize{WORKAROUND\\ \_ASK\_RESPONSE}}{\nc{}}{\nc{}}{Respuesta del nodo preguntado}{\messApp{}}
+\messageTableEnd{Mensaje \workaroundCaptionFem{} respuesta obtenida}{wa_ask_response}
+
+
+%-------------------
+% FIN API
+%-------------------
 
 %-------------------------------------------------------------------
 \section{Implementación de procesos de red}
