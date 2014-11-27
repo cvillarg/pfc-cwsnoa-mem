@@ -15,11 +15,11 @@
 \def\wifi{\textit{Wi-Fi}}
 \def\wifiD{\textit{Wi-Fi Direct}}
 \def\adhoc{\textit{Ad-Hoc}}
-\def\integer{entero}
+\def\integer#1{entero#1}
 \def\integers{enteros}
 \def\double{\textit{double}}
 \def\byteArray{\textit{array} de \textit{bytes}}
-\def\String{\textit{cadena de caracteres}}
+\def\String#1{\textit{cadena#1 de caracteres}}
 \def\Strings{\textit{cadenas de caracteres}}
 \def\false{\bsq{\textit{false}}}
 \def\true{\bsq{\textit{true}}}
@@ -63,10 +63,10 @@ Un conjunto de dos \textit{arrays} ligados, uno con los identificadores de los n
 \def\servToApp{desde el servicio a la aplicaci\'{o}n}
 \def\servToApps{desde el servicio a todas las aplicaciones}
 \def\appToServ{desde la aplicaci\'{o}n al servicio}
-\def\servToBt{desde el servicio al controlador de \bt}
-\def\btToServ{desde el controlador de \bt al servicio}
-\def\servToWifi{desde el servicio al controlador de \wifi}
-\def\wifiToServ{desde el controlador de \wifi al servicio}
+\def\servToBt{desde el servicio al controlador de \bt{}}
+\def\btToServ{desde el controlador de \bt{} al servicio}
+\def\servToWifi{desde el servicio al controlador de \wifi{}}
+\def\wifiToServ{desde el controlador de \wifi{} al servicio}
 \def\controllerToServ{desde un controlador (\bt{} o \wifi{}) al servicio}
 %---------------from---to-----------------------
 \providecommand{\messageTableInit}[6]{%
@@ -109,17 +109,27 @@ Un conjunto de dos \textit{arrays} ligados, uno con los identificadores de los n
      	{#2} & \multicolumn{4}{p{10.2cm}|}{#3}\\%
 	\hline%
 }
+
+\providecommand{\messageTableExtraArbitraryText}[3]{%
+	\noalign{\vskip 0.17cm} %fails with arydshln packet
+	\multicolumn{5}{l}{#1}\\%
+	\hline%
+	\textit{key} & \multicolumn{4}{l|}{\textit{value}}\\%
+	\hline
+     	{#2} & \multicolumn{4}{p{10.2cm}|}{#3}\\%
+	\hline%
+}
 %-------------------------
 %-------------------------
 % Tabla: estructura mensaje protocol buffer
 %	_init: iniciliza tabla e incluye el título del mensaje
 %	_end: finaliza la tabla y e introduce caption y label
 %-------------------------
-\providecommand{\protobufTableInit}[1]{%
-\begin{table}[h]%
+\providecommand{\protobufTableInit}[2][h]{%
+\begin{table}[#1]%
 	\begin{center}%
 		\begin{tabular}{c}%
-			\textbf{#1}\\ \hline%
+			\textbf{#2}\\ \hline%
 		\end{tabular}%
 	\end{center}%
 %\begin{center}
@@ -128,6 +138,9 @@ Un conjunto de dos \textit{arrays} ligados, uno con los identificadores de los n
 %\line(1,0){450}
 %\end{center}
 \begin{description}%
+}
+\providecommand{\protobufItem}[2]{%
+\item[\fbox{#1}]\hfill\\[3pt] #2%
 }
 \providecommand{\protobufTableEnd}[2]{%
 \end{description}%
