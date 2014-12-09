@@ -11,7 +11,7 @@
 	\begin{Fuente} \textit{Def.} Esperanza, {\scriptsize\sc Novena Virgen de la Salud} \end{Fuente}
 \end{FraseCelebre}
 \begin{resumen}
-En este capítulo definimos la arquitectura del nodo cognitivo sobre la que detallamos las interfaces de programación y los procesos de red involucrados en su funcionamiento.
+En este capítulo definimos la arquitectura del nodo cognitivo sobre la cual detallamos las interfaces de programación y los procesos de red involucrados en su funcionamiento.
 \end{resumen}
 
 
@@ -43,7 +43,7 @@ manera: \textit{reflection}, superusuario\ldots\\
 Como puede verse en la figura~\ref{fig:architecture} se ha estructurado la arquitectura en dos capas, existiendo una subdivisión de la capa inferior en otras dos. Un modelo de capas permite definir interfaces de comunicación entre las diferentes unidades, limitando el alcance y conocimiento de cada módulo independizando su propósito del resto. A saber:
 
 \begin{enumerate}
-\item \bsq{\bf Capa de aplicación}: Formada por cada una de las aplicaciones que operan sobre el módulo o servicio cognitivo que les sirve como canal de comunicaciones. Cada una de estas aplicaciones, tiene que cumplir con la interfaz definida entre esta capa y la inferior (aplicación y cognitiva). El diseño e implementación de cada aplicación excede a este proyecto y depende en cada caso del tercero que desarrolle la aplicación. No obstante para probar y utilizar las capacidades de nuestro nodo cognitivo se ha desarrollado una aplicación cuyo diseño presentamos en la sección~\ref{sec:app} del presente capítulo e implementación en la sección~\ref{sec:appImpl} del siguiente.
+\item \bsq{\bf Capa de aplicación}: Formada por cada una de las aplicaciones que operan sobre el módulo o servicio cognitivo que les sirve como canal de comunicaciones. Cada una de estas aplicaciones, debe cumplir con la interfaz definida entre esta capa y la inferior (aplicación y cognitiva). El diseño e implementación de cada aplicación excede a este proyecto y depende en cada caso del tercero que desarrolle la aplicación. No obstante para probar y utilizar las capacidades de nuestro nodo cognitivo se ha desarrollado una aplicación cuyo diseño presentamos en la sección~\ref{sec:app} del presente capítulo e implementación en la sección~\ref{sec:appImpl} del siguiente.
 \item \bsq{\bf Capa cognitiva} El interés del proyecto se centra en el desarrollo de esta capa. Es una capa compuesta por otras dos: una primera capa de control donde se recoge toda la inteligencia y propósitos cognitivos y otra capa de actuación que provee de toda la funcionalidad para recibir y enviar datos por cada una de las interfaces de comunicación presentes:
 	\begin{enumerate}[i.]
 		\item \bsq{\bf Módulo radio cognitiva} Está fuertemente inspirado en los módulos presentes en 
@@ -62,15 +62,18 @@ entre capas, puede ser fácilmente añadida a la arquitectura final.
 \end{enumerate}
 
 A continuación haremos una breve descripción de los diferentes bloques que hemos definido en la arquitectura que conforman el nodo cognitivo. Al ser los procesos entidades que hacen uso más de un bloque, se ha preferido dejar para más adelante (sección~\ref{sec:procesosRed}) su explicación una vez vista la arquitectura. Así se obtienen varios puntos de vista que ayudan a comprender el funcionamiento del nodo.
+%---------
 
 \subsection{Interfaz Aplicación - Módulo cognitivo}
-El apellido cognitivo supone una abstracción en el modelo de comunicaciones de tal forma que el usuario (la aplicación) sea transparente a los parámetros, tiempos o detalles de la comunicación usada para transmitir los datos. Para lograr esta abstracción necesitamos un punto de ruptura que aisle y defina solamente la información estrictamente necesaria a intercambiar entre ambos agentes para poder recrear una \ac{CWSN}. En la sección~\ref{sec:api} se expone la definición de la \ac{API} que debe cumplir el desarrollador de las distintas aplicaciones.\\
+El apellido cognitivo supone una abstracción en el modelo de comunicaciones de tal forma que el usuario (la aplicación) sea transparente a los parámetros, tiempos o detalles de la comunicación usada para transmitir los datos. Para lograr esta abstracción necesitamos un punto de ruptura que aisle y defina solamente la información estrictamente necesaria a intercambiar entre ambos agentes para poder recrear una \ac{CWSN}.\\%En la sección~\ref{sec:api} se expone la definición de la \ac{API} que debe cumplir el desarrollador de las distintas aplicaciones.\\
 
-Al definir una interfaz permitimos que terceros puedan desarrollar sus propias aplicaciones que usen de este \var{Módulo cognitivo} para montar sus comunicaciones, podemos decir que es una interfaz tipo cliente-servidor, donde se permite dar soporte simultáneo a varias aplicaciones. Esto es posible gracias al \var{Gestor de Aplicaciones} que explicamos en la siguiente sección.
-%----------
+Al definir una interfaz permitimos que terceros puedan desarrollar sus propias aplicaciones que usen de este \var{Módulo cognitivo} para montar sus comunicaciones, podemos decir que es una interfaz tipo cliente-servidor, donde se permite dar soporte simultáneo a varias aplicaciones. Esto es posible gracias al \var{Gestor de Aplicaciones} que explicamos en la sección~\ref{subsec:sensorManager}.
+
+Esta interfaz que podemos darle el nombre de \ac{API} del servicio, se basa en el intercambio de mensajes en ambos sentidos, desde \bsq{capa de aplicación} a la \bsq{capa cognitiva} y al revés. Unas veces estos mensajes van acompañados de respuesta, también en forma de mensaje, para comunicar el resultado de un proceso y otras en cambio son entregados de manera aislada sin previo aviso. En la sección~\ref{sec:api} explicamos en profundidad cada peculiaridad de esta interfaz.
 
 %\subsection{Sensor Manager}
 \subsection{Gestor del sensor}
+\label{subsec:sensorManager}
 Es el punto de entrada a nuestro \var{Módulo cognitivo}, el encargado de
 recoger las peticiones de las distintas aplicaciones e informar tanto
 de la respuesta a la aplicación que lo solicitó, como al resto de
@@ -123,7 +126,7 @@ Este módulo hace las labores de concentración, estructuración y perseverancia de
 
 \begin{description}
 	\item[Información relativa al Módulo cognitivo:] Necesitamos almacenar
-          la interfaz actual de comunicaciones y el estado de ésta, así como un valor que nos permita averiguar si el servicio cognitivo ha sido destruido por causas ajenas para intentar reconstruir la \ac{CWSN} ante una eventualidad. Esta información necesita ser persistente. También almacenamos cuál es el periodo con la que el optimizador y ejecutor actúan en base al tiempo. Si en vez de sobreescribir esta información hacemos un seguimiento, podemos obtener información acerca de la estabilidad y la adaptabilidad de la red.
+          la interfaz actual de comunicaciones y el estado de ésta, así como un valor que nos permita averiguar si el servicio cognitivo ha sido destruido por causas ajenas para intentar reconstruir la \ac{CWSN} ante una eventualidad. Esta información necesita ser persistente. También almacenamos cuál es el periodo con la que el optimizador y ejecutor actúan en base al tiempo. Si en vez de sobrescribir esta información hacemos un seguimiento, podemos obtener información acerca de la estabilidad y la adaptabilidad de la red.
 
 \item[Información relativa a los nodos en la red:] Para hacer un mapa
   de la red necesitamos información acerca de qué nodos hay en la red y cómo llegar a ellos. Los datos elegidos son:
@@ -169,7 +172,7 @@ se conectan a través del \var{Repositorio} que actúa como una especie de bus.
 
 %XXX-jblesa. A que modulos te refieres con ambos modulos? XXX-cvillar discovery & policy/optimizer/executor
 
-Este módulo no sólo recoge parámetros (ver sección~\ref{subsec:senseAndPolicy} para conocer en detalle qué datos son sensados), si no que monitoriza el estado de las diferentes interfaces de comunicaciones. Por esta razón parte de este módulo está muy ligado al controlador de la interfaz. Sin embargo debido a que ciertas políticas necesitan que el optimizador evalúe parámetros relativos a interfaces de comunicaciones no activas, se ha sacado del diseño del controlador esta parte para añadirla al modulo \var{Sensado} y que pueda ser manejada en cualquier momento. En la sección~\ref{subsec:btControllerImpl} del siguiente capítulo completamos el por qué de esto. 
+Este módulo no sólo recoge parámetros (ver sección~\ref{subsec:senseAndPolicy} para conocer en detalle qué datos son sensados), si no que monitoriza el estado de las diferentes interfaces de comunicaciones. Por esta razón parte de este módulo está muy ligado al controlador de la interfaz. Sin embargo debido a que ciertas políticas necesitan que el optimizador evalúe parámetros relativos a interfaces de comunicaciones no activas, se ha sacado del diseño del controlador esta parte para añadirla al modulo \var{Sensado} y que pueda ser manejada en cualquier momento. En la sección~\ref{subsec:btControllerImpl} del siguiente capítulo completamos el porqué de esto. 
 %----------
 
 \subsection{Gestor de Interfaces}
@@ -200,7 +203,7 @@ La forma de comunicarse con el controlador de la interfaz de comunicación es med
 Permite establecer una comunicación unidireccional basada en mensajes desde los distintos \var{Controladores} hacia el \var{Módulo cognitivo} en cualquier momento de tiempo. Estos mensajes son consecuencia de procesos bien disparados por el servicio cognitivo al invocar métodos del controlador (desde el módulo \var{Ejecutor} y/o \var{Gestor de Interfaces}) o bien originados en el propio controlador al tratarse de un evento de red, reflejando el estado en el que se encuentra el controlador.
 
 \paragraph{WiFi} Los diferentes estados y eventos en los que pueden estar la interfaz \wifi{}:%\\
-\smTableInit{\textit{Wi-Fi State Manager}}
+\smTableInit{\textit{Gestor de Estados Wi-Fi}}
 	\smTableRow{STATE\_none}{event\_no\_device\_changes}	
 	\smTableRow{STATE\_listen}{EVENT\_ENTERED\_IN\_NETWORK}
 	\smTableRow{STATE\_sending}{EVENT\_LOST\_NODE}
@@ -208,7 +211,7 @@ Permite establecer una comunicación unidireccional basada en mensajes desde los 
 \smTableEnd{Gestor de estados WiFi}{wifiStateManager}
 %~\\
 \paragraph{Bluetooth} De manera análoga los diferentes estados y eventos en los que pueden estar la interfaz \bt{}:
-\smTableInit{\textit{Bluetooth State Manager}}
+\smTableInit{\textit{Gestor de Estados Bluetooth}}
 	\smTableRow{STATE\_none}{event\_no\_device\_changes}	
 	\smTableRow{STATE\_listen}{EVENT\_new\_device}
 	\smTableRow{STATE\_connecting}{EVENT\_device\_LOST}
@@ -218,448 +221,287 @@ Permite establecer una comunicación unidireccional basada en mensajes desde los 
 \smTableEnd{Gestor de estados Bluetooth}{btStateManager}
 
 Esta información recibida por cada controlador se mapea con los eventos y estados que veremos en la \ac{API} (ver sección~\ref{subsec:serviceInformation}) de forma que las singularidades de cada interfaz sean ocultadas más allá del servicio cognitivo.
-%----------
-                                                     
+
+
+\section{API del servicio: Interfaz Aplicación - Módulo cognitivo}
 %-------------------------------------------------------------------
-\section{API: Definición, Cómo montar una aplicación sobre el servicio cognitivo}
+\label{sec:api} %% API DEL SERVICIO %%
 %-------------------------------------------------------------------
-\label{sec:api}
-En esta sección se explica cada detalle de la interfaz Aplicación - Módulo cognitivo en ambos sentidos. Su cumplimiento es necesario para desarrollar una aplicación que interactúe de forma correcta con el módulo o servicio cognitivo. La forma de interactuar con éste se basa en, como se verá en \ref{sec:detallesImplementacion}, el intercambio de mensajes a través de los objetos \textit{Messenger} y \textit{Handler} provistos por \android{}. Estos mensajes provocan el disparo de ciertos procesos en el servicio que responderá, si procede, en cuanto el resultado esté listo. Son llamadas por tanto asíncronas. De igual modo, el servicio entregará mensajes a las aplicaciones en cualquier momento sin que estás hayan solicitado nada.\\
+Como se comentó, el diseño de esta interfaz se fundamenta en el intercambio de mensajes. Cada funcionalidad de esta interfaz está respalda por uno o varios mensajes formando acciones de petición y respuesta. Cada uno de estos mensajes va clasificado con una etiqueta y acompañado de la información necesaria para realizar un proceso o informar del resultado.
 
-La aplicación que haga uso del modelo no necesita cumplir más requisitos que la de manejar los distintos mensajes que le entregue el servicio en cualquier instante de tiempo y la de almacenar la lista de nodos formada por el par (identificador, nombre) entregada por el servicio y modificada en cada evento que lo requiera. La confección de algunos mensajes de la \ac{API} requieren que sean informados con algunos valores de la lista de nodos, por lo que la aplicación debe tener accesible esta lista ya que no hay una manera activa de pedirla al servicio.
+\miniTableInit[!h]{.4}{}{Clasificación Mensajes Intercambiados}
+	\miniTableRow{register\_client}
+	\miniTableRow{unregister\_client}
+	\miniTableRow{register\_exchange}
+	\miniTableRow{OUTGOING\_CONTENT}
+	\miniTableRowNI{OUTGOING\_CONTENT\_PROGRESS}
+	\miniTableRow{OUTGOING\_CONTENT\_RESULT}
+	\miniTableRowNI{INCOMING\_CONTENT\_PROGRESS}
+	\miniTableRow{INCOMING\_CONTENT}
+%
+	\miniTableSwitch{.02}{.5}{}
+	\miniTableRow{SERVICE\_INFORMATION}
+	\miniTableRow{ERROR\_MESSAGE}
+	\miniTableRow{QUEUED\_MESSAGE}
+	\miniTableRow{CONNECT\_TO\_VIA\_BT}
+	\vspace{0.5em}
+	\miniTableRow{{\fontsize{9pt}{10pt}\selectfont WORKAROUND}\_WHAT\_TO\_REPLY}
+	\miniTableRow{{\fontsize{9pt}{10pt}\selectfont WORKAROUND}\_ASK\_RESPONSE}
+%	\miniTableRow{{\fontsize{9pt}{10pt}\selectfont WORKAROUND}\_CONTEXT\_CHANGE}
+	\miniTableRow{{\fontsize{9pt}{10pt}\selectfont WORKAROUND}\_SWITCH}
+	\miniTableRow{{\fontsize{9pt}{10pt}\selectfont WORKAROUND}{\tiny\_}PENDINGMESSAGE{\tiny\_}INJECTION}
+	\miniTableRow{{\fontsize{9pt}{10pt}\selectfont WORKAROUND}{\tiny\_}PENDINGMESSAGE{\tiny\_}DISPOSAL}
+\miniTableEnd{Mensajes tipo intercambiados a través de la API del servicio}{apiMessages}
+Las filas en {\bf\color{notImplemented} gris} corresponden a mensajes reservados no implementados. Tendrían uso si el \var{Módulo cognitivo} segmentase los mensajes que les entrega las aplicaciones para su envío en trozos más pequeños para adecuarse a directrices cognitivas. Las filas precedidas por \Scst{WORKAROUND} son mensajes que se salen del redil  para poder disparar procesos manualmente, corresponden por tanto a funciones de \textit{test} no necesario su cumplimiento por parte de las aplicaciones para un correcto funcionamiento.
 
-Los mensajes que se intercambian tienen un campo llamado \textit{what} que resume el propósito de éste, más una serie de añadidos expresados en forma de parámetros y extras que conforman y describen el proceso que está ocurriendo.
-Este campo \textit{what} es un \integer{} único que define el número diferente de mensajes tipo que se intercambian, entre éstos habrá algunos que sólo existan en un sentido de la comunicación y otros que aparezcan en ambos sentidos.
-
-\apiTableInit{Mensajes tipo intercambiados entre Aplicación y servicio}
-	\apiTableRow{register\_client}{\phantom{0}1}	
-	\apiTableRow{unregister\_client}{\phantom{0}2}
-	\apiTableRow{register\_exchange}{\phantom{0}3}
-	\apiTableRow{OUTGOING\_CONTENT}{\phantom{0}4}
-	\apiTableRowNotImplemented{OUTGOING\_CONTENT\_PROGRESS}{\phantom{0}5}
-	\apiTableRow{OUTGOING\_CONTENT\_RESULT}{\phantom{0}6}
-	\apiTableRowNotImplemented{INCOMING\_CONTENT\_PROGRESS}{\phantom{0}7}
-	\apiTableRow{INCOMING\_CONTENT}{\phantom{0}8}
-	\apiTableRow{SERVICE\_INFORMATION}{\phantom{0}9}
-	\apiTableRow{ERROR\_MESSAGE}{10}
-	\apiTableRow{QUEUED\_MESSAGE}{11}
-	\apiTableRow{CONNECT\_TO\_VIA\_BT}{12}
-	\noalign{\vskip 0.25cm}
-	\apiTableRow{{\footnotesize WORKAROUND\_WHAT\_TO\_REPLY}}{20}
-	\apiTableRow{{\footnotesize WORKAROUND\_ASK\_RESPONSE}}{21}
-	\apiTableRow{{\footnotesize WORKAROUND\_CONTEXT\_CHANGE}}{22}
-	\apiTableRow{{\footnotesize WORKAROUND\_PENDINGMESSAGE\_INJECTION}}{23}
-	\apiTableRow{{\footnotesize WORKAROUND\_PENDINGMESSAGE\_DISPOSAL}}{24}
-\apiTableEnd{Mensaje tipo}{apiMessages}
- Las filas en gris corresponden a mensajes reservados no implementados como son las constantes \Scst{OUTGOING\allowbreak\_CONTENT\allowbreak\_PROGRESS} (5) y \Scst{INCOMING\allowbreak\_CONTENT\allowbreak\_PROGRESS} (7). Están pensadas para una posible segmentación de los mensajes de aplicación por parte del servicio. En caso de segmentación la forma de informar a la aplicación del progreso del envío de segmentos (y de la recepción de éstos) se haría con este tipo de mensajes. Las filas precedidas por \Scst{WORKAROUND} son comportamientos necesarios para disparar procesos manualmente, corresponden por tanto a una interfaz de \textit{test} no necesario su cumplimiento para el correcto funcionamiento.
-%----------
-\subsection{Conectarse al servicio}
-\label{subsec:apiStart}
-Para poder entregar y recibir mensajes necesitamos una referencia al
-\textit{Messenger} del servicio, esta referencia la obtenemos tras
-hacer una petición de unión o atadura (\textit{bind}) llamando al método \textit{bindService()} con un \textit{Intent} a la clase:
-\begin{verbatim}
-es.upm.die.lsi.pfc.CWSNoA.CognitiveLayer_specific_Service.class
-\end{verbatim}
-En la petición de \textit{bind} también se pasa como parámetro un objeto de la clase \textit{ServiceConnection} que el sistema \android{} llama cuando ha establecido la conexión. \android{} arrancará el servicio si éste no lo estaba ya y nos devolverá como objeto \textit{IBinder} una instancia del \textit{Messenger} del servicio. 
-Por motivos de seguridad la aplicación que realice la petición de \textit{bind()} requiere la declaración en su archivo \bsq{\textit{manifest}} la aceptación del permiso:
-\begin{verbatim}
-es.upm.die.lsi.pfc.CWSNoA.permission.COGNITIVE_SERVICE
-\end{verbatim}
-Este permiso informa al usuario final que usa la aplicación del uso posible de la modificación de la interfaz \bt{} y \wifi{} sin la intervención de éste.
-
-Una vez recuperada la referencia procedemos al registro de la aplicación en el servicio, para ello iniciamos un proceso de \textit{handshaking}. El primer mensaje no lleva ningún dato adicional, dicta de esta forma (ver tabla~\ref{tab:registerClientMessage}).
-
-\messageTableInit{\appToServ}{1 =\\ \footnotesize{REGISTER\_CLIENT}}{\nc{}}{\nc{}}{\nc{}}{\messApp{}}
-\messageTableEnd{Mensaje registro cliente}{registerClientMessage}
-
-Acto seguido debemos informar sobre parámetros de nuestra aplicación al servicio con el envío de un mensaje con la siguiente información: 
-\begin{description}
-\item[Papel de nodo] En el campo \textit{arg1} del mensaje. \bsq{0} para indicar que somos un nodo secundario y \bsq 1 para indicar que nuestro papel es primario.
-\item[Código de aplicación] Como extra del mensaje incluimos una \String{} con la clave ``appCode'' indicando qué aplicación somos, para intercambiar mensajes cuyo código de aplicación coincida.
-\end{description}
-A través del mensaje descrito en la tabla~\ref{tab:registerExchangeMessage}
-
-\messageTableInit{\appToServ}{3 =\\ \scriptsize{REGISTER\_EXCHANGE}}{0=secundario / 1=primario}{\nc}{\textit{null}}{\messApp{}}
-\messageTableExtra{appCode}{Una \String{} con el ``código de aplicación''}
-\messageTableEnd{Mensaje entrega parámetros de aplicación}{registerExchangeMessage}
-
-Tras esto el servicio nos responderá con un mensaje igual tipo \Scst{REGISTER\_EXCHANGE}, pero del que puede haber dos variantes dependiendo de cuál fuera la situación del servicio. La forma fácil de identificar el tipo de respuesta es con la información devuelta en el campo \textit{obj} del mensaje. 
-
-Se trata de un valor booleano, si obtenemos un \false{} corresponde al caso de que no estábamos cooperando en una \ac{CWSN} cuando nos registramos en el servicio. Es probable que nos hayan llegado entre tanto otros mensajes del tipo \Scst{SERVICE\_INFORMATION} debido a procesos internos del servicio relacionados con la configuración y la entrada en la red. El detalle de éste se puede ver en la tabla~\ref{tab:endHandshakingNotCWSNMessage}
-
-\messageTableInit{\servToApps}{3 =\\ \scriptsize{REGISTER\_EXCHANGE}}{Estado de la interfaz}{Interfaz}{\textbf{False}}{\nc{}}
-\messageTableExtra{nodeRole}{Papel del nodo}
-\messageTableExtraAddrow{nodeType}{Tipo de nodo}
-\messageTableExtraAddrow{periodTask}{Periodo tarea cognitiva}
-\messageTableExtraAddrow{nodeName}{Nombre del nodo en la red}
-\messageTableExtraAddrow{errorSetupInterface}{Resultado configuración interfaz}
-\messageTableEnd{Mensaje finalización de \textit{handshaking}: CWSN no establecida}{endHandshakingNotCWSNMessage}
-
-La información de cada campo:
-\begin{description}
-\label{itm:serviceParamsToAll}
-	\item[Arg1: Estado de la interfaz] Un entero cuyos valores corresponden a:
-	\begin{enumerate}
-	 \setcounter{enumi}{-1}
-		\item \Scst{INTERFACE\_STATE\_DOWN}, la interfaz de comunicación no está configurada.
-		\item \Scst{INTERFACE\_STATE\_IDLE}, la interfaz está configurada pero no estamos cooperando en red.
-		\item \Scst{INTERFACE\_STATE\_IDLE\_NETWORKING}, situación de reposo cooperando en \ac{CWSN}.
-		\item \Scst{INTERFACE\_STATE\_CONNECTING}, nos estamos conectando a otro nodo (sólo en \bt{}).
-		\item \Scst{INTERFACE\_STATE\_SENDING}, estamos enviado datos a través de la interfaz.
-		\item \Scst{INTERFACE\_STATE\_RECEIVING}, estamos recibiendo datos.
-	\end{enumerate}
-	\item[Arg2: Interfaz] Un entero cuyos valores corresponden a:
-	\begin{enumerate}
-		\setcounter{enumi}{-1}
-		\item \bt{}.
-		\item \wifi{}.
-		\item \textcolor{notImplemented}{\textit{Mobile}, no implementado.}
-		\setcounter{enumi}{-2}
-		\item Desconocido, devuelto en el transcurso de cambio de contexto.
-	\end{enumerate}
-	\item[Obj: \false{}] Un valor booleano cuyo valor nos indica que no estábamos cooperando con otros nodos tras la recepción del mensaje \Scst{REGISTER\_EXCHANGE} por lo tanto el servicio ha configurado de nuevo la interfaz para disparar los procesos de entrada en la red (ver sección~\ref{subsec:configInterface}).
-	\item [EXTRAS] Campos \textit{extra} con el resto de parámetros cuando el valor \textit{obj} es \false{}:
-	\begin{description}
-		\item[Papel del nodo] Un \integer{} que representa el papel del nodo en la red, se recupera con la clave ``nodeRole'':
-		\begin{enumerate}
-			\setcounter{enumi}{-1}
-			\item Secundario.
-			\item Primario.
-		\end{enumerate}
-		\item[Tipo de nodo] Un \integer{} que representa el tipo de nodo, se recupera con la clave ``nodeType'':
-		\begin{enumerate}
-			\setcounter{enumi}{-1}
-			\item Normal.
-			\item Coordinador.
-			\item \textcolor{notImplemented}{Coordinador temporal en \bt{}, no implementado. En todo caso este valor no es seleccionable nunca por el usuario/servicio.}
-			\setcounter{enumi}{-2}
-			\item Desconocido, valor por defecto (si obtenemos este valor nos encontramos en situación de error).
-		\end{enumerate}
-		\item[Periodo tarea cognitiva] Un \double{} con el que se nos informa cada cuánto el servicio realiza la tarea cognitiva (sensado, toma de decisiones...). Se recupera con la clave ``periodTask''.
-		\item[Nombre del nodo en la red] Una \String{} con la que el servicio nos informa de cómo nos conocen los otros nodos en la red. Se recupera con la clave ``nodeName''.
-		\item[Resultado configuración interfaz] Un valor booleano cuya clave para obtenerlo es ``errorSetupInterface'' cuyo valor significa:
-		\begin{itemize}
-			\item \true{} se ha producido un error mientras la configuración de la interfaz.
-			\item \false{} todo ha ido OK en el proceso de configuración.
-		\end{itemize}
-	\end{description}
-\end{description}
-
-Si por el contrario el valor obtenido en el campo \textit{obj} es \true{} significa que el servicio ya se encontraba cooperando en una \ac{CWSN} cuando registramos nuestra aplicación por lo que no es necesario ninguna configuración y recibimos una respuesta casi inmediata (a diferencia del caso anterior) con la siguiente disposición (ver tabla~\ref{tab:endHandshakingInCWSNMessage}).
-
-\messageTableInit{\servToApp}{3 =\\ \scriptsize{REGISTER\_EXCHANGE}}{Estado de la interfaz}{Interfaz}{\textbf{True}}{\nc{}}
-\messageTableExtra{nodeRole}{Papel del nodo}
-\messageTableExtraAddrow{nodeType}{Tipo de nodo}
-\messageTableExtraAddrow{periodTask}{Periodo tarea cognitiva}
-\messageTableExtraAddrow{nodeName}{Nombre del nodo en la red}
-\messageTableExtraAddrow{appCode}{Código de la aplicación}
-\messageTableExtraAddrow{nodeIdList}{Array de \integers{} con los identificadores de los nodos}
-\messageTableExtraAddrow{nodeNameList}{Array de \String{} con los nombres de los nodos}
-\messageTableEnd{Mensaje finalización de \textit{handshaking}: CWSN establecida}{endHandshakingInCWSNMessage}
-
-La información recibida es prácticamente igual salvo el campo \textit{obj} que nos devuelve el valor \true{} lo que provoca que este mensaje sólo lo reciba esta aplicación en exclusiva y un cambio en los extras, que dejan de incluir el \bsq{Resultado configuración interfaz} pero incluyen dos nuevos:
-
-\begin{description}
-	\item[Código de la aplicación] Un \String{} que representa el ``código de la aplicación''. El servicio nos hace un \bsq{eco} de este valor para saber que se ha configurado bien. Se recupera con la clave ``appCode''.
-	\ListaNodosItem{}
-\end{description}
-%------------
-\subsection{Enviar datos}
-El envío de datos a través de la red cognitiva consiste en la entrega al servicio de un mensaje codificado con esta información:
-
-\begin{description}
-	\item[Payload] El contenido del mensaje lo adjuntamos en el campo \textit{obj} del mensaje, debe ser o poder codificarse como una \String{}.
-	\item[Lista nodos] Los nodos a quién va dirigido el mensaje se codifican como una lista de identificadores, instancia de un \textit{ArrayList<Integer>} y debe ir como un extra guardado con la clave ``addressedNodes''. El identificador del nodo nos los devuelve el propio servicio en mensajes tipo \Scst{REGISTER\_EXCHANGE} en situación de \textit{networking} y en mensajes tipo \Scst{SERVICE\_INFORMATION}. Como convención, el identificador es un número natural. El valor \bsq 0 puede ser utilizado por el programador de aplicaciones como ausencia de nodos (útil para rellenar \textit{listviews} o \textit{spinners}), el \bsq1 es un valor reservado por el servicio que sirve para enviar el mensaje a todos los nodos. Los demás números corresponden cada uno a un nodo distinto. 
-
-Aunque no hay restricciones la manera correcta de enviar el mensaje a todos es rellenar la lista sólo con el identificador \bsq{1}.
-\end{description}
-
-El detalle del mensaje enviado al servicio es (ver tabla~\ref{tab:outgoingContent}).
-
-\messageTableInit{\appToServ}{4 =\\ \scriptsize{OUTGOING\_CONTENT}}{\nc{}}{\nc{}}{\textit{payload}}{\messApp{}}
-\messageTableExtra{addressedNodes}{Una lista de \integer{}s con los identificadores de los nodos destinatarios del mensaje}
-\messageTableEnd{Mensaje para el envío de datos}{outgoingContent}
-%-------------
-\subsection{Confirmación envío de datos}
-\label{subsec:apiAck}
-Cuando hemos enviado datos a través del servicio, la forma que tiene éste de informarnos que el proceso de envío ha terminado es con la entrega del siguiente mensaje, del que podremos obtener las estadísticas de envío (ver tabla~\ref{tab:outgoingContentResultApp}).
-
-\messageTableInit{\servToApp}{6 =\\ \scriptsize{OUTGOING\_CONTENT \_RESULT}}{número mensajes escritos OK}{número mensajes escritos NOK}{\textit{payload}}{\nc{}}
-\messageTableExtra{IdsNotDelivered}{Un array de \integer{}s con los identificadores de los nodos a los cuales no les ha llegado el mensaje}
-\messageTableExtraAddrow{NamesNotDelivered}{Un array de \String{} con los nombres de los nodos a los cuales no les ha llegado el mensaje}
-\messageTableEnd{Mensaje resultado envío de datos presentado a la aplicación}{outgoingContentResultApp}
-
-La información que podemos leer de este mensaje es:
-\begin{description}
-	\item[Arg1: número mensajes escritos OK] Un \integer{} que nos indica en cuántos nodos se ha entregado el mensaje correctamente.
-	\item[Arg2: número mensajes escritos NOK] Un \integer{} con el número de nodos los cuales no han recibido el mensaje.
-	\item[Obj: payload] El contenido que se ha enviado por la red, esto sirve a la aplicación para relacionar el envío con la contestación. 
-	\item[EXTRAS] Si el campo \textit{arg2} es distinto de cero incluimos los siguientes extras:
-	\begin{description}
-	\ListaNodosNoDeliveredItem{}
-
-	La motivación de enviar tanto el identificador como el nombre es porque si hay algún fallo en la entrega del mensaje antes de la confirmación de entrega, habremos recibido un mensaje indicándonos la pérdida de algún nodo. La aplicación entonces puede haber borrado de su lista el nodo implicado que al intentar recuperar ahora (en la recepción de la confirmación) el nombre le dará error al no encontrarse ya en su lista.
-	\end{description}
-\end{description}
-
-El tiempo de entrega de esta confirmación no está acotado, depende de la complejidad en el envío y de si ha habido encolamiento en cualquiera de los segmentos de red por los que ha pasado el mensaje.
-
-%----------
-\subsection{Recibiendo datos}
-En cuanto el servicio haya recibido datos que le interesen a nuestra aplicación (es decir el ``código de aplicación'' sea el mismo con el que va marcado el mensaje de datos) nos enviará un mensaje con el contenido (en el campo \textit{obj} del mensaje) y el identificador del nodo que lo envió, un extra que se recupera con la clave ``device\_id'' (ver tabla~\ref{tab:incomingContent}).
-
-\messageTableInit{\servToApp}{8 =\\ \scriptsize{INCOMING\_CONTENT}}{\nc{}}{\nc{}}{\textit{payload}}{\nc{}}
-\messageTableExtra{device\_id}{Un \integer{} que identifica al nodo que ha enviado el mensaje}
-\messageTableEnd{Mensaje datos recibidos}{incomingContent}
-
-\subsection{Recibir información del servicio}
-\label{subsec:serviceInformation}
-El servicio utiliza esta vía como principal para informar acerca de la evolución de sus procesos internos. Gracias a su gestor de estados entre los controladores de las interfaces y éste, los eventos y estados se codifican y aglutinan para informar a todas las aplicaciones registradas acerca de éstos y cuándo se producen. 
-
-Aunque parte de esta información (estado de la interfaz y lista de nodos) se distribuya también en otros mensajes, es aquí dónde se plasman todos los cambios de estado que haya a lo largo de un proceso completo. En otros mensajes enviados por el servicio la información aportada tan sólo corresponde al momento final del proceso.
-
-\apiTableInit{Diferentes estados en los que se pueden encontrar las interfaces}
-	\apiTableRow{INTERFACE\_STATE\_DOWN}{0}	
-	\apiTableRow{INTERFACE\_STATE\_IDLE}{1}
-	\apiTableRow{INTERFACE\_STATE\_IDLE\_NETWORKING}{2}
-	\apiTableRow{INTERFACE\_STATE\_CONNECTING}{3}
-	\apiTableRow{INTERFACE\_STATE\_SENDING}{4}
-	\apiTableRow{INTERFACE\_STATE\_RECEIVING}{5}
-\apiTableEnd{Estados de la interfaz de comunicación}{states}
-
-Los eventos se producen entre los dos nodos involucrados directamente en el proceso. Por ejemplo, la inclusión de un nuevo nodo produce un evento en los controladores de la interfaz de los dos nodos implicados, el resto de nodos se enteran del evento con mensajes de señalización (que veremos en la sección \ref{sec:procesosRed}) que para los controladores son tratados de la misma manera que otros mensajes de red. La mayoría de eventos surgen del propio controlador de la interfaz, otros sin embargo son fruto de la interpretación de mensajes de señalización como son los cambios de contexto.
-
-\apiTableInit{Eventos producidos en la red}
-	\apiTableRow{EVENT\_INTERFACE\_NO\_CHANGES}{0}	
-	\apiTableRow{EVENT\_INTERFACE\_NEW\_NODE}{1}
-	\apiTableRow{EVENT\_INTERFACE\_LOST\_NODE}{2}
-	\apiTableRow{EVENT\_INTERFACE\_CANNOT\_CONNECT}{3}
-	\apiTableRow{EVENT\_INTERFACE\_ALREADY\_CONNECTED}{4}
-	\apiTableRow{EVENT\_INTERFACE\_SWITCH\_TO\_BT}{5}
-	\apiTableRow{EVENT\_INTERFACE\_SWITCH\_TO\_WIFI}{6}
-	\apiTableRowNotImplemented{EVENT\_INTERFACE\_SWITCH\_TO\_MOBILE}{7}
-	\apiTableRow{EVENT\_INTERFACE\_END\_SWITCHING}{8}
-	\apiTableRow{EVENT\_UPDATE\_LIST\_NODES}{9}
-\apiTableEnd{Eventos que se pueden producir en la red}{events}
-
-
-  Estos mensajes son puramente informativos, no requieren de ningún procesamiento por parte de las aplicaciones y se presentan con esta estructura (ver tabla~\ref{tab:serviceInformation}).
-
-\messageTableInit{\servToApps}{9 = \scriptsize{SERVICE\\\_INFORMATION}}{interfaz}{\nc{}}{modificación lista nodos}{\nc{}}
-\messageTableExtra{coordinator}{Una \String{} con el nombre del nodo que es nuestro coordinador. Si somos el nodo coordinador este campo viene informado a \textit{null}}
-\messageTableExtraAddrow{triggerNodeName}{Una \String{} con el nombre del nodo que ha disparado el evento. Si no existe tal nodo no se incluye este campo en el mensaje}
-\messageTableExtraAddrow{state}{Una \integer{} con el estado de la interfaz}
-\messageTableExtraAddrow{event}{Una \integer{} con el evento producido en la red}
-\messageTableExtraAddrow{nodeIdList}{Un \textit{array} de \integers{} con los identificadores de los nodos que forman la red en estos momentos}
-\messageTableExtraAddrow{nodeNameList}{Un \textit{array} de \String{} con los nombres de los nodos que forman la población actual}
-\messageTableEnd{Mensaje información evento/estado por parte del servicio}{serviceInformation}
-
-El detalle de cada uno de los campos es:
-\begin{description}
-\label{itm:serviceInformation}
-	\item[Arg1: Interfaz] Un \integer{} cuyos valores corresponden a:
-	\begin{enumerate}
-		\setcounter{enumi}{-1}
-		\item \bt{}.
-		\item \wifi{}.
-		\item \textcolor{notImplemented}{\textit{Mobile}, no implementado.}
-		\setcounter{enumi}{-2}
-		\item Desconocido, devuelto en el transcurso de cambio de contexto.
-	\end{enumerate}
-	\item[Obj: modificación lista nodos] Un valor booleano que nos indica si ha habido un cambio en la lista de nodos.
-	\item [EXTRAS] Campos \textit{extra} con el resto de parámetros:
-	\begin{description}
-		\item[Coordinador] Una \String{} con el nombre del nodo coordinador. Informado a \textit{null} si somos nosotros el coordinador de la red.		
-		\item[Nodo causante del evento] Una \String{} con el nombre del nodo que ha causado el evento. Esta información es más útil para el nodo coordinador, pues para el normal el nodo causante siempre será su coordinador.
-		\item[Estado interfaz] Un \integer{} cuyos valores son los vistos en la tabla~\ref{tab:states}, se obtiene con la clave ``state'':
-		\begin{enumerate}
-	 		\setcounter{enumi}{-1}
-				\item \Scst{INTERFACE\_STATE\_DOWN}, la interfaz de comunicación no está configurada.
-				\item \Scst{INTERFACE\_STATE\_IDLE}, la interfaz está configurada pero no estamos cooperando en red.
-				\item \Scst{INTERFACE\_STATE\_IDLE\_NETWORKING}, situación de reposo cooperando en \ac{CWSN}.
-				\item \Scst{INTERFACE\_STATE\_CONNECTING}, nos estamos conectando a otro nodo (sólo en \bt{}).
-				\item \Scst{INTERFACE\_STATE\_SENDING}, estamos enviado datos a través de la interfaz.
-				\item \Scst{INTERFACE\_STATE\_RECEIVING}, estamos recibiendo datos.
-		\end{enumerate}
-		\item[Evento producido] Un \integer{} cuyos valores son los vistos en la tabla~\ref{tab:events}, se recupera con la clave ``event'':
-		\begin{enumerate}
-				\setcounter{enumi}{-1}
-				\item \Scst{EVENT\_INTERFACE\_NO\_CHANGES}, este evento es la ausencia de evento. Hay cambios en el estado de la interfaz que no son provocados por un evento, para estas casuísticas el evento que le asignamos es el de \bsq{no cambio}.	
-				\item \Scst{EVENT\_INTERFACE\_NEW\_NODE}, este evento surge cuando el coordinador nos conecta a la red. Se genera en ambos extremos (en el coordinador y el nodo normal que empieza a formar parte de la red).
-				\item \Scst{EVENT\_INTERFACE\_LOST\_NODE}, se genera al perder la comunicación con un nodo (entre coordinador y normal, aparece este evento al igual que el anterior en ambos extremos).
-				\item \Scst{EVENT\_INTERFACE\_CANNOT\_CONNECT}, surge en el nodo que ha intentado conectarse a otro y no ha podido.
-				\item \Scst{EVENT\_INTERFACE\_ALREADY\_CONNECTED}, surge cuando el coordinador intenta conectarse a un nodo al cual ya está conectado (sólo en \bt{}). 
-				\item \Scst{EVENT\_INTERFACE\_SWITCH\_TO\_BT}, evento que surge cuando recibimos o disparamos (coordinador) el cambio de contexto hacia \bt{}.
-				\item \Scst{EVENT\_INTERFACE\_SWITCH\_TO\_WIFI}, evento que surge cuando recibimos o disparamos (coordinador) el cambio de contexto hacia \wifi{}.
-				\item \textcolor{notImplemented}{\Scst{EVENT\_INTERFACE\_SWITCH\_TO\_MOBILE}, no implementado, de manera análoga cuando la interfaz de destino es la móvil.}
-				\item \Scst{EVENT\_INTERFACE\_END\_SWITCHING}, se genera al terminar el cambio de contexto.
-				\item \Scst{EVENT\_UPDATE\_LIST\_NODES}, cuando es necesaria una actualización de la lista de nodos que no haya sido provocada por algún evento anterior.
-			\end{enumerate}
-			\ListaNodosItem{}
-	\end{description}
-\end{description}
-
-%---------
-\subsection{No cumplimiento de la API: mensajes de error}
-El servicio tiene una manera de avisar a las aplicaciones cuando éstas no cumplen con la \ac{API} o internamente surge un error cuyo resultado es conveniente comunicar para poner en conocimiento que el proceso actual se ha detenido. Este aviso se realiza mediante el envío de mensajes de error que están dirigidos a quién lo ha provocado, o puesto en conocimiento de todos según interese.
-
-Es una sección experimental que sólo recoge los errores más importantes. No se ha hecho un estudio exhaustivo sobre el comportamiento maligno de las aplicaciones para intentar manejar y sanitizar todos los valores entregados por éstas. Algunos de los errores de los que son manejados por el servicio se listan en la tabla~\ref{tab:errors}
-
-\apiTableInit{Mensajes de error devueltos por el servicio}
-	\apiTableRow{CODE\_ERROR\_ILLEGAL\_ARGUMENT}{1}	
-	\apiTableRow{CODE\_ERROR\_NODE\_NO\_EXISTS}{2}
-	\apiTableRow{CODE\_ERROR\_INTERNAL}{3}
-	\apiTableRow{CODE\_ERROR\_NOT\_IN\_NETWORK}{4}
-	\apiTableRow{CODE\_ERROR\_MESSAGE\_NOT\_RECOGNIZED}{5}
-	\apiTableRow{CODE\_ERROR\_ILLEGAL\_PAYLOAD}{6}
-\apiTableEnd{Mensajes de error por el no cumplimiento de la API}{errors}
-
-Los errores son transmitidos a la aplicación o las aplicaciones por medio de este tipo de mensaje (ver tabla~\ref{tab:errorMessage}), en él se amplia la descripción del error mediante una \String{} en el campo \textit{obj}.
-
-\messageTableInit{\servToApp}{10 =\\ \scriptsize{ERROR\_MESSAGE}}{código de error}{\nc{}}{Descripción del error}{\nc{}}
-\messageTableEnd{Mensaje de error recibido del servicio}{errorMessage}
-
-%---------
-\subsection{Mensajes encolados}
-Puede darse la circunstancia de que al realizar el envío de datos al servicio, éste no pueda enviarlo por la red debido a que se encuentre en un cambio de contexto. En estas ocasiones los mensajes recibidos por parte de las aplicaciones son encolados siguiendo el modelo \ac{FIFO}, esto quiere decir que se respeta el orden de llegada y serán entregados en el mismo orden cuando se proceda su salida. 
-
-Cuando el servicio retoma el envío de estos mensajes encolados, enviamos a la aplicación dueña del mensaje un informe previo a su envío, indicando cuáles de los nodos destinatarios siguen en la red y cuáles no. En el caso de haber enviado el mensaje a todos, este informe nos devuelve la lista completa de nodos a los cuales le hemos intentado enviar el mensaje, ya que puede haber cambios en la población entre el momento en el cual se envío y el momento en el que el servicio le da salida. El detalle del mensaje recibido en la aplicación es (ver tabla~\ref{tab:queuedMessage}).
-
-\messageTableInit{\servToApp}{11= \scriptsize{QUEUED\_MESSAGE}}{número enviados}{número no enviados}{\textit{payload}}{\nc{}}
-\messageTableExtra{IdsTriedToSend}{Un \textit{array} de \integers{} con los identificadores de los nodos los cuales siguen en red}
-\messageTableExtraAddrow{NamesTriedToSend}{Un \textit{array} de \String{} con los nombres de los nodos siguen en red}
-\messageTableExtraAddrow{IdsNotDelivered}{Un \textit{array} de \integers{} con los identificadores de los nodos que no hemos enviado el mensaje por no encontrarse en la red}
-\messageTableExtraAddrow{NamesNotDelivered}{Un \textit{array} de \String{} con los nombres de los nodos que no hemos enviado el mensaje por no encontrarse en la red}
-\messageTableEnd{Mensaje informe previo a la salida de mensaje encolado}{queuedMessage}
-
-Los campos \textit{extra} son dos pares de \textit{arrays} ligados por la posición al igual que ocurre con la lista de nodos de otros mensajes. Los dos primeros nos informan de cuáles son los nodos a los cuales se va a proceder al envío del mensaje y los dos últimos están rellenos de los nodos que al no encontrarse en este momento en situación de red hemos obviado su envío para evitar envíos fallidos innecesarios.
-
-Al recibir este mensaje quedamos a la recepción del mensaje de confirmación de envío explicado en~\ref{subsec:apiAck}
-%---------
-\subsection{Actualización de parámetros}
-\label{subsec:apiUpdateParams}
-Si en algún momento queremos cambiar nuestro papel en la red o recibir la información de otras aplicaciones de la red cognitiva tan sólo necesitamos cumplir cierta parte del flujo del \textit{handshaking} para conectarse al servicio (ver~\ref{subsec:apiStart}). Empezaremos enviando directamente el segundo mensaje, con nuestros nuevos parámetros al servicio con el mensaje ya visto en la tabla~\ref{tab:registerExchangeMessage}, tras esto esperaremos la respuesta dónde veremos si realmente se han podido actualizar los valores que les entregamos. Si cuando decidimos actualizar estábamos en situación de \textit{networking} es posible que los valores no hayan podido actualizarse debido a que penalizan o entran en conflicto con las necesidades de las otras aplicaciones ya registradas. En este caso sólo se permite un cambio de papel \bsq{secundario} a \bsq{primario}, pero no al revés. El \bsq{código de aplicación} se actualiza siempre no importando la situación.
-%----------
-\subsection{Desconectarse del servicio}
-Llegado el momento de desconectarnos de la red deberemos enviar al servicio un mensaje del tipo \textit{unregister client} para que el servicio sea informado de forma directa, ya que la mera petición de \textit{unbind} no garantiza que éste se entere y si se entera, es para su propia destrucción por parte de \android{}. La composición de este mensaje es lo podemos ver en la tabla~\ref{tab:unregisterClientMenssage}
-
-\messageTableInit{\appToServ}{2 =\\ \footnotesize{UNREGISTER \_CLIENT}}{\nc{}}{\nc{}}{\nc{}}{\messApp{}}
-\messageTableEnd{Mensaje desregistro cliente}{unregisterClientMenssage}
-
-Tras este envío ya podemos deshacer el enlace entre aplicación y servicio de manera segura.
-%---------
-\subsection{Entrada de nodos en la red cuando la interfaz es \bt{}}
-\label{subsec:connectViaBT}
-Por motivos de implementación, si queremos introducir un nuevo nodo en la red cuando la interfaz de comunicación es \bt{}, debe ser el coordinador quién de el primer paso. Para ello en el nodo coordinador enviamos el siguiente mensaje (ver tabla~\ref{tab:connectToBT}).
-
-\messageTableInit{\appToServ}{12 = \footnotesize{CONNECT\_TO\\\_VIA\_BT}}{\nc{}}{\nc{}}{dirección MAC / identificador nodo}{\messApp{}}
-\messageTableEnd{Mensaje conectar a nodo en \bt{} }{connectToBT}
-
-El campo \textit{obj} puede recibir dos tipos de argumentos:
-\begin{itemize}
- \item Una \String{} con la dirección MAC de \bt{} del nodo.
- \item Un \integer{} con el identificador el nodo, si éste no está en el \var{Repositorio} enviaremos un mensaje de error a la aplicación.
-\end{itemize}
-
-Acto seguido el servicio intentará si la interfaz de comunicación actual es \bt{} conectarse al citado nodo bien por medio de su dirección \ac{MAC} o porque hemos podido recuperar ésta del \var{Repositorio}. Si la interfaz no es \bt{} devolveremos un error del tipo \Scst{CODE\_ERROR\allowbreak\_ILLEGAL\_ARGUMENT}
-
-\paragraph{Fallo conocido} El \textit{HashMap} del controlador de \bt{} donde guardamos las hebras de conexión pierde su contenido tras añadir un valor, la primera vez que se inicia el servicio. Instrucciones para detectar el fallo:
+\subsection{Conectarse al módulo cognitivo}
+\label{subsubsec:apiStart}
+La manera de inicializar la comunicación con el \var{Módulo cognitivo} comienza con la petición de atadura al servicio cognitivo, tras el establecimiento debemos empezar una pequeña negociación para que ambos agentes (\var{Aplicación} y \var{Módulo cognitivo}) acuerden los términos de la colaboración. Esta negociación consiste en el intercambio de tres mensajes:
 \begin{enumerate}
-	\setcounter{enumi}{-1}
-	\item Vaciar la base de datos y matar el proceso. O instalar la aplicación.
-	\item Sin cerrar la aplicación (no destruir el servicio) intentar conectarse desde un coordinador a ésta.
-	\item Observar que cuando el nodo intenta responder al coordinador con su información o intenta enviar un escaneo se lanza un evento de pérdida por no poder recuperar del \textit{HashMap} la hebra de conexión utilizada.
+\item	El primer mensaje del tipo \Scst{REGISTER\_CLIENT} sirve para que el servicio cognitivo nos reconozca y nos incluya en su registro de clientes. En la tabla~\ref{tab:registerClientMessage} se nos detalla cómo debemos informar este mensaje.
+
+\item Acto seguido la aplicación debe aportar datos sobre ella con el envío del segundo mensaje calificado como \Scst{REGISTER\_EXCHANGE} que podemos ver en la tabla~\ref{tab:registerExchangeMessage} del siguiente capítulo. La información que debemos aportar son los parámetros propios de la aplicación:
+	\begin{itemize}
+		\item \textbf{Papel del nodo} indicando si somos un usuario primario o secundario.
+		\item \textbf{Código de aplicación} que sirve al servicio cognitivo para distinguir entre las distintas aplicaciones registradas.
+	\end{itemize}
+
+\item Con estos dos mensajes el \var{Módulo cognitivo} actuará teniendo en cuenta su situación previa a la negociación y devolverá un resultado que comprende:
+	
+\paragraph{En situación red no existente} Si el \var{Módulo cognitivo} no estuviese colaborando en ninguna red antes de comenzar esta negociación, entonces la información recibida en todas las aplicaciones, cuyo formato podemos ver en la tabla~\ref{tab:endHandshakingNotCWSNMessage}, tiene esta explicación:
+	\begin{itemize}
+		\item \textbf{Estado de la interfaz} (ver tabla~\ref{tab:infoHandshaking}).
+		\item \textbf{Interfaz de comunicación en curso}: \wifi{} o \bt{}, la interfaz \textit{Mobile} finalmente no está implementada.
+		\item \textbf{Papel del nodo finalmente adoptado}. Puede darse la circunstancia de que las características que reclama la aplicación no sean satisfechas por el servicio, por ello informamos de nuevo qué tipo nodo somos, en la sección~\ref{subsec:updateSettings} se detalla en profundidad este tema. 
+		\item \textbf{Resultado de la configuración de la interfaz de comunicación en curso} indicando el éxito o fracaso del proceso.		
+		\item \textbf{Nombre del nodo}, cómo nos conocen los demás nodos en la red. 
+		\item \textbf{Tipo de nodo}, indicando si se trata de un nodo normal o un nodo coordinador. Finalmente la figura del nodo subcoordinador temporal en \bt{} no está implementada.
+		\item \textbf{Periodo de la tarea cognitiva}, el tiempo medido en segundos entre ejecuciones de las funciones de optimización y adaptación de la red en situación normal. Como veremos la aplicación puede proponer un periodo por si éste no fuese apropiado para sus necesidades.
+	\end{itemize}	
+No obstante estos tres últimos parámetros trascienden a cualquier aplicación. En la sección~\ref{subsec:updateSettings} se explica esto con más detalle. Son parámetros del \var{Módulo cognitivo} los cuales pueden ser obviados por la aplicación que no los necesita para su funcionamiento.
+
+En esta situación antes de recibir este mensaje es probable que nos hayan llegado mensajes del tipo \Scst{SERVICE\_INFORMATION}, éstos informan sobre procesos de configuración y entrada en la red.
+
+\paragraph{En situación de red previa} Si otra u otras aplicaciones previamente registradas ya estuviesen colaborando en una \ac{CWSN}, la información suministrada en exclusiva a esta aplicación por el \var{Módulo cognitivo} cambia ligeramente. En la tabla~\ref{tab:endHandshakingInCWSNMessage} vemos cómo se estructura la siguiente información:
+	\begin{itemize}
+		\item Se incluyen algunos de los mismos campos con el mismo significado: ``Estado de la interfaz'', ``Interfaz de comunicación en curso'', ``Papel del nodo finalmente adoptado'', ``Nombre del nodo'', ``Tipo de nodo'' y ``Periodo de la tarea cognitiva''.
+		
+		\item \textbf{Código de aplicación}, el servicio cognitivo nos devuelve este valor a modo de eco. Que se informe este campo coge sentido cuando la aplicación ha hecho una actualización de sus parámetros, esto permite validar que el proceso ha ido bien.
+		
+		\item \textbf{Lista de nodos}, los nodos que se encuentran en este momento cooperando en la red.
+	\end{itemize}  
 \end{enumerate}
 
-%---------
-\subsection{La API oculta: workarounds, test\ldots}
+En la sección~\ref{subsec:serviceRegisterProcess} veremos por qué hemos separado el proceso de registro en tres mensajes en vez de dos.
+
+%\miniTableInit[!h]{.5}{Información intercambiada en la negociación}{Clasificación Mensajes Intercambiados}
+%	\miniTableRow{register\_client}
+%	\miniTableRow{unregister\_client}
+%	\miniTableRow{register\_exchange}
+%	\miniTableRow{OUTGOING\_CONTENT}
+%	\miniTableRowNI{OUTGOING\_CONTENT\_PROGRESS}
+%	\miniTableRow{OUTGOING\_CONTENT\_RESULT}
+%	\miniTableRowNI{INCOMING\_CONTENT\_PROGRESS}
+%	\miniTableRow{INCOMING\_CONTENT}
+%	\miniTableRow{SERVICE\_INFORMATION}
+%	\miniTableRow{ERROR\_MESSAGE}
+%	\miniTableRow{QUEUED\_MESSAGE}
+%	\miniTableRow{CONNECT\_TO\_VIA\_BT}
+%	\vspace{0.5em}
+%	\miniTableRow{WORKAROUND\_WHAT\_TO\_REPLY}
+%	\miniTableRow{WORKAROUND\_ASK\_RESPONSE}
+%	\miniTableRow{WORKAROUND\_CONTEXT\_CHANGE}
+%	\miniTableRow{WORKAROUND\_PENDINGMESSAGE\_INJECTION}
+%	\miniTableRow{WORKAROUND\_PENDINGMESSAGE\_DISPOSAL}
+%
+\miniTableInit[!h]{.5}{Información intercambiada en la negociación}{Estado de la Interfaz}
+%	\miniTableSwitch{.1}{.4}{Estado de la Interfaz}
+	\miniTableRow{INTERFACE\_STATE\_DOWN}
+	\miniTableRow{INTERFACE\_STATE\_IDLE}
+%	\miniTableRow{INTERFACE\_STATE\_IDLE\_} \miniTableRow{\hspace*{1.7em}NETWORKING}
+	\miniTableRow{INTERFACE\_STATE\_IDLE\_NETWORKING}
+	\miniTableRow{INTERFACE\_STATE\_CONNECTING}
+	\miniTableRow{INTERFACE\_STATE\_SENDING}
+	\miniTableRow{INTERFACE\_STATE\_RECEIVING}
+%
+	\miniTableHeader{Papel del nodo}
+	\miniTableRow{Secundario}
+	\miniTableRow{Primario}
+%
+	\miniTableSwitch{.04}{.4}{Interfaz de comunicación}
+%	\miniTableHeader{Interfaz de comunicación}
+	\miniTableRow{Bluetooth}
+	\miniTableRow{Wi-Fi}
+	\miniTableRowNI{Mobile}
+%
+	\miniTableHeader{Tipo de nodo}
+	\miniTableRow{Normal}
+	\miniTableRow{Coordinador}
+	\miniTableRowNI{subCoordinador temporal en Bluetooth}
+%
+\miniTableEnd{Información involucrada en el proceso de negociación}{infoHandshaking}
+
 %----------
-\subsubsection{Actualización de parámetros avanzada}
-Un nodo cognitivo tiene mas parámetros (como se puede ver en~\ref{subsec:updateSettings}) que los expuestos en la \ac{API}. Un nodo cognitivo en nuestra aplicación, se define además por:
+\subsection{Incluir a nodos a la red en Bluetooth}
+Cuando la interfaz de comunicación en curso sea \bt{} y seamos un nodo coordinador, podemos incluir nodos en la red de manera activa. Para ello necesitamos enviar un mensaje del tipo \Scst{CONNECT\_TO\_VIA\_BT} incluyendo el nodo al que nos queremos conectar. Si la información del nodo no fuese válida se devolverá como veremos un mensaje de error del tipo \Scst{CODE\_ERROR\_NODE\_NO\_EXISTS} o \Scst{CODE\_ERROR\_ILLEGAL\_ARGUMENT} según corresponda, al igual que si la interfaz en curso no es \bt{}.
+
+La información proporcionada puede ser información relacionada con el nodo ya conocido o con la dirección \ac{MAC} de \bt{} para nodos completamente nuevos. En la tabla~\ref{tab:connectToBT} vemos su implementación. 
+
+%----------
+\subsection{Recibir datos de otros nodos}
+En el momento que el \var{Módulo cognitivo} recibe datos de otro nodo, se entregan a la aplicación cuyo ``código de aplicación'' coincida con el que viene marcado en el mensaje recibido. La información que se entrega a la aplicación correspondiente mediante el tipo \Scst{INCOMING\_CONTENT} (cuya implementación vemos en la tabla~\ref{tab:incomingContent}) es:
 \begin{itemize}
-	\item Nombre: con el que nos conocen los demás nodos.
-	\item Tipo: si somos coordinador o normal.
-	\item Periodo de la tarea cognitiva: el intervalo de tiempo que transcurre entre sensados del entorno y/o toma de decisiones.
+	\item {\bf Contenido recibido}, el contenido del mensaje enviado por otra aplicación por la red.
+	\item {\bf Nodo originario}, el nodo desde el cuál nos han enviado el mensaje.
 \end{itemize}
-Como vemos, son parámetros que no son propios de la aplicación o aplicaciones que en ese momento estén registradas. Estos valores son devueltos cuando finaliza el \textit{handshaking} para que las aplicaciones conozcan al nodo cognitivo aunque para éstas debe ser transparente. 
 
-Sin embargo, para poder configurar el nodo para que pueda cooperar en
-cualquier \ac{CWSN} debemos habilitar una manera de modificar estos
-parámetros. Para llevar a cabo esto se envía el mismo mensaje que cuando actualizamos nuestro papel o código de aplicación pero con unos campos adicionales. En concreto, el campo clave para saber si se trata de una actualización normal o avanzada recae en el campo \textit{obj}. Vimos que en una actualización normal su valor es \textit{null} y en una avanzada este valor será \bsq{no nulo} como vemos en la estructura del mensaje (ver tabla~\ref{tab:updateAllParamsMessage}). Los pormenores de este flujo los veremos en la sección~\ref{sec:procesosRed}
+%----------
+\subsection{Enviar mensajes de datos a otros nodos}
+\label{subsubsec:api_sendData}
+Para enviar un mensaje por la red utilizamos un mensaje del tipo \Scst{OUTGOING\_CONTENT} con la siguiente información, en la tabla~\ref{tab:outgoingContent} vemos el detalle de cómo construir el mensaje:
+\begin{itemize}
+	\item {\bf Contenido}, la información útil del mensaje, el dato del sensor. Debe ser codificado como una \String{}.
+	\item {\bf Lista de nodos destinatarios}, a partir de la información que nos haya entregado la \bsq{capa cognitiva} sobre la población en la red.
+\end{itemize}
 
-\messageTableInit{\appToServ}{3 =\\ \scriptsize{REGISTER\_EXCHANGE}}{0=secundario / 1=primario}{0=normal / 1=coordinador}{\textbf{True}}{\messApp{}}
-\messageTableExtra{appCode}{Una \String{} con el código de aplicación}
-\messageTableExtraAddrow{nodeName}{Una \String{} con el nuevo nombre del nodo en la red}
-\messageTableExtraAddrow{periodTask}{Un \double{} con el nuevo periodo medido en segundos de la tarea cognitiva a ejecutar}
-\messageTableEnd{Actualización de todos los parámetros del servicio}{updateAllParamsMessage}
+%----------
+\subsection{Confirmación entrega de datos a otros nodos}
+Al enviar un mensaje de datos el \var{Módulo cognitivo} responderá a la aplicación que le envió el mensaje de datos cuando haya terminado el proceso de envío mediante un mensaje catalogado como \Scst{OUTGOING\_CONTENT\_RESULT}. En la tabla~\ref{tab:outgoingContentResultApp} se explica la estructura de información que entrega la \bsq{capa cognitiva} que incluye:
+\begin{itemize}
+	\item {\bf Número de mensajes correctamente entregados}.
+	\item {\bf Número de mensajes no entregados}.
+	\item {\bf Contenido enviado}, se nos envía de vuelta el contenido del mensaje enviado para que la aplicación pueda reconocer entre envíos que haya hecho.
+	\item {\bf Lista de nodos a los que no se ha entregado el mensaje}, este campo irá relleno si ha habido uno o más fallos en la entrega del mensaje.
+\end{itemize}
+
+%----------
+\subsection{Confirmación entrega de datos encolados}
+Sucede que cuando el \var{Módulo cognitivo} no puede proceder al envío de los mensajes de datos proporcionados por las aplicaciones, éstos se encolan. La razón radica en que la \ac{CR} debe proporcionar un entorno transparente al usuario de ella, independizando y dando una solución al problema de indisponibilidad los cambios de contexto. Una vez terminado se retoma el envío, no sin antes comprobar si ha habido un cambio en la lista de nodos.
+
+En este momento el \var{Módulo cognitivo} avisa a las aplicaciones cuyos mensajes han sido encolados comunicándoles el envío de los mensajes. Esta información incluye:
+\begin{itemize}
+	\item \textbf{Porción de la lista de nodos que ya no están activos}, el subconjunto de lista de nodos a los que estaba dirigido el mensaje pero que ya no se encuentran en la red. Y a los cuáles no enviaremos el mensaje para no provocar fallos innecesarios en los \var{Controladores}.
+
+	\item \textbf{Porción de la lista de nodos válida}, el subconjunto de la lista de nodos que siguen cooperando en la red, a estos serán los que intentaremos enviar el mensaje de datos.
+
+	\item \textbf{El contenido del mensaje enviado previamente}, sirve para que la aplicación reconozca qué mensaje envió.\\
+
+{\sf Nota:} Si el mensaje estuviera dirigido a todos los nodos de la red, en la porción de la lista de nodos válida se informa de todos los nodos que forman la población actual de la red. Así la aplicación tiene una manera de conocer quién recibirá el mensaje.
+\end{itemize}
+Con esto dejamos a la aplicación en la misma situación como si enviase ahora el mensaje de datos. Este mensaje tiene el tipo \Scst{QUEUED\_MESSAGE}, en la tabla~\ref{tab:queuedMessage} vemos la composición de este mensaje. Al recibir este mensaje la aplicación queda a la recepción del mensaje de confirmación de envío que acabamos de explicar.
+
+%----------
+\subsection{Información sobre el servicio cognitivo}
+\label{subsubsec:apiInfo}
+El \var{Módulo cognitivo} comunica a todas sus aplicaciones registradas información acerca de eventos y procesos ocurridos en la red. El \var{Gestor de interfaces} aglutina la información recibida de cada uno de los \var{Controladores} y la uniformiza para su entrega a las \var{Aplicaciones} (su estructura se ve en la tabla~\ref{tab:serviceInformation}). Estos mensajes van catalogados como \Scst{SERVICE\_INFORMATION}, reflejan cada cambio puntual que se produce dentro de un proceso de red. Finalmente estos mensajes dan paso a la comunicación del proceso de red oportuno con su resultado final.
+
+La información que se suministra en este tipo de mensajes es:
+\begin{itemize}
+	\item \textbf{Interfaz de comunicaciones en curso} (ver tabla~\ref{tab:infoGatheredFromService}).
+	\item \textbf{Nodo coordinador}, la figura del nodo coordinador, si somos el nodo coordinador este campo está vacío.
+	\item \textbf{Nodo que propició el evento}, un evento de red tiene dos agentes de red involucrados. Uno de ellos propicia la acción que atañe a otro nodo de la red.
+	\item \textbf{Estado de la interfaz}.
+	\item \textbf{Evento producido en la red}.
+	\item \textbf{Lista de nodos}. En caso de que el evento propiciado introdujese cambios en la población de la red, se informaría de toda la población de red actualizada.
+\end{itemize}
+
+\miniTableInit[!h]{.38}{Información suministrada por el servicio}{Interfaz de comunicaciones}
+	\miniTableRow{(ver tabla}~\ref{tab:infoHandshaking})
+	\miniTableHeader{Estado de la interfaz}
+	\miniTableRow{(ver tabla}~\ref{tab:infoHandshaking})
+	\miniTableHeader{Eventos}
+	\miniTableRow{EVENT{\footnotesize\_}INTERFACE{\footnotesize\_}NO{\footnotesize\_}CHANGES}
+	\miniTableRow{EVENT\_INTERFACE\_NEW\_NODE}
+%	
+	\miniTableSwitch{.05}{.5}{}
+%	
+	\vspace{-1.6em}
+	\miniTableRow{EVENT\_INTERFACE\_LOST\_NODE}
+	\miniTableRow{EVENT\_INTERFACE\_CANNOT\_CONNECT}
+	\miniTableRow{EVENT{\footnotesize\_}INTERFACE{\footnotesize\_}ALREADY{\footnotesize\_}CONNECTED}
+	\miniTableRow{EVENT\_INTERFACE\_SWITCH\_TO\_BT}
+	\miniTableRow{EVENT\_INTERFACE\_SWITCH\_TO\_WIFI}
+	\miniTableRowNI{EVENT\_INTERFACE\_SWITCH\_TO\_MOBILE}
+	\miniTableRow{EVENT\_INTERFACE\_END\_SWITCHING}
+	\miniTableRow{EVENT\_UPDATE\_LIST\_NODES}
+\miniTableEnd{Información entregada a las aplicaciones desde el servicio cognitivo}{infoGatheredFromService}
+
+%----------
+\subsection{Mensajes de error: incumplimiento de la API del servicio}
+Cuando el \var{Módulo cognitivo} detecta ciertas anomalías o alguna aplicación no cumple con la \ac{API} del servicio, se notifica a la aplicación que corresponda. No se ha realizado un estudio exhaustivo sobre la casuística de valores entregados por las aplicaciones que se les presupone buena fe. A través de un mensaje catalogado como \Scst{ERROR\_MESSAGE} como el que podemos ver en la tabla~\ref{tab:errorMessage} se informa sobre algunas situaciones (ver tabla~\ref{tab:APIerrorMessages}):
+
+\begin{itemize}
+	\item \textbf{Parámetro no válido}: La aplicación no incluye el campo que permite identificarla, la negociación se realiza con parámetros no válidos o intentamos conectarnos a un nodo en \bt{} cuando la interfaz de comunicación en curso es otra.
+	\item \textbf{No estamos en red} e intentamos enviar un mensaje de datos.
+	\item \textbf{Nodo no válido}, el servicio cognitivo no reconoce como activo el nodo a cual queremos enviar un mensaje de datos.
+	\item \textbf{Error interno}: fallos en los \var{Controladores}, otros\ldots 
+\end{itemize}
+
+El mensaje entregado a la aplicación incluye una descripción con más detalles sobre la situación producida.
+
+\miniTableInit[!h]{.4}{}{Clasificación Mensajes de Error}
+	\miniTableRow{CODE{\footnotesize\_}ERROR{\footnotesize\_}NOT{\footnotesize\_}IN{\footnotesize\_}NETWORK}
+	\miniTableRow{CODE\_ERROR\_NODE\_NO\_EXISTS}
+	\miniTableRow{CODE\_ERROR\_INTERNAL}
+%
+	\miniTableSwitch{.03}{.5}{}
+%
+	\miniTableRow{CODE\_ERROR\_ILLEGAL\_ARGUMENT}
+	\miniTableRow{CODE{\footnotesize\_}ERROR{\footnotesize\_}MESSAGE{\footnotesize\_}NOT{\footnotesize\_}RECOGNIZED}
+	\miniTableRow{CODE\_ERROR\_ILLEGAL\_PAYLOAD}
+\miniTableEnd{Mensajes de error obtenidos desde la API del servicio}{APIerrorMessages}
+
+%----------
+\subsection{Actualización de parámetros de aplicación}
+\label{susubbsec:apiUpdateParams}
+
+Si una aplicación quiere actualizar sus parámetros (``código de aplicación'' y ``papel del nodo'') puede hacerlo en cualquier instante enviando el segundo mensaje de la negociación vista en la sección~\ref{subsubsec:apiStart}, tras esto recibiremos al igual que entonces un tercer mensaje confirmándonos los cambios hechos.
+
+%----------
+\subsection{Desconectarse del servicio cognitivo}
+Para que una aplicación deje de colaborar con la \bsq{capa cognitiva} debe primero enviar un mensaje del tipo \Scst{UNREGISTER\_CLIENT} cuyo formato podemos ver en la tabla~\ref{tab:unregisterClientMenssage}. Una vez enviado necesitamos ejecutar una petición para dejar de estar atados al servicio cognitivo. Tras estos dos pasos la aplicación está totalmente desligada del \var{Módulo cognitivo}.
+
+%\subsubsection*{\phantom{0}\hspace{1em}API oculta del servicio}
+\subsection{API \bsq{oculta} del servicio}
+%\subsubsection*{\hspace*{1em}API oculta del servicio}
+\label{subsubsec:darkAPI}
+La \ac{API} del servicio tiene ciertos comportamientos que podríamos denominar de \textit{test} o soluciones alternativas para disparar de forma manual ciertos comportamientos. Hasta aquí cualquier aplicación que se precie debe cumplir y soportar los mensajes de la \ac{API} del servicio, a partir de aquí los comportamientos, que explicamos a continuación, están soportados en nuestra aplicación desarrollada pero no es necesario su cumplimiento por el resto de ellas.
+
+%----------
+\subsubsection{API oculta: Actualización de parámetros del servicio cognitivo}
+\label{subsubsec:darkApiUpdateParams}
+Como veremos en la sección~\ref{subsec:updateSettings} los parámetros que gobiernan a un nodo cognitivo son más de los que entregan las aplicaciones. De hecho, hemos visto que en el tercer mensaje de la negociación se comunica a las aplicaciones sobre otros parámetros: ``tipo de nodo'', ``nombre del nodo'' y ``periodo tarea cognitiva''. Estos parámetros deben tener la posibilidad de ser modificados para adecuar al nodo cognitivo a cualquier \ac{CWSN}.\\
+
+Para ello utilizamos el mismo proceso que la actualización de parámetros (sección~\ref{susubbsec:apiUpdateParams}) pero con una estructura de mensaje distinta que permita por una parte comunicar todos los parámetros y por otra que sea reconocible para que el servicio cognitivo actúe actualizando sus parámetros. En la tabla~\ref{tab:updateAllParamsMessage} vemos el formato de este tipo de mensajes que permiten la actualización en bloque tanto de los parámetros de aplicación como los del \var{Módulo cognitivo}.
+
+Dependiendo del estado del \var{Módulo cognitivo} la viabilidad de la actualización cambia: si estamos cooperando en una \ac{CWSN} no se permite un cambio en el tipo de nodo. No obstante remitimos nuevamente al lector a la sección~\ref{subsec:updateSettings} dónde se explica en detalle estas actualizaciones. La aplicación comprueba si su petición ha podido ser atendida cuando recibe el tercer mensaje de la negociación que envía el servicio cognitivo al recibir esta actualización.
+
+%----------
+\subsubsection{API oculta: Forzar cambio de contexto}
+Si somos un nodo coordinador podemos forzar un cambio de contexto de forma manual entre las dos interfaces implementadas: \wifi{} y \bt{}. Para ello utilizando un mensaje tipo \Scst{WORKAROUND\_SWITCH} como el que podemos ver en la tabla~\ref{tab:wa_switch} propiciaremos el cambio de contexto a la otra interfaz de comunicaciones no utilizada en ese momento.
 
 
-\subsubsection{Mensaje de petición y respuesta}
-Un flujo interesante en redes de sensores cognitivas es la de
-habilitar una vía para que el coordinador pida de forma activa
-información a otro nodo. En nuestra arquitectura, este flujo está
-implementado la primera vez que incluimos un nodo nuevo en \bt{} para
-preguntarle acerca de su nombre y su papel. Este sistema, que en
-principio se montó con finalidad de \textit{test} se ha decidido dejar
-operativo.
+%----------
+\subsubsection{API oculta: Almacenar y liberar datos encolados}
+Por los motivos que explicaremos en la sección~\ref{sec:app}, si la aplicación mantiene la lista de nodos actualizada en todo momento es muy probable que no sepa enviar un mensaje en el transcurso de un cambio de contexto. Por ello el servicio cognitivo habilita una manera de encolar mensajes de datos y de liberar la cola de mensajes en cualquier momento.
 
-La aplicación desarrollada junto al servicio incluye una interfaz de test que, entre sus funciones, provee este flujo. El proceso tiene dos actores: por un lado los nodos normales que pueden guardar una respuesta (la información que posteriormente nos pedirá el coordinador). Para ello enviamos un mensaje al servicio con la respuesta a enviar en el campo \textit{obj} del mensaje (ver tabla~\ref{tab:wa_reply}).
+Para mandar un mensaje de datos que se encole debemos enviar un mensaje del tipo \Scst{WORKAROUND\_PENDINGMESSAGE\_INJECTION} cuya estructura podemos ver en la tabla~\ref{tab:wa_queue}, la información que debemos proveer es la misma que al enviar un mensaje de datos normal (ver sección~\ref{subsubsec:api_sendData}). Sin embargo si queremos vaciar la cola de mensajes debemos enviar un mensaje catalogado como \Scst{WORKAROUND\_PENDINGMESSAGE\_DISPOSAL} sin ninguna información adicional.
 
-\messageTableInit{\appToServ}{20 = \footnotesize{WORKAROUND\\ \_WHAT\_TO\_REPLY}}{\nc{}}{\nc{}}{\textit{reply}}{\messApp{}}
-\messageTableEnd{Mensaje \textit{workaround} salvado de respuesta}{wa_reply}
+%----------
+\subsubsection{API oculta: Mensaje de petición y respuesta}
+Un mecanismo interesante presente en muchas \ac{CWSN} es la petición de información desde el nodo coordinador a un nodo normal. En nuestra arquitectura este flujo se utiliza cuando el nodo coordinador incluye por primera vez a un nodo nuevo en \bt{} para preguntarle por su nombre y su papel. Este sistema que en principio se montó como una función del módulo \var{Ejecutor}, se ha decidido mantenerlo para el apartado de \textit{test} de la aplicación desarrollada.\\
 
-El otro agente, el nodo coordinador, enviando este mensaje al servicio, recupera la información del otro actor (ver tabla~\ref{tab:wa_ask}).
+Un nodo normal puede elegir la respuesta que suministrará cuando sea requerida mediante el envío desde la aplicación de un mensaje catalogado como \Scst{WORKAROUND\_WHAT\allowbreak\_TO\allowbreak\_REPLY}. Por otra parte una aplicación en el nodo coordinador puede pedir la información almacenada en un nodo normal con la ayuda de un mensaje (ver tabla~\ref{tab:wa_ask}) tipo \Scst{WORKAROUND\_ASK\_RESPONSE}. Al recibir la información el \var{Módulo cognitivo} del nodo coordinador comunica con el mismo tipo de mensaje esta información, ver tabla~\ref{tab:wa_ask_response}. Ésta está dirigida a todas sus aplicaciones registradas, puesto que el mensaje que viene por la red no está marcado con ningún ``código de aplicación''. Por este motivo se desaconseja su uso fuera de las funciones de \textit{test} puesto que puede desconcertar a otras aplicaciones que no esperan una respuesta, no obstante la aplicación puede hacer caso omiso a este tipo de mensajes.
 
-\messageTableInit{\appToServ}{21 = \footnotesize{WORKAROUND\\ \_ASK\_RESPONSE}}{\nc{}}{\nc{}}{Identificador nodo}{\messApp{}}
-\messageTableEnd{Mensaje \textit{workaround} petición de respuesta}{wa_ask}
-
-Una vez enviada esta petición la respuesta nos vendrá encapsulada en un mensaje del mismo tipo (ver tabla~\ref{tab:wa_ask_response}). Esta respuesta se envía a todas las aplicaciones porque no viene marcada con el \bsq{código de aplicación}. Se recomienda su uso sólo en test ya que puede desconcertar a otras aplicaciones que estén registradas en el servicio.
-
-\messageTableInit{\servToApps}{21 = \footnotesize{WORKAROUND\\ \_ASK\_RESPONSE}}{\nc{}}{\nc{}}{Respuesta del nodo preguntado}{\messApp{}}
-\messageTableEnd{Mensaje \textit{workaround} respuesta obtenida}{wa_ask_response}
-
-
-\subsubsection{Cambio de contexto forzado}
-Otra función de \textit{test} es la de forzar un cambio de interfaz de comunicación en la red. Para ello si somos el coordinador podemos enviar este mensaje al servicio. No necesitamos comunicarle la interfaz destino debido a que, en estos momentos, sólo hay dos interfaces de comunicación.
-
-\messageTableInit{\appToServ}{22=\footnotesize{WORKAROUND\_\\ CONTEXT\_CHANGE}}{\nc{}}{\nc{}}{\nc{}}{\messApp{}}
-\messageTableEnd{Mensaje \textit{workaround} cambio de interfaz de comunicación}{wa_switch}
-
-\subsubsection{Encolar mensajes y forzar su entrega en cualquier momento}
-Para probar el encolamiento de mensajes y su entrega en momentos que no corresponden pueden enviarse estos mensajes al servicio que alterará el flujo normal para producir el resultado buscado.
-
-Para encolar un mensaje de datos entregaremos al servicio un mensaje con esta estructura (ver tabla~\ref{tab:wa_queue}).
-
-\messageTableInit{\appToServ}{23=\scriptsize{WORKAROUND\_ PENDINGMESSAGE \_INJECTION}}{\nc{}}{\nc{}}{\textit{payload}}{\messApp{}}
-\messageTableExtra{addressedNodes}{Una lista de \integer{}s con los identificadores de los nodos destinatarios del mensaje}
-\messageTableEnd{Mensaje \textit{workaround} encolamiento de mensaje de datos}{wa_queue}
-
-Y para vaciar la cola de mensajes en cualquier momento deberemos enviar este otro (ver tabla~\ref{tab:wa_disposalqueue}).
-
-\messageTableInit{\appToServ}{24=\scriptsize{WORKAROUND\_ PENDINGMESSAGE \_DISPOSAL}}{\nc{}}{\nc{}}{\nc{}}{\messApp{}}
-\messageTableEnd{Mensaje \textit{workaround} vaciado cola de mensajes}{wa_disposalqueue}
-
-
-%XXX-jblesa Esta seccion es implementacion claramente. Los detalles de
-%implementacion pasalos a implementacion. Aqui en diseño solo comentar
-%diagrama de bloques, se enviaran mensajes, etc. pero sin definir
-%detalles. Hay subapartados mejor enfocados a diseño, ya que hablan de
-%funcionalidades y no de detalles. Por ejemplo, todas las tablas con
-%campos son claramente implementacion. Los mensajes concretos son
-%implementacion. En diseño lo importante son diagramas de bloques,
-%UML, etc. Para que se vean las interfaces pero no los detalles.
-
-%XXX-jblesa. Cuida los puntos y comas. Tienes muchos fallos de
-%puntuacion. Cuida los alglicismos, pon en castellano todo lo que se
-%pueda.
-
+%----------
+% FIN API
+%----------
 
 %-------------------------------------------------------------------
 \section{Procesos de red}
 %-------------------------------------------------------------------
 \label{sec:procesosRed}
-Cuando ocurren eventos en la red estos son manejados por los distintos nodos según sea su tipo, propagando la información necesaria para que toda la red pueda reconstruir la misma perspectiva sobre la actual situación. Veremos quién dispara y el por qué de estos eventos, cómo se informa y en qué casos a las aplicaciones montadas sobre el servicio del nodo cognitivo. Como ya se comentó, los procesos atañen a más de un bloque de la arquitectura, lo que ayuda a comprender las relaciones entre los distintos módulos. A menudo la \ac{API} del servicio cognitivo (sección~\ref{sec:api}: interfaz Aplicación - Módulo cognitivo) se ve involucrada pues es donde empieza o finaliza la acción de estos procesos.
+Cuando ocurren eventos en la red estos son manejados por los distintos nodos según sea su tipo, propagando la información necesaria para que toda la red pueda reconstruir la misma perspectiva sobre la actual situación. Veremos quién dispara y el porqué de estos eventos, cómo se informa y en qué casos a las aplicaciones montadas sobre el servicio del nodo cognitivo. Como ya se comentó, los procesos atañen a más de un bloque de la arquitectura, lo que ayuda a comprender las relaciones entre los distintos módulos. A menudo la \ac{API} del servicio cognitivo (sección~\ref{sec:api}: interfaz Aplicación - Módulo cognitivo) se ve involucrada pues es donde empieza o finaliza la acción de estos procesos.
 %------------------------------
 \subsection{Registro de una aplicación en el servicio cognitivo}
 \label{subsec:serviceRegisterProcess}
@@ -917,7 +759,8 @@ Un nodo se desregistra de la red cuando no quedan aplicaciones montadas sobre el
 Cuando se libera esta conexión los pasos a seguir antes de destruir el \var{Módulo cognitivo} es la preparación del \var{Repositorio} y otros módulos para que estén preparados para una nueva instancia del servicio cognitivo. Estas acciones comprenden borrar las direcciones \ac{IP} y el identificador del coordinador para cada nodo, así como el marcaje de éstos como inactivos. Por último una indicación de que el \var{Módulo cognitivo} ha sido parado de forma voluntaria para darnos cuenta de posibles cierres forzados, de tal forma que al instanciar de nuevo éste, siempre tengamos una situación de partida inicial. 
 Estas acciones no son ejecutadas si la salida es forzosa: debido a un error no manejado que provoca el cierre o debido a la falta de memoria que provoca que el gestor de \android{} cierre la aplicación. En este caso como no se ha puesto la marca de cierre voluntario del \var{Módulo cognitivo}, al arrancar a éste de nuevo podemos realizar estas acciones al comienzo para desembocar en la misma situación inicial.\\
 
-Entre las acciones a ejecutar por el nodo que sale de la red tenemos que dependiendo de la interfaz la forma de avisar al resto de nodos que se quedan varía:
+Según la interfaz de comunicaciones en la que nos encontremos, el nodo que sale de la red tendrá una manera diferente de avisar al resto de nodos que se quedan:
+%Entre las acciones a ejecutar por el nodo que sale de la red tenemos que dependiendo de la interfaz la forma de avisar al resto de nodos que se quedan varía:
 \subsubsection{Wi-Fi}
 %\begin{codeInvolved}
 %\begin{files}
@@ -927,7 +770,7 @@ Entre las acciones a ejecutar por el nodo que sale de la red tenemos que dependi
 %\end{files}
 %\end{codeInvolved}
 
-En esta interfaz tenemos una conexión intermitente, que se despliega y se retrae en los momentos en los que hay comunicación. En esta situación ante eventualidades no tenemos el mismo tiempo de reacción como lo podemos tener en \bt{}. En el caso de salida voluntaria necesitamos un mecanismo que informe que un nodo va a abandonar la red.
+En esta interfaz tenemos una conexión intermitente que se despliega y se retrae en los momentos en los cuales hay comunicación. En esta situación ante eventualidades no tenemos el mismo tiempo de reacción como lo podemos tener en \bt{}. En el caso de salida voluntaria necesitamos un mecanismo que informe que un nodo va a abandonar la red.
 
 Este mecanismo consiste en el envío de un paquete llamado \textit{``ByePacket''} (ver detalle en figura~\ref{itm:byePacket}) que contiene la dirección \ac{MAC} del nodo que abandona la red. El envío de este paquete puede ser sobre \ac{TCP} o \ac{UDP}. En el caso de que el envío sea desde el nodo coordinador, sólo podremos mandarlo sobre \ac{TCP} ya que los nodos normales no escuchan sobre \ac{UDP} como hemos visto en la sección~\ref{subsec:configInterface} dónde se explica la configuración de las distintas interfaces.\\
 %%diseño+impletacion

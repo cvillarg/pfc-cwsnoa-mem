@@ -39,6 +39,13 @@
 \texttt{\small\ifthenelse{\equal{#1}{}}{#1\allowbreak.#2}{\ifthenelse{\equal{#1}{util}}{es.upm\allowbreak.die.lsi\allowbreak.pfc\allowbreak.CWSNoA.util\allowbreak.#2}{#1\allowbreak.#2}}%
 }%
 }
+\def\argOne{\textit{arg1}}
+\def\argTwo{\textit{arg2}}
+\def\obj{\textit{obj}}
+\def\replyTo{\textit{replyTo}}
+\def\workaround{solucion alternativa}
+\def\workaroundCaption{\workaround{} para el}
+\def\workaroundCaptionFem{\workaround{} para la}
 
 %---
 \def\ListaNodosNoDeliveredItem{
@@ -69,16 +76,16 @@ Un conjunto de dos \textit{arrays} ligados, uno con los identificadores de los n
 \def\wifiToServ{desde el controlador de \wifi{} al servicio}
 \def\controllerToServ{desde un controlador (\bt{} o \wifi{}) al servicio}
 %---------------from---to-----------------------
-\providecommand{\messageTableInit}[6]{%
-\begin{table}[h]%
+\providecommand{\messageTableInit}[7][h]{%
+\begin{table}[#1]%
 \begin{center}
 	\begin{tabular}{|m{3.4cm}|m{2.3cm}|m{2.3cm}|m{2.3cm}|m{2.3cm}|}%
 	\hline%
-	\multicolumn{5}{c}{\textbf{Campos mensaje #1}} \\%
+	\multicolumn{5}{c}{\textbf{Campos mensaje #2}} \\%
 	\hline%
 	\textit{What} & \textit{arg1} & \textit{arg2} & \textit{obj} & \textit{replyTo} \\%
 	\hline%
-	\parbox[t]{3.4cm}{#2} & #3 & #4 & #5 & #6 \\%
+	\parbox[t]{3.4cm}{#3} & #4 & #5 & #6 & #7 \\%
 	\hline%
 }
 \providecommand{\messageTableExtra}[2]{
@@ -248,7 +255,7 @@ Un conjunto de dos \textit{arrays} ligados, uno con los identificadores de los n
 \begin{center}%
 	\begin{tabular}{l @{\hskip 1.17cm} l}%
 	\multicolumn{2}{c}{#1}\\ \hline
-	\noalign{\vskip 0.25cm} 
+	\noalign{\vskip 0.24cm} 
 	%\dashuline{Constante usada en el c\'{o}digo} & \dashuline{Representaci\'{o}n en forma de \integer{}} \\  %\cdashline{2-2}
 	\uwave{\texttt{Estados interfaz}} & \uwave{\texttt{Eventos interfaz}} \\  %\cdashline{2-2}
 	\noalign{\vskip 0.17cm} %\hdashline
@@ -293,7 +300,7 @@ Un conjunto de dos \textit{arrays} ligados, uno con los identificadores de los n
 %		#7 caption
 %		#8 label
 %-----------------------------
-\newcommand{\figuraSideBySide}[8][h!]{%
+\newcommand{\figuraSideBySide}[8][!h]{%
 \begin{figure}[#1]%
 \begin{center}%
 	\begin{minipage}[t]{.5\textwidth}%
@@ -313,4 +320,56 @@ Un conjunto de dos \textit{arrays} ligados, uno con los identificadores de los n
 \end{center}%
 \end{figure}%
 }%
-
+%-----------------------------
+% Tabla: 2 minipages info servicio.
+%      _init: inicializa la tabla
+%      _row: fila de la tabla
+%      _swtich: cambia de minipagina
+%      _header: cabecera intermedia
+%      _end: finaliza la tabla con caption y label
+%-----------------------------
+\providecommand{\miniTableInit}[4][h]{%
+\begin{table}[#1]%
+\begin{center}%
+	\begin{tabular}{c}%
+	#3\\ \hline%
+	\noalign{\vskip 0.24cm}% 
+	\begin{minipage}[t]{#2\textwidth}%
+		\uwave{\texttt{#4}}%
+		\vspace{0.17cm}%
+}%
+\providecommand{\miniTableRowNormal}[1]{%
+		\\ \MakeUppercase{#1}%
+}%
+\providecommand{\miniTableRow}[1]{%
+		\\ \MakeUppercase{\small #1}%
+}%
+\providecommand{\miniTableRowNI}[1]{%
+	\\ \textcolor{notImplemented}{\MakeUppercase{\small #1}} \\[-4pt] {\scriptsize\color{notImplemented}(No implementado)}%
+}%
+\providecommand{\miniTableSwitch}[3]{%
+	\end{minipage}%
+	\begin{minipage}[t]{#1\textwidth}%
+	\hfill
+	\end{minipage}%
+	\begin{minipage}[t]{#2\textwidth}%
+		\uwave{\texttt{#3}}%
+		\vspace{0.17cm}%
+}%
+\providecommand{\miniTableHeader}[1]{%
+		\vspace{0.17cm}\\%
+		%\\%
+		\uwave{\texttt{#1}}\vspace{0.17cm}%
+}%
+\providecommand{\miniTableEnd}[2]{%
+	\end{minipage}%
+	%~\\
+	\\
+	\noalign{\vskip 0.24cm}% 
+	\hline
+	%~\\\hline%
+	\end{tabular}%
+	\caption{#1} \label{tab:#2}%
+\end{center}%
+\end{table}%
+}%
