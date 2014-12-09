@@ -42,9 +42,9 @@ fabricantes de dispositivos \var{(iOS)} o empresas de \ac{IT}
 %XXX-jblesa Cuidado con los acrónimos. Si usas ac{} debería de
 %funcionar.
 
-Como consecuencia se tiene un dispositivo con una gran conectividad y almacenamiento de datos. Esto habilita la realización de una experiencia \textit{web} completa e independiente. Precursores de los \sphone{s} se valían de la ayuda de su \ac{ISP}, quién facilitaba la navegación \textit{web} adaptando el contenido al navegador del dispositivo. De tal forma que páginas estándar son traducidas al protocolo \ac{WAP} \cite{bulbrook2001wap}, a sus diferentes versiones: la versión 1.0 no soporta el protoloco \ac{HTTP}, por lo que el uso de una pasarela se hace indispensable y su versión 2.0 la pasarela o \textit{content adapter}  completa la adaptación que sigue siendo necesaria pues tanto el contenido como protocolos usados para proveerlo no estaban pensados para un mundo móvil, ejemplo de un \textit{content adapter} es \var{OpenWave} usando en la operadora Vodafone. A esta tecnología le sucedió \textit{i-mode} \cite{imode} pero no es hasta 2007, cuando un móvil incorpora el soporte nativo del modelo tradicional TCP/IP, cuando se puede hablar de una experiencia completa, dándole la denominación completa de \sphone{}.\\ El marco de conectividad se completa con las diferentes interfaces de comunicación que permiten el intercambio de información a través de más de una tecnología, entre las más comunes: \wifi{}, \bt{}, señalización móvil (\ac{SMS}), datos sobre la interfaz móvil (\ac{GPRS}, \ac{UMTS}, o \ac{LTE}), \ac{NFC}, \wifiD{}\ldots\\
+Como consecuencia se tiene un dispositivo con una gran conectividad y almacenamiento de datos, esto habilita la realización de una experiencia \textit{web} completa e independiente. Precursores de los \sphone{s} se valían de la ayuda de su \ac{ISP}, quien facilitaba la navegación \textit{web} adaptando el contenido al navegador del dispositivo. De tal forma que las páginas estándar son traducidas al protocolo \ac{WAP} \cite{bulbrook2001wap}, en sus diferentes versiones: la versión 1.0 no soporta el protoloco \ac{HTTP}, por lo que el uso de una pasarela se hace indispensable. En su versión 2.0 se sigue utilizando una pasarela y un adaptador de contenidos pues la adaptación sigue siendo necesaria ya que tanto el contenido como protocolos usados para proveerlo no estaban pensados para un mundo móvil. Un ejemplo de un adaptador de contenidos es \var{OpenWave} usando en la operadora Vodafone. A esta tecnología le sucedió \textit{i-mode} \cite{imode} pero no es hasta 2007, cuando un móvil incorpora el soporte nativo del modelo tradicional TCP/IP, cuando se puede hablar de una experiencia completa, dándole la denominación completa de \sphone{}.\\ El marco de conectividad se completa con las diferentes interfaces de comunicación que permiten el intercambio de información a través de más de una tecnología, entre las más comunes: \wifi{}, \bt{}, señalización móvil (\ac{SMS}), datos sobre la interfaz móvil (\ac{GPRS}, \ac{UMTS}, o \ac{LTE}), \ac{NFC}, \wifiD{}\ldots\\
 
-%XXX-jblesa Content adapter en español.
+%XXX-jblesa Content adapter en español. Hecho, esta se colo.
 
 Antes de comentar las peculiaridades de las plataformas móviles analizadas, veamos cómo se reparte la cuota de mercado global
 
@@ -162,8 +162,8 @@ Entre las conexiones \cite{tizenNet} soportadas caben destacar: \wifiD{} y \wifi
 \subsection{Ubuntu Touch}
 Presentado a primeros de 2013 por Canonical, este sistema operativo para dispositivos móviles y tabletas quiere proporcionar una experiencia de usuario muy similar a la versión de escritorio de la distribución Linux Ubuntu. De hecho ambos sistemas comparten las mismas tecnologías núcleo de tal forma que aplicaciones desarrolladas para las últimas versiones de la plataforma de escritorio pueden ser ejecutadas en el dispositivo móvil y viceversa.\\
 
-\var{Ubuntu Touch} \cite{ubuntuTouch} utiliza el \fwork{} Qt5 (QML y C++) para el desarrollo de aplicaciones nativas y la plataforma \bsq{Adobe Cordova} %\cite{cordova}
- para el desarrollo con tecnologías web HTML5. Otros componentes integrados son OpenGL y otros provenientes de \var{MeeGo} (oFono: pila telefónica), así como libhybris: una capa para proveer compatibilidad a la librería de C de \ac{GNU} que desciende de Bionic %\cite{bionic}
+\var{Ubuntu Touch} \cite{ubuntuTouch} utiliza el \fwork{} Qt5 (QML y C++) para el desarrollo de aplicaciones nativas y la plataforma \bsq{Adobe Cordova} \cite{cordova}
+ para el desarrollo con tecnologías web HTML5. Otros componentes integrados son OpenGL y otros provenientes de \var{MeeGo} (oFono: pila telefónica), así como libhybris: una capa para proveer compatibilidad a la librería de C de \ac{GNU} que desciende de Bionic \cite{bionic}
  lo que hace que sea más fácil portar este sistema a dispositivos \var{Android}, ejemplo de esto es que los únicos dispositivos por el momento que soportan todas las características son los modelos Nexus aunque con peculiaridades \cite{ubuntuDevices}.
 
 Con respecto a las interfaces de comunicación, debido a que el sistema aún está en fase de desarrollo, no están expuestas todas las características en la versión para desarrolladores \cite{ubuntuReleaseNotes}. La característica \adhoc{} se desconoce si será soportada de forma oficial.
@@ -176,13 +176,13 @@ A finales de 2012 sale \var{Windows Phone 8} una versión que integra
 un nuevo núcleo, hasta ahora basado en \bsq{Windows CE}. Se trata del
 núcleo \bsq{Windows NT} que da soporte a procesadores de varios
 núcleos. Esta versión sólo está disponible para nuevos dispositivos,
-lo que supone un corte. Al ser un núcleo que comparte muchas
+lo que supone un corte con la arquitectura anterior. Al ser un núcleo que comparte muchas
 características con la versión de escritorio \var{Windows 8} y poseer
 la misma interfaz de usuario: \var{Metro} (ahora conocida como
 \var{Modern UI})  las aplicaciones pueden ser fácilmente portadas
 entre ambas plataformas.\\
 
-%XXX-jblesa ``lo que supone un corte'' ¿un corte con qué?
+%XXX-jblesa ``lo que supone un corte'' ¿un corte con qué?. XXX-cvillar con la arquitectura anterior.
 
 El modelo de desarrollo se basa en las herramientas de .Net a través de XAML \cite{xaml} (C++/CX, C\# o VisualBasic) o HTML5 (HTML, JavaScript: WinJs). Entre las \ac{API} publicadas \cite{winAPI} se puede observar que tenemos control sobre \bt{} y \wifiD{}, pero faltan el control de \wifi{} y la conexión de datos móvil, al igual que parece no haber un soporte a conexiones \adhoc{} \cite{winNetLacks}.
 
@@ -288,13 +288,14 @@ Una solución para conseguir este propósito pasa por evolucionar la
 capa de la macro célula integrando células más pequeñas. Para proveer
 al usuario de una experiencia sin fisuras en estas redes heterogéneas,
 todas la capas, dominios y nodos de red tienen que estar unidos y
-sincronizados con un grado sin precedentes, muy cercano al enfoque de
-\ac{CN}. Se necesita por tanto coordinación entre las pequeñas células
+sincronizados con un grado sin precedentes, muy cercano al enfoque del  
+tipo de red que veremos en la sección~\ref{sec:cognitiveNetworks}.
+Se necesita por tanto coordinación entre las pequeñas células
 y las macro que las contienen, gestión común de red y gestión del
 tráfico y movilidad de usuarios.
 
 %XXX-jblesa Aseguraté de que hayas hablado de lo que es una CN antes
-%de mencionarla aquí
+%de mencionarla aquí. XXX-cvillar mmm pues no hago referencia.
 
 %\begin{minipage}[t]{.6\textwidth}%
 %\paragraph{Coordinación a nivel radio} Siguiendo las especificaciones de \ac{UMTS}: traspaso suave, célula combinadas e introduciendo la tecnología de \ac{CoMP} para el canal de subida, se consigue doblar las tasas de datos, en situaciones en las que varias células de distintas antenas están próximas.%
@@ -345,20 +346,149 @@ tráfico y movilidad de usuarios.
 \end{center}%
                                                                                       
 %-------------------------------------------------------------------
-\section{Redes Cognitivas}
+\section{Cognición en los dispositivos}
 \label{sec:cognitiveNetworks}
 %-------------------------------------------------------------------
 
-CN
+Las actuales redes de datos usadas en telecomunicaciones limitan la habilidad de éstas para adaptarse resultando en un rendimiento muchas veces por debajo del punto óptimo. Limitadas por definición, ámbito y con pobres mecanismos de respuesta, los elementos de red (consistentes en nodos, capas de protocolos, políticas y comportamientos) son incapaces de ejecutar adaptaciones inteligentes. 
+
+La comunicación del estado y situación de la red se ve cortada por la capa de transporte que abstrae estos detalles. Desembocando en que elementos individuales de red no son conscientes del estado de la red que experimentan otros elementos. Ante un evento de red, cualquier respuesta que haga un elemento de red queda restringido a un ámbito local. Por todo ello, las adaptaciones suelen sen reactivas y no predictivas para actuar antes que el problema ocurra.
+
+Los términos inteligente o cognitivo se han popularizado en varios campos incluido las telecomunicaciones. Los mismos términos se aplican frecuentemente dentro de este sector para diferentes sistemas de redes y comunicaciones. Hay una gran controversia entre los diferentes autores para definir y calificar qué son las redes cognitivas. Una cosa que esta clara es que este tipo de redes se debe apoyar sobre una radio cognitiva
+
+\subsection{Radio cognitiva}
+
+La \ac{CR} nace como una de las posibles soluciones a la crisis del espectro. En los últimos años no son pocas las voces que evidencian la saturación del espectro radioeléctrico~\cite{corvus}. Sin embargo organismos reguladores como \ac{FCC}~\cite{fcc} or \ac{OFCOM} denotan que estamos ante un mal aprovechamiento del espectro radio: ciertas bandas de frecuencia están muy pobladas como las bandas \ac{ISM}~\cite{wpanIssues} y las utilizadas para telefonía móvil, mientras que otras casi no tienen uso como las bandas de propósito militar, para radioaficionados o las destinadas a las comunicaciones por satélite. 
+
+La utilización del espectro depende en gran medida del tiempo y del espacio: podemos tener comunicaciones en una banda realizadas sobre un intervalo de tiempo acotado y en un lugar determinado, produciéndose un infrauso de la banda en el resto de lugares y en el resto del tiempo. Esto supone un problema desde el momento en que se realiza una reserva estática para aplicaciones específicas del espectro, por parte de organismos reguladores~\cite{cuadroFreqReserva}, desembocando en un uso ineficiente del mismo. Esta reserva está motivada para garantizar el acceso sin interferencias a ciertas aplicaciones y garantizar así una calidad de servicio. Se estima que se usa un 10\% del espectro total, pero esta cifra alcanza el 95\% si nos limitamos a frecuencias por debajo de 3 GHz tal y como se ve en la figura~\ref{fig:spectrum}. 
+
+\figuraEx{Vectorial/state/spectrumuse}{width=.7\textwidth}{fig:spectrum}%
+{Potencia media observada en el área urbana cerca del \textit{Berkeley Wireless Research Center} donde se observa la medida del espectro utilizado hasta la banda de los 6 GHz. Medida realizada a medio día con una resolución de 20 KHz sobre una medición de 50 microsegundos con una antena direccional de 30 grados~\cite{seung}.}{Medida del espectro utilizado (hasta 6 GHz) en un área urbana}
+
+Sin embargo, ya que el uso del espectro está fuertemente localizado en el espacio y tiempo, esta interferencia no llega a producirse en la mayoría de las ocasiones. Estas oportunidades de espectro sin usar es lo que busca la radio cognitiva que son fuente de numerosas investigaciones.
+
+El concepto de esta radio está bien definida por Joseph Mitola~\cite{mitola1}\cite{mitola2}, aunque si que es verdad que emerge una confusión cuando el término \ac{SDR} y \ac{CR} se usan indistintamente. Una \ac{SDR} es simplemente una radio que ha colocado la mayor parte de la funcionalidad de las \ac{RF} e \ac{IF}, lo que incluye la síntesis de la forma de onda, en el dominio digital. Permitiendo gran flexibilidad en la operación de la radio. La \ac{CR} muchas veces se asienta sobre una \ac{SDR}, sin embargo, es la ``inteligencia'' cognitiva quién gobierna a esta capa, indicando qué modo y qué parámetros debe usar. Que una radio posea \ac{SDR} o sea progrmable no es requisito suficiente para considerarla cognitiva tal y como se sugiere el organismo \ac{FCC} en~\cite{fcc1}.
+
+La \ac{CR} tal y como sugieren Mitola y Maguire, abre un nuevo paradigma donde los dispositivos que usan de una comunicación sin hilos cambian sus parámetros de transmisión o recepción para comunicarse eficientemente. La alteración de estos parámetros se basa en la monitorización activa de aspectos tanto internos como externos al entorno radio: estado de la red, comportamiento de la aplicación y uso del espectro. La \ac{CR} es consciente de su entorno y aprende de éste para adaptarse a variaciones observadas estadísticamente~\cite{brainempower} con dos objetivos principales:
+\begin{itemize}
+	\item Lograr comunicaciones sumamente fiables
+	\item Uso eficiente del espectro radioeléctrico
+\end{itemize}
+
+Las principales funciones~\cite{dsa}\cite{CRfunctionality} de los dispositivos que usen \ac{CR} son:
+\begin{description}
+	\item [Sensado del espectro] Una importante característica es la de averiguar qué partes del espectro no están siendo utilizadas y compartirlo sin interferir con otros usuarios. Especialmente a los legítimos, que son aquellos que tienen asignada esa porción del espectro con una asignación estática. Podemos distinguir varias técnicas de sensado:
+	\begin{itemize}
+		\item \textbf{Detector de transmisores}: La \ac{CR} debe tener la capacidad de detectar si usuarios primarios (los legítimos) están transmitiendo localmente en una zona del espectro. Podemos citar algunas técnicas comunes como filtro adpatado, detección de energía o procesos cicloestacionarios para detectar la presencia de señal.
+		
+		\item \textbf{Detención cooperativa}: Se refieren aquellos métodos \cite{sensing} que integran la información de varios dispositivos de \ac{CR}.
+
+		\item \textbf{Detección basada en interferencias}: Aquellas técnicas que intentan averiguar cuál es la diferencia entre el ruido detectado y la máxima de cantidad de ruido que el usuario primario puede asumir. Se intenta así transmitir una señal entre estos dos límites, de tal forma que no sea un ruido más pero que el usuario primario aún la considere como ruido. Estas técnicas no son comunes debido a la legislación en favor de los usuarios primarios.
+	\end{itemize}
+\item [Control de potencia] Esta técnica se usa tanto para acceder al espectro de forma oportunista cuando no se está utilizando, como para la compartición apropiada del espectro. El acceso oportunista busca el nivel de corte de la \ac{SNR} que permite establecer un canal. Por otro lado la compartición del espectro que realiza la \ac{CR} busca encontrar qué restricción en la potencia de transmisión debe imponer para que la interferencia entre usuarios de \ac{CR} no moleste al usuario primario. En~\cite{threshold} se propone una unión conjunta de control de potencia y sensado del espectro para maximizar la capacidad de los canales usados.
+
+\item [Gestión del espectro] Determinar la mejor porción disponible del espectro para satisfacer los requerimientos de comunicación del usuario, mientras que al mismo tiempo no se interfiera indebidamente a otros usuarios. La \ac{CR} debe decidir cuál es la mejor banda del espectro (entre toda la porción disponible) para cumplir una \ac{QOS} dada.
+\end{description}
+
+Podemos clasificar la \ac{CR} dependiendo de la zona de operación y de las características que tenga. La primera cladificación podemos distinguir:
+\begin{itemize}
+	\item \textbf{Radio cognitiva en bandas licenciadas}, capaz de usar bandas asignadas a usuarios legítimos o primarios.
+	\item \textbf{Radio cognitiva en bandas sin licencia}, es aquella radio que sólo opera en bandas en las que no hace falta tener licencia. Uno de estos sistemas es el descrito en las especificaciones \ac{IEEE} 802.15 TG2~\cite{802152}.
+\end{itemize}
+Si atendemos a las características que posea la \ac{CR}:
+\begin{itemize}
+	\item \textbf{Radio cognitiva plena o radio de Mitola}, en esta radio se tienen en cuenta todos los posibles parámetros que sean observables por el nodo~\cite{mitola1}.  Mitola propone un ciclo basado en el ciclo ``ODDA''~\cite{oodaLoop} formado por cuatro fases: Observación del entorno, Orientación o evaluación de la información obtenida, Decisión y planeamiento de las acciones tras la evaluación y por último Actuación o realización de las acciones pertinentes para llevar a cabo el plan elaborado.
+	\item \textbf{Radio cognitiva de sensado del espectro} en la que sólo se tiene en consideración el espectro radio~\cite{brainempower}. Este problema, uno de los más complicados, es objeto de numerosos estudios que se centran tanto en desarrollos de dispositivos de alta calidad de sensado, como en técnicas y algoritmos para intercambiar esta información perteneciente a las funciones de gestión del espectro.
+\end{itemize}
+
+La \ac{CR} como vemos puede incluir más o menos funcionalidades, al igual que puede que puede anclarse en múltiples arquitecturas. La razón es que el alcance de la \ac{CR} puede abarcar demasiado y por ello es normal encontrar simplificaciones como dedicarse exclusivamente a la asignación dinámica del espectro. Un ejemplo de ello es el grupo de trabajo \ac{IEEE} 802.22~\cite{80222web} formado en noviembre de 2004 que publicó en 2011 su estándar~\cite{standar80222}\cite{80222} que aprovecha, mediante el sensado, usar el espectro a dispositivos sin licencia en bandas asignadas a servicios de televisión para recrear redes \ac{WRAN} de acceso a internet en áreas rurales poco pobladas.
+
+
+\subsection{Red cognitiva}
+
+El concepto de \ac{CN} se apoya en los mismos conceptos que la \ac{CR}, pero con un ámbito que alcanza conceptos más global y menos individualizados. Mientras que la \ac{CR} se centra en los niveles físicos (PHY) y de enlace o acceso al medio (MAC), la \ac{CN} necesita de más capas y protocolos para llevar a cabo su tarea. Una \ac{CN} no es una red formada por dispositivos cuya radio sea cognitiva, ésta podríamos denominarla como \ac{CRN}, en estas redes el ámbito continua en las capas física y enlace pero operando con una especie de meta global~\cite{mitola2}\cite{gamecr}.
+
+Como podemos intuir, al contrario que la \ac{CR} su definición no está del todo clara. En los últimos ha salido a la luz términos como antenas inteligentes~\cite{smartantenna}, paquetes inteligentes~\cite{smartpackets}, paquetes cognitivos~\cite{cognitivepackets}, radios inteligentes~\cite{smartradio}, \ac{CR}~\cite{mitola1}\cite{brainempower} y \ac{CN}~\cite{cn1}\cite{cn2}. Todos ellos mencionan los términos cognitivo e inteligente pero ninguno aclara o precisa el concepto de red cognitiva, el aspecto común que nombran es la habilidad de auto modificación. Pero el concepto de \ac{CN} va más allá que la de ser una tecnología que puede auto modificarse. El primero que esbozó cómo debería actuar la \ac{CR} a nivel de sistema dentro del ámbito de una \ac{CN} fue Mitola en~\cite{mitola1}. Saracco \cite{saracco} la vaticina como el futuro en las tecnologías de la información. M\"ah\"onen et al. en \cite{cn1} ve oportunidades para aplicar la sensibilidad de las redes móviles \ac{IP} de nueva generación al campo de la \ac{CR}. Sin embargo son conceptos incompletos y no se especifica claramente qué es una \ac{CN}, cómo debe funcionar y qué problemas debe resolver. Lo que está claro es que se necesita cada vez más un concepto de red distinto que extienda la inteligencia de red al borde de ésta y que la información fluya sin restricciones.
+
+Una de las primeras definiciones de \ac{CN} la sugiere Clark~\cite{knowledgeplane}, como aquella red que se autoensambla dadas unas instrucciones de alto nivel, ajustándose cuando los requerimientos cambien, descubriendo automáticamente cuando algo no funciona como se desearía, solucionando el problema o explicando porqué no se puede resolver. El autor Thomas ahonda más aún dando una definición completa en~\cite{thomasCN}:
+\begin{quotation}
+Una \ac{CN} tiene un proceso cognitivo que percibe las condiciones actuales de la red y con ellas planea, decide y actúa. La red puede aprender de estas adaptaciones y usarlas para futuras decisiones, todo ello teniendo en cuenta metas de extremo a extremo. 
+\end{quotation}
+Y posteriormente la matiza en su tesis doctoral~\cite{thomas}:
+\begin{quotation}
+Una red compuesta de elementos que, a través del aprendizaje y el razonamiento, se adapta dinámicamente a las variaciones de las condiciones de red para mejorar el rendimiento de extremo a extremo. En una \ac{CN}, las decisiones son tomadas para satisfacer los requerimientos de la red como un todo, en vez de los de los elementos individuales de la red.
+\end{quotation}
+
+
+Para que las adaptaciones no sean reactivas y sean predictivas tal y como sugiere Thomas, se necesitan una serie de protocolos y asentarse sobre una capa \ac{SAN}: un concepto similar a la capa \ac{SDR} en \ac{CR} y así lograr un rendimiento mayor de extremo a extremo a lo largo del tiempo que una red convencional ya sea en el terreno de la gestión de los recursos, la \ac{QOS}, la seguridad y control de acceso u otros campos. Este rendimiento extendido en el tiempo debe ser positivo, teniendo en cuenta la penalización que las cabeceras, las operaciones y la arquitectura extra añaden a la \ac{CN}.
+
+Las redes \ac{CN} son más propensas a utilizar optimizaciones transversales en el modelo de capas\footnote{Cross-layer}, actuando simultáneamente en parámetros que pertenecen a múltiples capas en la pila de protocolos. En~\cite{crossLayer} podemos ver estos protocolos que necesitan comunicar información entre capas y borran de alguna manera las fronteras y las restricciones entre ellas. No obstante, si estas soluciones se centran en optimizar el enlace sin tener en cuenta el contexto global, estaremos ante un mecanismo que no suministra el plano de extremo a extremo necesario en una \ac{CN}. Estos algoritmos dependen de la flexibilidad y de la adaptabilidad de lo subyacente: las funcionalidades de la \ac{SAN} implementada.\\ 
+
+La arquitectura de una \ac{CN} debe ser escalable y flexible para albergar futuras mejoras y elementos. Su implementación puede ser más o menos fácil teniendo en cuenta el tipo de usuarios que contenga. En entornos homogéneos como el militar, regulados por ley o corporativos los diferentes nodos están más concienciados con la meta común a toda la red al igual que con su propia meta. En otras aplicaciones de red como un acceso \ac{WAN} comercial (u otras redes formadas por usuarios no relacionados) los nodos son más propicios a actuar de una forma más egoísta priorizando su meta frente a la común. La diferencia entre los dos entornos se conoce como \bsq{precio de la anarquía}. Se define como la diferencia en el rendimiento entre una red donde un dictador benevolente que conoce todo y aquella gobernada puramente por el egoísmo anarquista. El lado hacia que se inclina la red indica el grado de complejidad y la cantidad de información que se necesita para cumplir con las metas. Si el rendimiento observado cuando se actúa con fines egoístas es peor que cuando se actúa por el común, la \ac{CN} debe quizás guiar de una manera más centralizada o una estructura que incentive a los elementos de red, en vez de limitarse a fijar una meta de extremo a extremo.
+
+El efecto que hacen las decisiones cognitivas en la red depende de la cantidad de información de red disponible, para que una \ac{CN} tome decisiones basadas en la meta global, el sistema debe conocer tanto el estado actual de red como las metas vigentes. Hay varios modelos para conseguir este propósito, desgraciadamente conseguir una imagen completa del estado de la red es objetivo muy costoso, además pueden emergen problemas de confianza y veracidad entre la información distribuida entre los nodos:
+\begin{itemize}
+	\item \textbf{Centralizado}, donde un servidor central hace el seguimiento de todas la metas globales de la red y estado de ésta. Uno de los problemas mas importantes es que este esquema expone un punto de fallo único. 
+	\item \textbf{Distribuido}, donde todos los nodos comparten la información observada y no hay una autoridad central que obtenga o disemine estos datos. Esta red necesita de un modelo más complejo donde es necesario transmitir mucha mas información de señalización.
+	\item \textbf{Híbridos}, intentan resolver los problemas descritos, un ejemplo es aquella red que distribuye sus metas extremo a extremo por todos los nodos, pero usa un repositorio común para almacenar y cortejar el estado de la red.
+\end{itemize}
+
+Thomas en~\cite{thomasCN} propone un marco cognitivo que se divide en tres capas cuyo núcleo es el proceso cognitivo que a su vez se estructura también en tres partes:
+\begin{itemize}
+	\item \textbf{Lenguaje de especificación cognitiva}, permite conectar los requerimientos de alto nivel de los usuarios de la red con la capa cognitiva. Se desarrolla por tanto una interfaz con la que entrar al proceso cognitivo.
+	\item \textbf{Capa cognitiva}, aquí se reflejan aspectos como la centralización de la red y la que realiza el bucle de cognición ya presentado en la \ac{CR} a este bucle habría que añadir aspectos como las metas. Este bucle funciona a pesar que no conozcamos todos los detalles o la realidad a percibir sea bastante compleja porque esta realidad nunca es aleatoria, por ello tras unas iteraciones, el sistema converge a un punto o al menos a una región. Para realizar el proceso de aprendizaje se sugieren usar estos algoritmos:
+	\begin{itemize}
+		\item \textit{Algoritmos genéticos}, siempre que se habla de aprendizaje en maquinas e inteligencia artificial surge el término de redes neuronales. Si la respuesta de la red se puede modelar como un patrón de ruido, una red neural puede ayudar para clasificar y reconocer este patrón dadas unas respuestas predeterminadas. Este tipo de algoritmos funcionan mejor cuando el proceso está centralizado y se conocen bastantes detalles del mismo.
+		\item \textit{Sistema experto}, mediante respuestas \bsq{si}, \bsq{no} o \bsq{ns/nc} estos sistemas pueden guiar la toma de decisiones en un campo de conocimiento muy específico.
+		\item \textit{Filtro Kalman}, no son considerado como un algoritmo de aprendizaje como tal, pero están compuestos de un algoritmo adaptativo controlado mediante realimentación. Son útiles en sistemas con gran cantidad de ruido, mediante la recursividad y medidas de ruido Gausianas este filtro es capaz de predecir el estado actual y futuro del sistema.
+		\item \textit{Aprendizaje de autómata}, es el método más simple de aprendizaje de un sistema con una realimentación desconocida. Un campo de aplicación son aquellos sistemas que incluyen varios elementos dinámicos interactuando en un sistema complejo. Son especialmente útiles en un sistema distribuido que requiera muy poca información sobre el estado del mismo.  
+	\end{itemize}
+Estos algoritmos son muy importantes que funcionen correctamente para evitar que la red se adapte en una condición que en computo global, sea peor a la anterior. Por el hecho de ajustar un parámetro podemos poner el riesgo a otros, siempre habrá un precio que pagar por cada modificación, el punto óptimo es encontrar el equilibrio.
+	\item \textbf{Sensores del estado de la red}, su función es la de suministrar realimentación sobre el estado de la red a la capa cognitiva, para que ésta reconozca los patrones y umbrales para una posible actuación. Esta información puede ser tratada solo localmente o por necesidades de la red, ser distribuida entre todos los nodos. 
+\end{itemize}
+
+
+Un pequeño y sencillo ejemplo publicado en~\cite{example} ilustra la necesidad de el objetivo extremo a extremo en vez adaptaciones basadas en el enlace más inmediato.
+
+\figuraEx{Bitmap/state/example}{width=.5\textwidth}{fig:example}%
+{Simple red de retransmisión obtenida de~\cite{example}.}{Simple red de retransmisión para una red de conectividad sin hilos.}
+
+Consideramos la transmisión entre el nodo originario $S_{1}$ y el nodo destino $D_{1}$ como se muestra en la figura~\ref{fig:example} en su parte izquierda. El nodo $S_{1}$ no tiene suficiente potencia para alcanzar directamente al nodo destino, así que usa la ruta a través de $R_{1}$ y/o $R_{2}$. Se asume que la meta de extremo a extremo es tener una transmisión satisfactoria con la mayor probabilidad. El protocolo o capa de encaminamiento determinará la ruta basada en el mínimo número de saltos, que en este caso involucra a cualquiera de $R_{1}$ o $R_{2}$. El nodo $S_{1}$ establecerá la conexión con aquel que reporte mejor \ac{SINR}. Desde el punto de vista de $S_{1}$ esta es la mejor elección para que los datos lleguen al nodo que retransmite. Sin embargo, esto no significa que la probabilidad de que los datos lleguen a destino sea mejor o peor, no hemos tenido en cuenta el concepto de extremo a extremo. En oposición a la adaptación basada en enlace, una \ac{CN} usará la información observada por todos los nodos para calcular la ruta con mayores probabilidades desde $S_{1}$ a $D_{1}$ a través de $R_{1}$ o $R_{2}$, teniendo en cuenta la calidad de los enlaces entre $R_{1}$ y $D_{1}$ o $R_{2}$ y $D_{1}$. Esto precisamente muestra el beneficio de tener en consideración un ámbito de extremo a extremo.\\
+
+Sin embargo, las posibilidades de una \ac{CN} no acaban aquí, otra ventaja importante es su capacidad cognitiva. Para ello tenemos en cuenta toda la figura~\ref{fig:example}, supongamos que tanto $S_{1}$ como $S_{2}$ transmiten a través de $R_{2}$. Supongamos también que el algoritmo de aprendizaje mide las posibilidades de la transmisión como la fracción de paquetes entregados correctamente desde el origen hasta el destino.
+
+Si $R_{2}$ se congestiona debido al gran volumen de tráfico proveniente de $S_{2}$, esta situación desemboca en que el ratio de paquetes correctamente entregados disminuye. El proceso cognitivo determinará que la ruta a través de $R_{2}$ no es óptima, encaminando el tráfico por otros nodos retransmisores. La \ac{CN} no ha conocido esta información explícitamente que que haya habido una congestión en $R_{2}$ porque esta información no está incluida en la \ac{SINR} observada. Con todo, se ha podido deducir que ha habido un problema basándose en la disminución del caudal, dando una solución. Este ejemplo nos ha ilustrado el poder de las \ac{CN} que tienen adaptándose teniendo en cuenta metas globales y reaccionando, gracias a la información obtenida, ante situaciones inesperadas.
+ 
+
+\subsection{Red cognitiva de sensores inalámbrica}
+
+Una red de sensores inalámbrica, o \ac{WSN}, es un conjunto de nodos distribuidos en el espacio para monitorizar gracias a uno o varios sensores por cada nodo aspectos físicos o condiciones ambientales. La información obtenida la van construyendo poco a poco cada nodo que sabe una pequeña parte de toda esa información, para lograrlo, la cantidad de nodos varia desde unos pocos, hasta cientos incluso miles. Cada nodo es un sistema empotrado de capacidad, a menudo, limitada y de pequeño tamaño, el coste también es una restricción. Lo que repercute en energía, memoria, velocidad de computación y comunicaciones limitadas. Las aplicaciones que tienen este tipo de redes que son consideradas la principal tecnología para desarrollar ambientes inteligentes~\cite{Benini20061639}, son (entre otras):
+\begin{itemize}
+	\item \textit{Monitorización industrial}. Para controlar el estado de conservación de maquinas industriales o en general cualquier gestión o control de aplicaciones industriales evitando el despliegue de cable.
+	\item \textit{Monitorización de estructuras}. Sensores distribuidos a lo largo de un puente, túnel o edificios pueden ayudar a obtener datos para prevenir daños estructurales derivados de sobrecargas o por efecto del clima o vibraciones.
+	\item \textit{Monitorización ambiental}. Como control de calidad del aire, del agua, contaminación atmosférica, detección de incendios forestales, movimientos de tierra o cualquier desastre natural son sus usos más normales.
+	\item \textit{Domótica}. Podemos monitorizar las actividades realizadas en un hogar inteligente con una \ac{WSN}. Se habilita que los objetos del día a día actúen en base a los cambios de estado capturados por la red.
+	\item \textit{Agricultura}. Usados en comúnmente en invernaderos donde el riego y el control del ambiente es clave para lograr rendimientos altos.
+	\item \textit{Localización pasiva y seguimiento}. Aplicaciones orientadas a detectar dónde ha ocurrido algo o seguimiento de presencia sobre un área. Controlar intrusiones no deseadas y demás aplicaciones de seguridad o vigilancia.
+	\item \textit{e-Salud}. Se presenta como un nuevo uso para las \ac{WSN} para monitorizar parámetros del cuerpo y observar patrones de salud y comportamiento. Estas redes pueden ser usadas para mejorar el diagnóstico y otros usos médicos o prevenir accidentes en el trabajo o domésticos.
+\end{itemize}
+
+Si añadimos los conceptos de \ac{CR} y \ac{CN} a las \ac{WSN} desembocamos en las redes cognitivas de sensores inalámbricas, en adelante \ac{CWSN}. Estas redes como hemos visto incrementan la complejidad por los algoritmos que se ejecutan y la sobrecarga en la señalización de la red. Los agentes cognitivos son capaces de hacer decisiones de manera activa para ayudar a cumplir metas de extremo a extremo, mientras que los conceptos de \ac{CR} permiten aprovechar de manera oportunista el uso de entornos heterogéneos inalámbricos mediante el uso de varias interfaces de comunicación para colocar la comunicación en la parte del espectro que más convenga.
+
+Las principales interfaces de comunicación en estas redes se basan en el estándar \ac{IEEE} 802.15.4 \cite{wpanieee}, que define las capas físicas y enlace del modelo \ac{OSI} que busca comunicar datos en un rango cercano, \ac{WPAN}, con poca energía y sin que haya una infraestructura por debajo. Algunas implementaciones de este estándar son los protocolos \bt{}~\cite{bluetooth}, ZigBee$^{TM}$~\cite{zigbee}, WirelessHART~\cite{hart}, ISA100.11~\cite{isa}, o MiWi$^{TM}$~\cite{miwi}. Otro protocolo popular de comunicaciones es \ac{IEEE} 802.11~\cite{802.11}, en el cual se basa \wifi{}~\cite{wifi}, debido a la convergencia total hacia \ac{IP} se incluye este estándar que no cumple la restricción de baja energía, no obstante para solucionar este problema emerge el estándar \ac{6LOWPAN}~\cite{6lowpan} que permite enviar paquetes \ac{IP} sobre redes basadas en 802.15.4.\\
+
+El aspecto cognitivo no solo ayuda a lograr metas de extremo a extremo para toda la red, si no que incrementa la fiabilidad de la red y reduce el mantenimiento bajando el coste y alargando la vida útil de  la red. Los estudios~\cite{gamewsn}\cite{neuralcsn}\cite{crwsn}\cite{crbasedwsn} revelan el interés creciente por aplicar técnicas cognitivas a las \ac{WSN}.
+
 
 
 %-------------------------------------------------------------------
-\section{Radio Cognitiva en teléfonos inteligentes}
+\section{Conceptos cognitivos aplicados al campo de teléfonos inteligentes}
 \label{sec:CRsmartphone}
 %-------------------------------------------------------------------
 
-Hemos visto que la evolución de las redes 4G (\ac{LTE}) prevé mecanismos para evitar la concentración de tráfico localizado mediante el uso de difusión, despliegue de células mas pequeñas, coordinación entre células y gestión centralizada del tráfico. Estas palancas de actuación aunque no parecen estar orientadas bajo una perspectiva cognitiva sí que comparten algunos de sus principios y su finalidad que es evitar el colapso del espectro. La tendencia, según los últimos congresos celebrados \cite{cnPhoneCongress}  sugieren que la infraestructura de acceso a las redes móviles tenga cada vez más características de la radio cognitiva \cite{cnPhoneCongressLast}. En realidad Ericcson recomienda para la próxima generación de redes para teléfonos móviles (5G) el que haya una compartición flexible del espectro: \ac{DAS} en frecuencias altas \cite{5gAccess} que son más indicadas para la masificación y localización debido a su pobre propagación. \\
-Al ser una nueva zona del espectro para redes telefónicas, permite realizar nuevas técnicas (como radio cognitiva) permitiendo una compatibilidad hacia \ac{LTE} en la zona baja del espectro dónde se mantendrían las modulaciones y acceso al medio actuales evitando costes de actualización. En las frecuencias altas la red de transporte entre nodos de las estaciones bases se puede realizar también de forma inalámbrica en la zona alta del espectro que es más ancha aumentando la eficiencia si se comparte igualmente de forma dinámica.
+Hemos visto que la evolución de las redes 4G (\ac{LTE}) prevé mecanismos para evitar la concentración de tráfico localizado mediante el uso de difusión, despliegue de células mas pequeñas, coordinación entre células y gestión centralizada del tráfico. Estas palancas de actuación aunque no parecen estar orientadas bajo una perspectiva puramente cognitiva con metas de extremo a extremo, sí que comparten algunos de sus principios y su finalidad que es evitar el colapso del espectro. La tendencia, según los últimos congresos celebrados \cite{cnPhoneCongress}  sugieren que la infraestructura de acceso a las redes móviles tenga cada vez más características de la radio cognitiva \cite{cnPhoneCongressLast}. En realidad Ericcson recomienda para la próxima generación de redes para teléfonos móviles (5G) el que haya una compartición flexible del espectro: \ac{DAS} en frecuencias altas \cite{5gAccess} que son más indicadas para la masificación y localización debido a su pobre propagación.
+
+Al ser una nueva zona del espectro para redes telefónicas, permite realizar nuevas técnicas (como las de \ac{CR}) permitiendo una compatibilidad hacia \ac{LTE} en la zona baja del espectro, donde se mantendrían las modulaciones y acceso al medio actuales evitando costes de actualización. En las frecuencias altas la red de transporte entre nodos de las estaciones bases se puede realizar también de forma inalámbrica en la zona alta del espectro que es más ancha aumentando la eficiencia si se comparte igualmente de forma dinámica.
 
 Como vemos es un campo fuertemente investigado por fabricantes de equipos de telecomunicaciones, universidades y también por fabricantes de terminales como Nokia quién tiene un espacio \textit{web} dedicado a sus investigaciones \cite{cnPhoneNokia} de entre los que cabe destacar un artículo \cite{cnPhoneNokiaArticle} en el que se versa sobre comunicaciones \ac{D2D} mediante \ac{LTE} dentro de una célula estudiando el impacto sobre el usuario primario (la célula) se demuestra que la capacidad observada en toda la célula aumenta.\\
 Es obvio que estas nuevas técnicas afectan a las operadoras \cite{cnPhoneCarrierPerspective} con ventajas e inconvenientes. Entre las ventajas es la que incrementar parte del espectro en redes existentes, o la de acceder a nuevos mercados con mayor facilidad, ya que entre las desventajas tenemos que el valor del espectro se devalúa y aumenta la interferencia debido a los usuarios secundarios. En media la capacidad aumenta y los costes de red disminuyen. El proyecto \bsq{SENDORA} \cite{cnPhoneSendora} utiliza una \ac{WSN} para identificar zonas del espectro sin usar en ese momento.\\

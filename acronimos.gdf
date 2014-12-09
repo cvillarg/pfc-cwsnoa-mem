@@ -62,6 +62,8 @@
 
 @entry{RF, , \emph{Radio Frequency}}
 
+@entry{IF, , \emph{Intermediate Frequency}}
+
 @entry{RSSI, , \emph{Received Signal Strength Indication}}
 
 @entry{SNR, , \emph{Signal to Noise Ratio}}
@@ -181,6 +183,8 @@
 @entry{PLL, ,\emph{Phase-locked loop}}
 
 @entry{FIFO, ,\emph{First-in First-out}}
+
+@entry{LIFO, ,\emph{Last-in First-out}}
 
 @entry{FHSS, ,\emph{Frequency Hopping Spread Spectrum}}
 
@@ -323,3 +327,7 @@
 @entry{D2D, ,\emph{Device-to-device}}
 
 @entry{DSA, ,\emph{Dynamic Spectrum Access}}
+
+@entry{SAN, ,\emph{Software Adaptable Network}}
+
+@entry{JNI, ,\emph{Java Native Interface}}
