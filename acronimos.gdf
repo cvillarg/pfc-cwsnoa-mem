@@ -188,6 +188,8 @@
 
 @entry{FHSS, ,\emph{Frequency Hopping Spread Spectrum}}
 
+@entry{DSSS, ,\emph{Direct Sequence Spread Spectrum}}
+
 @entry{DQI, ,\emph{Data Quality Indicator}}
 
 @entry{ED, ,\emph{Energy Detect}}
@@ -246,9 +248,11 @@
 
 @entry{OTAP, , \emph{Over The Air Programming}}
 
-@entry{GSM,2G,\emph{Global System for Mobile}}
+@entry{GSM, ,\emph{Global System for Mobile}}
 
-@entry{GPRS,2.5G,\emph{General Packet Radio Service}}
+@entry{GPRS, ,\emph{General Packet Radio Service}}
+
+@entry{EDGE, ,\emph{Enhanced Data Rates for GSM Evolution}}
 
 @entry{QR, , \emph{Quick Response}}
 
@@ -258,11 +262,11 @@
 
 @entry{SMA, ,\emph{SubMiniature version A}}
 
-@entry{UMTS,3G,\emph{Universal Mobile Telecommunications System}} 
+@entry{UMTS, ,\emph{Universal Mobile Telecommunications System}} 
 
-@entry{LTE,4G,\emph{Long Term Evolution}}
+@entry{LTE, ,\emph{Long Term Evolution}}
 
-@entry{LTE-A, ,\emph{LTE Advanced}}
+@entry{LTEA, LTE-A ,\emph{LTE Advanced}}
 
 @entry{VoLTE, ,\emph{Voice over LTE}}
 
@@ -331,3 +335,25 @@
 @entry{SAN, ,\emph{Software Adaptable Network}}
 
 @entry{JNI, ,\emph{Java Native Interface}}
+
+@entry{URI, ,\emph{Uniform Resource Identifier}}
+
+@entry{SIG, ,\emph{Special Interest Group}}
+
+@entry{WCDMA, W-CDMA,\emph{Wideband Code Division Multiple Access}}
+
+@entry{FDD, ,\emph{Frequency-Division Duplexing}}
+
+@entry{TDD, ,\emph{Time-division duplexing}}
+
+@entry{QAM, ,\emph{Quadrature Amplitude Modulation}}
+
+@entry{HSPA, ,\emph{High-Speed Packet Access}}
+
+@entry{OFDMA, ,\emph{Orthogonal Frecuency-Division Multiple Access}}
+
+@entry{SCFDMA, SC-FDMA,\emph{Single Carrier Frecuency-Division Multiple Access}}
+
+@entry{NAT, ,\emph{Network Address Translation}}
+
+@entry{VOIP, VoIP,\emph{Voice over IP}}

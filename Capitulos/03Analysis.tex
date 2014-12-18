@@ -1,0 +1,274 @@
+%---------------------------------------------------------------------
+%
+%                          Capítulo 3
+%
+%---------------------------------------------------------------------
+
+\chapter{Análisis}
+
+\begin{FraseCelebre}
+\begin{Frase}
+Sólo sé que no se nada y, al saber que no sé nada, algo sé; porque sé que no sé nada
+\end{Frase}
+\begin{Fuente}
+Sócrates de Atenas {\sc\scriptsize a través de Ale Gallardo}
+\end{Fuente}
+\end{FraseCelebre}
+
+\begin{resumen}
+Estudio previo.
+\end{resumen}
+
+
+%-------------------------------------------------------------------
+\section{Plataformas Móviles: Android}
+\label{sec:android}
+%-------------------------------------------------------------------
+
+La plataforma móvil que hemos elegido para la implementación de la arquitectura cognitiva es \android{}. Esta elección está motivada por los siguientes motivos:
+\begin{itemize}
+	\item \textbf{Código libre}: como hemos visto en el capítulo anterior, la \ac{CN} requiere de una capa \ac{SAN} subyacente que permita modificar parámetros de comunicación, muchas veces restringidos y ocultados a los niveles superiores. El tener la posibilidad de poder hacer una modificación en el código del sistema operativo, recompilarlo y poder cargarlo en un dispositivo, hace que este aspecto no sea una pared insalvable para el proyecto. Supone un riesgo moderado, pues los conocimientos necesarios para conseguir hacer esas modificaciones son bastantes alto.
+
+\item \textbf{Madurez}: \android{} es una de las plataformas móviles más ``antiguas'' entre las listadas en la sección~\ref{sec:mobilePlatforms}. Con el paso del tiempo la estabilidad y funcionalidad de la plataforma se incrementa al igual que no lo hace la comunidad de desarrolladores y la documentación disponible, facilitando el desarrollo de aplicaciones. La plataforma anunció en noviembre de 2014 el lanzamiento de la versión 5.0 - Lollipop que corresponde con la versión vigésima primera de la \ac{API} del sistema.
+
+\item \textbf{Cuota de mercado}: otro factor importante es la penetración de la tecnología en la sociedad. Por dos motivos: uno para poder recrear una \ac{CN} en la que se necesita la participación de muchos nodos y el segundo responde a que cuanto más extendido está una plataforma, más modificaciones y oportunidades aparecen.
+
+\end{itemize}
+
+\subsection{Fundamentos de una aplicación}
+En \android{} las aplicaciones se escriben en lenguaje \java{} que gracias a las herramientas del \ac{SDK} se compilan encapsulando en un solo archivo (\texttt{.apk}) tanto el código como archivos de datos o recursos como lo son las imágenes. Este archivo único contiene un espacio de nombres exclusivo el cual puede ser referenciado desde otras aplicaciones para la invocación de componentes concretos. \android{} es un sistema multiusuario donde cada aplicación es un usuario diferente, ejecutándose cada una de ellas en su propio espacio. Cada aplicación es aislada del resto al ser ejecutada en una instancia distinta de la maquina virtual y ser tratada como un proceso de \linux{} diferente~\cite{andProcess}. Se implementa por tanto el principio del mínimo privilegio que consiste en que por defecto, cada aplicación sólo tiene acceso a los componentes que requiere y no otros. Esto crea un entorno bastante seguro, no obstante cada aplicación puede pedir el acceso al resto de recursos del sistema mediante la aceptación de unos permisos de los cuales se informa en el momento de la instalación. También es posible que dos aplicaciones se ejecuten en el mismo proceso al compartir el identificador del usuario \linux{} que sólo es conocido por el sistema y no por las aplicaciones en cuestión, para ello las aplicaciones tienen que estar firmadas bajo el mismo certificado.
+
+\figura{Bitmap/analysis/android-arch}{width=.76\textwidth}{fig:android-arch}{Arquitectura global de \android{} en \cite{andArchitecture}}
+
+En la figura~\ref{fig:android-arch} vemos que el sistema se apoya sobre el núcleo de \texttt{Linux}, dependiendo del dispositivo las versiones de éste oscilan desde la 2.6 hasta la versión 3.10 al igual que los distintos componentes para adecuarse al \textit{hardware}. Sobre este núcleo se construyen unas librerías escritas tanto en \var{C} como \var{C++} que completan las funciones básicas de los módulos y componentes. Se une con el resto de la arquitectura gracias a la interfaz \ac{JNI} que permite ejecutar métodos nativos escritos en otros lenguajes y así permitir que la maquina virtual de \java{} interactúe con los programas del núcleo y las librerías. 
+
+El resto de la arquitectura la componen los componentes de manejan las aplicaciones ubicadas en el \textit{System server}, las demás librerías necesarias para \android{} y la implementación de \java{} libre (\texttt{Apache Harmony}, proyecto descontinuado a finales de 2011). La comunicación entre estos procesos se realiza con un objeto \textit{Binder}. 
+
+Por último la arquitectura se corona con las aplicaciones tanto del sistema como desarrolladas por terceros. Como veremos hay ciertas aplicaciones que tienen acceso a zonas y funciones del sistema que no son accesibles desde la \ac{API}, ni están contempladas por la aceptación de permisos de cara al usuario. Para llevar a cabo este propósito, estas aplicaciones se instalan además, en una partición especial y se ejecutan en procesos cuyo usuario tiene más privilegios que un usuario destinado a una aplicación sin más. La comunicación entre las aplicaciones y la arquitectura se produce gracias a la \ac{API} que publica el sistema.\\
+
+Las aplicaciones se estructuran y se componen de los siguientes componentes:
+
+\subsubsection{Activity}
+O actividad, es un componente que representa una parte de la interfaz gráfica que consiste en una única pantalla de interacción con el usuario. Una aplicación proporciona tantas actividades como sea necesario que son encadenadas para construir el flujo de trabajo de ésta. Aunque estas actividades trabajan juntas y comparten datos para lograr una experiencia de usuario óptima, cada una de ellas es independiente, es más, pueden ser iniciadas desde cualquier otro punto de la misma aplicación u otra si se habilita para ello.
+
+Cada vez que se inicia una actividad se para la actividad anterior, el sistema conserva esta actividad en una cola \ac{LIFO}, es decir que cuando un usuario presiona el botón \bsq{atrás} se recupera la actividad que se pausó en último lugar. Las actividades al igual que los otros componentes siguen un ciclo de vida propio que es manejado por el sistema que llama a ciertos métodos de ésta para informar de su estado actual.
+
+\figura{Bitmap/analysis/activity-lifecycle}{width=.76\textwidth}{fig:activity-lifecycle}{Ciclo de vida de una actividad en \android{} extraído de \cite{andActivity}}
+
+En la figura~\ref{fig:activity-lifecycle}, vemos los métodos que son llamados por el sistema. Cuando una aplicación se crea el sistema llama al método \textit{onCreate()} de la actividad, en él debemos inicializar los componentes de ésta tales como su interfaz gráfica. Justo antes de que la actividad torne por primera vez en la pantalla del dispositivo, o cuando ha estado en el estado de parada, se llama al método \textit{onStart()}. En las sucesivas veces que la actividad vuelva a la pantalla del dispositivo se ejecutará \textit{onResume()} que puede ser utilizado para recuperar la información que tuviera antes de perder el foco del usuario. Cuando otra actividad coja la atención del usuario nuestra actividad será pausada con \textit{onPause()} y cuando no sea visible en pantalla el sistema llamará a \textit{onStop()}. En este estado la actividad se mantiene en memoria pero es buena ocasión para guardar su estado para poder recuperarlo aunque el sistema la mate por una necesidad de memoria. Cuando la actividad termina bien por la llamada a su método \textit{finish()} o porque el usuario decide destruirla con el botón \bsq{atrás} el sistema invoca el método \textit{onDestroy()} de la actividad. Este método también se invoca si el sistema decide prescindir de la actividad por falta de recursos y esta necesidad no es muy urgente, es decir la llamada a este método no está garantizada.
+
+El ciclo de vida de las actividades se ve modificado por cambios en la configuración, ejemplos de ello son un cambio en el idioma del sistema, la disponibilidad del teclado físico o un cambio en la orientación de la pantalla. Ante estos eventos las actividades son destruidas y reconstruidas automáticamente pero hay que restaurar de manera manual el estado que tuviesen. No obstante, hay algunos fabricantes que no consideran el cambio de orientación de la pantalla como un cambio en la configuración y por tanto el ciclo de vida no se ve afectado.
+
+
+\subsubsection{Service}
+O servicio, pensado para realizar tareas cuyo tiempo de ejecución es dilatado o para trabajar con procesos remotos como la descarga de un archivo. Es un componente sin interfaz gráfica, por lo que debe ser iniciado por otro componente, normalmente por una actividad que requiera de sus servicios.
+
+Un servicio se ejecuta, en principio, en la misma hebra y en el mismo proceso que la aplicación. Pero al no tener interfaz gráfica, su ciclo de vida está desligado de la pantalla. Es más, su ejecución es totalmente independiente del componente que lo inició, es decir, aunque éste este fuera de foco o incluso haya sido destruido o matado por el sistema, el servicio seguirá ejecutándose.\\ 
+
+Para proporcionar de una serie de operaciones a la aplicación (u otras ya que \android{} nos permite la instanciación de otros componentes fuera del alcance de ésta si lo habilitamos para ello) tenemos dos opciones: un servicio empezado o un servicio atado.
+
+Un servicio empezado es aquel que es iniciado por un componente que requiere de una operación pero no necesita que flujo de trabajo dependa de ésta. Aunque el servicio tiene mecanismos para devolver un resultado, éstos no están contemplados bajo el punto de vista de este tipo de servicio. Tras su iniciación, permanecerá ejecutándose hasta que sea parado por el componente que lo inició o sea parado por el mismo al terminar su trabajo. Un servicio atado sin embargo, permite la comunicación con el componente que lo inició mediante una interfaz cliente-servidor. Como esta interfaz debe ser capaz de comunicarse no sólo con el proceso dónde está alojado el servicio, si no con otros procesos o aplicaciones, su implementación se basa en un objeto \textit{IBinder}: un objeto ligero que define una interfaz para el procedimiento de llamada remota diseñado para tener un gran rendimiento en procesos y llamadas a procesos cruzados~\cite{andIBinder}. Hay tres formas de declarar esta interfaz:
+\begin{description}
+ \item [Extendiendo la clase Binder] Si el alcance se restringe a la misma aplicación y no se necesita comunicación entre procesos, está es la manera más sencilla de conseguir una referencia para llamar a todos los métodos públicos del servicio.
+ \item [Usando un Messenger] Este objeto nos permite que el servicio preste soporte a otros procesos más allá del local y evitando condiciones de carrera entre las distintas peticiones ya que la hebra que maneja el \textit{Handler}~\cite{andHandler} recoge y encola las solicitudes. Las peticiones son en forma de mensaje por lo que no hay una interfaz que declare métodos propiamente dichos, si no que brinda una comunicación entre ambos por medio de paso de mensajes que son procesados en una cola.
+ \item [Usando AIDL] Esta forma es la menos intervencionista por parte de \android{}, nos permite definir una \ac{API} propiamente dicha con la declaración de funcionalidad gracias a \ac{AIDL} que descompone los objetos en primitivas que pueden ser traspasadas entre procesos para desempeñar \ac{IPC}. Es la única manera de proveer un servicio que acepte peticiones simultáneamente pero es responsabilidad del programador proveer una estructura multihebra segura. 
+\end{description}
+
+\figura{Bitmap/analysis/service-lifecycle}{width=.56\textwidth}{fig:service-lifecycle}{Ciclo de vida de los distintos tipos de servicios en \android{} extraído de \cite{andService}}
+
+El ciclo de vida de los servicios se plasma en la figura~\ref{fig:service-lifecycle}, en ella se ve que ningún evento del teléfono tales como la interacción del usuario o llamadas entrantes modifica el flujo de trabajo del servicio. En la parte izquierda tenemos al servicio que ha sido empezado por un componente y la derecha el servicio que ha sido vinculado o atado por el componente. La manera de parar este tipo de servicios es mediante la desvinculación de todos los componentes que hayan interactuado con él. \android{} no obstante, no restringe que un servicio que haya sido vinculado no pueda ser iniciado y al revés, para acomodarse a los distintos requerimientos de una operación.
+
+
+\subsubsection{Content provider}
+O proveedor de contenidos, permite dotar de un contexto para el intercambio de datos entre aplicaciones. Una aplicación decide dónde guardar sus datos: base de datos, archivo de preferencias, sistema de ficheros, en remoto\ldots Pero para que otras aplicaciones puedan acceder o incluso modificar sus datos, se necesita el uso del objeto \textit{ContentResolver}, éste recibe las peticiones de otras aplicaciones, las procesa y devuelve el resultado por medio de una \ac{API} estandarizada para el intercambio. 
+
+
+\subsubsection{Broadcast receiver}
+Es un componente que responde a avisos que son difundidos a todo el sistema. Muchos de estos avisos se originan desde el propio sistema \android{} informando del estado del teléfono o eventos producidos, pero también una aplicación puede lanzar este tipo de avisos. Una aplicación puede recibir este tipo de avisos registrándose a la acción y tipo que lleve el anuncio, son capturados en el método \textit{onReceive()} que está pensado para una ejecución corta, si no el sistema puede matar la aplicación por bloquear el flujo normal. En este método podemos aprovechar para lanzar una notificación al usuario o iniciar otro componente.
+
+
+\subsubsection{Vertebrando el flujo de la aplicación}
+La forma de canalizar el flujo e ir disparando y enlazando los diferentes componentes para crear un flujo de aplicación se basa en una llamada asíncrona llamada \textit{Intent}~\cite{andIntent}. Se trata de una especie de mensaje para activar un componente específico o un tipo de componente que se adapte al deseo para el cual se creó el \textit{Intent}. Se trata del tipo explícito, donde conocemos qué componente queremos que realice la acción, o implícito, en caso de que expresemos un deseo a través de una acción y una \ac{URI} para identificar un dato necesario para esa acción. Con este \textit{Intent} implícito \android{} elige entre todos los componentes disponibles aquel que pueda realizar este deseo, si hay varios componentes elegibles, la decisión depende en último lugar del usuario del dispositivo.
+
+
+\subsubsection{AndroidManifest.xml}
+El archivo manifiesto permite registrar la aplicación en el sistema y ofrecer los servicios que tenga ésta. En él debemos definir:
+\begin{itemize}
+	\item Todos los componentes de aplicación para que puedan ser activados. Además pueden ser declarados junto con la etiqueta \textit{intent-filter} para que el sistema identifique y clasifique a éste y sea así elegible de manera implícita. Podemos usar este archivo para reconocer el evento de encendido y activar un componente, característica que desde el propio código no podemos capturar.
+	\item Cuál es la mínima versión de la \ac{API} del sistema que garantiza que nuestra aplicación se ejecuta correctamente.
+	\item Cada uno de los permisos que la aplicación necesita para ejecutarse, así como los componentes \textit{hardware} que necesita para su ejecución.
+ 	\item Librerías existentes en el teléfono que necesita vincular (a parte de la del sistema) para acceder a ciertas funcionalidades.
+	\item Otros: nombre de la aplicación, icono, crear permisos personalizados, definir procesos\ldots 
+\end{itemize}
+                         
+\subsection{Otros componentes de interés}
+
+Estos otros componentes se utilizan dentro de los ya descritos o por si mismos y suponen una especialización. No contraen gran peso en la arquitectura de \android{} aunque junto con otros muchos, que no describimos aquí pues no son útiles para la implementación de este proyecto, ayudan a componer la funcionalidad que ofrece la plataforma.
+
+
+\subsubsection{AsyncTask}
+Este componente nos permite realizar trabajos asíncronos como si estuviésemos en la hebra principal, en la llamada hebra de interfaz de usuario o \textit{UI thread}. \android{} no tolera que una aplicación bloquee la hebra principal~\cite{andANR} por un tiempo: cinco segundos en el caso de la respuesta a eventos provenientes de la interfaz de usuario o diez para la ejecución de un \textit{BroadcastReceiver}. Por lo tanto la hebra principal o de interacción con el usuario, no debe ser usada para realizar trabajos si no que deben ser delegadas en otra hebra. Eso es precisamente lo que una tarea \textit{AsyncTask}~\cite{asynctask} realiza. El sistema llama a su método \textit{doInBackground()} cuando arranca la tarea. Éste se ejecuta en un grupo de hebras de segundo plano, la instanciación y finalización de esta hebra es manejada por el sistema. Una vez se ha terminado la ejecución en segundo plano, el sistema llama al método \textit{onPostExecute()} que recoge el resultado arrojado por la ejecución. Este método en cambio, se ejecuta en la hebra principal por lo tanto es un lugar seguro para actualizar la interfaz de usuario evitando comportamientos inesperados~\cite{andSingleThreadedModel} . La \textit{AsyncTask} también proporciona un mecanismo para ir actualizando la interfaz de usuario no sólo al final de la ejecución de la tarea, esto se realiza mediante la llamada a \textit{publishProgress()} desde el método \textit{doInBackground()} y recogido en la hebra principal con el método \textit{onProgressUpdate()}. Este componente puede ser utilizado en cualquier otro componente pudiendo acceder a su ámbito: dentro de un servicio, de una actividad\ldots
+
+
+\subsubsection{ServiceIntent}
+Se trata de una especialización de un servicio, este componente~\cite{intentService} permite crear un servicio iniciado en una hebra independiente a la principal. Una vez que el servicio ha terminado de ejecutar su tarea finaliza por si mismo si no tiene que atender más peticiones destruyendo la hebra utilizada para ello.
+
+Al contrario que una \textit{AsyncTask} este componente se presenta por si solo, la manera de pasarle parámetros es mediante el objeto \textit{Intent}. En cambio no hay una manera estándar para recoger el resultado del trabajo, una manera que podemos utilizar es lanzando un anuncio que sea recogido, si sólo necesitamos informar al componente que lo inició es mejor usar un anuncio local con el objeto \textit{LocalBroadcastManager}, otras maneras son mediante variables usadas como banderas u otros mecanismos de la programación de objetos. Este componente se instancia una sola vez, es decir si lo invocamos varias veces desde distintos puntos o desde el mismo, las peticiones son encoladas y atendidas en orden de llegada. Desde fuera podemos vaciar la cola en cualquier momento y así parar la ejecución, pero una vez una petición está siendo atendida no hay forma de detenerla al menos que implementemos un mecanismo especial para ello.
+
+
+\subsubsection{Handler}
+El objeto \textit{Handler}~\cite{andHandler} nos permite hacer dos cosas: programar la ejecución de objetos \textit{Runnable} o \textit{Message} en un punto del futuro o encolar una acción para que sea realizada en una hebra diferente a la actual~\cite{andSingleThreadedModel}. Cada instancia de un \textit{Handler} se asocia a una hebra que maneja la cola de mensajes, es aquí donde se envían las acciones que posteriormente serán entregadas en orden y procesadas en la hebra principal.
+
+Como hemos visto el \textit{Handler} maneja dos tipos de objetos y prevé métodos para ambos, los \textit{Runnable} van asociados a los métodos \textit{post} y los \textit{Messsage} a los \textit{sendMessage}. Nuestra aplicación de por si, tiene asociada un \textit{Handler} que utiliza para manejar todos los objetos de alto nivel (Actividades, \textit{BroadcastReceiver}\ldots), pero nosotros mismos podemos extender una instancia de la clase \textit{Handler} y proporcionar el método \textit{handleMessage()} para recoger los mensajes enviados desde hebras que creemos en nuestra aplicación y así tener un mecanismo de comunicación con ellas.
+
+
+\subsubsection{Fragments}
+La llegada de las tabletas al mundo móvil deja gran parte de la pantalla sin utilizar ya que el diseño de la interfaz gráfica está diseñada para dispositivos con pantalla más pequeña. En esta tesitura si mantenemos la misma tecnología las aplicaciones tendrían que rediseñar su interfaz dependiendo del dispositivo en el que ejecuten, teniendo que duplicar tanto el código que maneja la interfaz como la funcionalidad enmarañando el modelo de modularidad que brinda la programación de objetos.
+
+Para ello \android{} desarrollo el fragmento~\cite{fragments}. En las versiones anteriores una actividad representaba una ventana de la interfaz de usuario, un fragmento representa una porción de esta interfaz dentro de una actividad. Según las posibilidades de la pantalla podemos combinar distintos fragmentos en una actividad creando una interfaz multipanel dinámica. Este sistema nos da la posibilidad de reutilizar de manera más cómoda cada fragmento en varias actividades. La actividad, por tanto, se convierte en un contenedor de fragmentos que es utilizada para manejarlos y hacer posible que unos se comuniquen con otros, pues el modelo independiza a cada uno de ellos dotándole de un espacio propio y un ciclo de vida propios.
+                                                             
+%-------------------------------------------------------------------
+\section{Interfaz de comunicación: Wi-Fi}
+\label{sec:wifi-analysis}
+%-------------------------------------------------------------------
+
+\wifi{}~\cite{wifi} es nombre comercial, sin significado aparente, para un conjunto de estándares para redes \ac{LAN} inalámbricas basado en las especificaciones de la norma \ac{IEEE} 802.11~\cite{802.11} que engloba los dos primeros niveles del modelo \ac{OSI}: la capa física (PHY) y la de enlace (MAC). \wifi{} realiza las mismas funciones que el estándar \ac{IEEE} 802.3~\cite{802.3} pero de manera inalámbrica.
+
+El espectro utilizado por \wifi{} se localiza en varias zonas del espectro, las más populares son las posicionadas en las bandas de 2.4 GHz (802.11b/g/n) y de 5 GHz (802.11a/h/j/n/ac), pero hay otras implementaciones en otras bandas tal como vemos en~\cite{wifiChannels}. En la figura~\ref{fig:wifiChannels} observamos que tenemos catorce canales de los cuales sólo hay tres que no solapan (por ejemplo el 1, 6 y 11) si tenemos en cuenta un ancho de 22 MHz por canal y una separación de 5 MHz a excepción del 14 que se separa 12 MHz. En la versión \bsq{n} podemos utilizar un ancho de canal de 40Mhz y por tanto todos los canales se solapan. No en todo el mundo está permitido el total uso de estos canales además el uso la aplicación (interior o exterior) también es un factor que restringe su uso, no obstante aunque con singularidades, el uso de los once primeros canales está, aceptado globalmente. 
+
+\figura{Vectorial/analysis/wifiChannels}{width=0.976\textwidth}{fig:wifiChannels}{Asignación frecuencias a los canales de \wifi{} en la banda ISM de 2.4 GHz}
+
+En la banda de 5 GHz existen más restricciones debido a que es una banda relativamente nueva y no en todos los países se ha liberado. A pesar de ser una banda más ancha espectralmente y menos ocupada, lo que ayuda al incremento de la velocidad de transmisión, sus condiciones de propagación son peores~\cite{802.11nPropagation} y requiere de una mayor planificación y mantenimiento lo que hace que sea descartada para ciertas aplicaciones. A parte no es una tecnología muy extendida en el campo de los \sphone{s}, sólo unos cuantos terminales la incorporan como el \bsq{Samsung Galaxy S3} en adelante, el \bsq{HTC One X} o \bsq{BlackBerry Z30}, por citar algunos.
+
+~\\
+Hablar de como va en android
+%-----------------------------------
+\subsection{Viabilidad: Ad-Hoc}
+\label{sec:adhoc-analysis}
+%-----------------------------------
+
+\subsection{Viabilidad: Wi-Fi Direct}
+\label{sec:wifiD-analysis}
+
+%-------------------------------------------------------------------
+\section{Interfaz de comunicación: Bluetooth}
+\label{sec:bt-analysis}
+%-------------------------------------------------------------------
+
+\bt{} sin embargo, es una tecnología \ac{WPAN} de bajo consumo que opera en la banda \ac{ISM} de 2.4 GHz, que recordemos es sin licencia. Creada en 1994 por Ericcson como la alternativa inalámbrica al cable RS-232 se estandarizó como \ac{IEEE} 802.15.1~\cite{802.15.1} pero el estándar ha dejado de mantenerse, en cambio surgió el \bt{} \ac{SIG} que mantiene el desarrollo de la tecnología. Podemos clasificar a los dispositivos según su alcance de transmisión y según la capacidad de canal~\cite{bluetoothWiki}:
+
+\begin{minipage}[t]{.5\textwidth}%
+	\begin{center}%
+	\uwave{Alcance}%
+	\end{center}%
+	\begin{itemize}%
+		\item \textbf{Clase 1}: limitado a una potencia de transmisión máxima de 100 mW (20 dBm) con un alcance medio de $\approx$100 m.%
+		\item \textbf{Clase 2}: limitado a 2.5 mW (4 dBm), la clase más común con un alcance medio de $\approx$10 m.%
+		\item \textbf{Clase 3}: cuenta con una limitación de 1 mW (0 dBm) que le permite alcanzar distancias de $\approx$1 m.%
+	\end{itemize}%
+\end{minipage}%
+\begin{minipage}[t]{.5\textwidth}%
+	\begin{center}%
+ 	\uwave{Capacidad}%
+	\end{center}%
+	\begin{itemize}%
+		\item \textbf{Versión 1.2}: alcanza una tasa de 721 kbps.%
+		\item \textbf{Versión 2.0 + EDR}: hasta 2.1 Mbps con modulación GFSK~\cite{btRegulation}.%
+		\item \textbf{Versión 3.0 + HS}: hasta 24 Mbps con un enlace basado en 802.11 cuyo establecimiento se realiza con los protocolos de \bt{}.%
+		\item \textbf{Versión 4.0}: simplificación de protocolos y baja energía.%
+	\end{itemize}%
+\end{minipage}%
+
+\paragraph{}Esta tecnología utiliza la técnica de espectro ensanchado~\cite{meel99} mediante el salto de frecuencia: \ac{FHSS}, ésta se basa en transmitir la información en pequeños trozos cada vez sobre una portadora distinta en una banda de frecuencias. La pseudoaleatoria secuencia de salto es conocida por el receptor para poder recoger toda la información de manera íntegra. Esto hace que la densidad de potencia espectral disminuya al repartirse sobre una banda muy ancha lo que hace que sea difícil de detectar y que sea robusta frente a interferencias pues nuestra señal se divide en muchas componentes espectrales.
+
+Como se puede ver en la figura~\ref{fig:btChannels} las frecuencias en las que \bt{} puede saltar son 79 portadoras que están espaciadas 1 MHz. Sin embargo algunos países por la asignación que hicieron, no disponen de una banda tan ancha lo que les obliga a restringir el salto a 23 portadoras~\cite{btRegulation}.
+
+\figura{Bitmap/analysis/btChannels}{width=0.976\textwidth}{fig:btChannels}{Asignación canales de salto en \bt{} en la banda ISM de 2.4 GHz extraído de~\cite{btMeasures}}
+
+Un ejemplo que ilustra la baja densidad espectral de potencia es el que podemos ver en~\cite{btVsWifi}. En él se comparan las densidades de una transmisión en \bt{} con una medición de -27.17 dBm y la transmisión utilizando la técnica de \ac{DSSS} en 802.11b sobre el canal 1 que ocupa menos en frecuencia pero cuya potencia alcanza a -6.776 dBm:
+%\clearpage
+\begin{figure}%
+\centering%
+\begin{minipage}{.5\textwidth}%
+  \centering%
+  \includegraphics[width=.97\linewidth]{Imagenes/Bitmap/analysis/bluetooth-spectrum}%
+  \captionof{figure}{Medición de la densidad\\espectral de potencia bajo una señal de\\ búsqueda de otros dispositivos \bt{}}%
+  \label{fig:test1}%
+\end{minipage}%
+\begin{minipage}{.5\textwidth}%
+  \centering%
+  \includegraphics[width=.97\linewidth]{Imagenes/Bitmap/analysis/wifi-spectrum}%
+  \captionof{figure}{Medición de la densidad espectral de potencia de una señal 802.11b ubicada en el canal 1}%
+  \label{fig:test2}%
+\end{minipage}%
+\end{figure}%
+
+
+%\clearpage
+Hablar de como va en android
+
+%-------------------------------------------------------------------
+\section{Interfaz de comunicación: Datos Móviles}
+\label{sec:wifi-analysis}
+%-------------------------------------------------------------------
+
+Debido a que el espectro radioeléctrico es un recurso limitado propiedad de cada país, la discordancia entre asignaciones se evidencia aún más los sistemas telefónicos que empezaron adoptando soluciones particulares fuera de un estándar común.\\
+
+Los primeros datos móviles se cursaron bajo \ac{GPRS}, un añadido a las redes \ac{GSM} que consiste en hacer las mínimas modificaciones en el interfaz radio dedicando alguno de los canales físicos de voz para paquetes y haciendo una asignación dinámica para cuando no hay demanda de voz~\cite{bates2001gprs}. En ese entonces surgieron tres clases de dispositivos: la clase A capaces de utilizar simultáneamente los servicios de \ac{GPRS} o \ac{GSM}; la clase B, la más común, que no es capaz de simultanear en el tiempo ambos servicios pero alterna entre ambos automáticamente y la clase C, cuya cambio de servicio se tiene que realizar de manera asistida. Las velocidades alcanzadas varían desde los pocos kbps hasta los 177.6 kbps con las mejora \ac{EDGE} introducida al final de la segunda generación. Las velocidades son siempre dependientes del tipo de dispositivos involucrados y la población de red. En~\cite{gsmBands} vemos un resumen de las bandas de frecuencias asignadas por los diferentes países.
+
+La siguiente generación de redes llamada \ac{UMTS}~\cite{veguillas2003comunicaciones} introducía la tecnología de acceso múltiple \ac{WCDMA} para lograr tasas de hasta 2 Mbps, al igual que su predecesora mantiene circuitos de voz pero mejora los circuitos de paquetes. Soporta tecnologías como \ac{FDD} y \ac{TDD} y todos los dispositivos son capaces de transmitir voz y datos simultáneamente. Estas redes introducen un control de potencia que intenta mantener la potencia de transmisión al mínimo, para ello intenta decrecer siempre este valor hasta que nota que la degradación en \ac{QOS} no es deseable y eleva el nivel de potencia para comenzar otra vez el ciclo. La evolución de esta red se le otorgó el nombre de \ac{HSPA} y recoge varias versiones todas ellas encaminadas a la convergencia \ac{IP} de las redes, incluyendo modulaciones digitales más eficientes tipo 64 \ac{QAM}, llegando a tasas de 21 Mbps, aunque si se utilizan técnicas avanzadas de antena pueden alcanzarse tasas mayores. Sobre la asignación de frecuencias realizada~\cite{umtsBands} se puede ver en algunos casos una reutilización de bandas de \ac{GSM}, los dispositivos suelen ser compatibles con varias de estas bandas para poder operar en más de un territorio o compañía.
+
+La cuarta generación de redes móviles llamada \ac{LTE}~\cite{penuelas20123gpp} es una red \bsq{todo \ac{IP}}, no hay circuitos de voz, tan sólo dominio de paquetes. Respecto al enlace de subida se utiliza la técnica \ac{OFDMA} y para el de bajada la \ac{SCFDMA} alcanzado tasas de 300 Mbps con \ac{LTEA}~\cite{dahlman20134g}. En~\cite{lteBands} vemos que hay nuevas asignaciones en países en desarrollo y la misma reutilización que en los casos anteriores, de hecho como ya vimos, para el futuro se proyectan reasignaciones en países desarrollados para mejorar y permitir tráfico creciente en estas redes~\cite{refarming700}.\\
+
+El diseño del núcleo de estas redes y en general de \textit{Internet} motivados, en parte por la escasez de direcciones \ac{IP}, hacen que las conexiones entre iguales que no siguen un papel centralizado tal como lo es la figura de un servidor expuesto y accesible desde cualquier punto de la red, presenten problemas. Si queremos comunicar dos \sphone{s} en una red móvil tenemos que hacer frente a varios inconvenientes~\cite{p2pIssues}:
+\begin{itemize}
+	\item Los dispositivos suelen dormir esta interfaz para minimizar el consumo cuando no están transmitiendo o recibiendo, lo que hace difícil que prestemos un servicio en el que haya que estar escuchando para conexiones entrantes.
+	\item El dispositivo no es accesible desde fuera de la red, es decir o bien la operadora por motivos de seguridad bloquea las conexiones entrantes o la \ac{IP} recibida por el dispositivo no es pública y al encontrarse tras un \ac{NAT} no es posible establecer una conexión entrante. Un caso estudiado por el autor es el de Vodafone España, esta operadora no restringe ninguna conexión excepto las de \ac{VOIP}, si el cliente no tiene este servicio suplementario. Sin embargo las tarifas de menor importe asignan direcciones \ac{IP} privadas al dispositivo imposibilitando que actúen como servidores.
+	\item Una dificultad menor se trata que, en caso de recibir una dirección \ac{IP} pública esta no es conocida a priori por los otros dispositivos que quieran establecer una conexión.
+	\item Por el carácter móvil de los dispositivos y la política acerca de qué interfaz de red usar entre las disponibles. Por motivos esencialmente económicos, si la interfaz \wifi{} está disponible el dispositivo tenderá a conectarse mediante este método. Si hemos establecido la conexión con la interfaz de red móvil, al caer dentro de una red \wifi{} seremos ocultados con un \ac{NAT}. Esta situación supone que no podamos seguir estableciendo conexiones si no tenemos control sobre esta red para configurar y hacer accesible al dispositivo desde fuera, a aparte hemos de comunicar al resto de dispositivos la nueva dirección \ac{IP} pública de la red en la que nos encontramos.
+\end{itemize}
+
+
+~\\
+Hablar de como va en android
+
+%-----------------------------------
+\subsection{Viabilidad: cambio tipo red}
+\label{sec:adhoc-analysis}
+%-----------------------------------
+
+%-------------------------------------------------------------------
+\section{Arquitecturas cognitivas: Conectivity Brokerage}
+\label{sec:cb-Analysis}
+%-------------------------------------------------------------------
+
+Mmmmm esta sección, como ya he hablando un poco en el estado del arte no se si mantenerla.
+
+%-------------------------------------------------------------------
+%\section*{\NotasBibliograficas}
+%-------------------------------------------------------------------
+%\TocNotasBibliograficas
+
+%Citamos algo para que aparezca en la bibliografía\ldots
+%\citep{ldesc2e}
+
+%\medskip
+
+%Y también ponemos el acrónimo \ac{CVS} para que no cruja.
+
+%Ten en cuenta que si no quieres acrónimos (o no quieres que te falle la compilación en ``release'' mientras no tengas ninguno) basta con que no definas la constante \verb+\acronimosEnRelease+ (en \texttt{config.tex}).
+
+
+%-------------------------------------------------------------------
+%\section*{\ProximoCapitulo}
+%-------------------------------------------------------------------
+%\TocProximoCapitulo
+
+
+% Variable local para emacs, para  que encuentre el fichero maestro de
+% compilación y funcionen mejor algunas teclas rápidas de AucTeX
+%%%
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "../Tesis.tex"
+%%% End:
