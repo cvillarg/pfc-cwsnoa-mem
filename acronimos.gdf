@@ -22,7 +22,7 @@
 
 @entry{IEEE, , \emph{Institute of Electrical and Electronics Engineers}}
 
-@entry{ITU, , \emph{International Telecommunication Union}} 
+@entry{ITU, , \emph{International Telecommunication Union}}
 
 @entry{QOS,QoS,\emph{Quality of Service}}
 
@@ -31,6 +31,10 @@
 @entry{CWSN, ,\emph{Cognitive Wireless Sensor Network}}
 
 @entry{WPAN, , \emph{Wireless Personal Area Network}}
+
+@entry{LAN, , \emph{Local Area Network}}
+
+@entry{WAN, , \emph{Wide Area Network}}
 
 @entry{CR, , \emph{Cognitive Radio}}
 
@@ -104,7 +108,7 @@
 
 @entry{DSA, , \emph{Dinamic Spectrum Access}}
 
-@entry{AWD, , \emph{Advanced Wireless Dynamics}} 
+@entry{AWD, , \emph{Advanced Wireless Dynamics}}
 
 @entry{PIC, , \emph{Peripheral Interface Controller}}
 
@@ -262,13 +266,13 @@
 
 @entry{SMA, ,\emph{SubMiniature version A}}
 
-@entry{UMTS, ,\emph{Universal Mobile Telecommunications System}} 
+@entry{UMTS, ,\emph{Universal Mobile Telecommunications System}}
 
 @entry{LTE, ,\emph{Long Term Evolution}}
 
 @entry{LTEA, LTE-A ,\emph{LTE Advanced}}
 
-@entry{VoLTE, ,\emph{Voice over LTE}}
+@entry{VOLTE, VoLTE,\emph{Voice over LTE}}
 
 @entry{UUID, ,\emph{Universally unique identifier}}
 
@@ -298,7 +302,7 @@
 
 @entry{IT, ,\emph{Information technology}}
 
-@entry{ISP, ,\emph{Internet Service Provider}
+@entry{ISP, ,\emph{Internet Service Provider}}
 
 @entry{WAP, ,\emph{Wireless Application Protocol}}
 
@@ -326,9 +330,11 @@
 
 @entry{AOSP, ,\emph{Android Open Source Project}}
 
-@entry{GNU, ,\emph{GNU's Not Unix}}
+@entry{GNU, ,\emph{GNU is Not Unix}}
 
 @entry{D2D, ,\emph{Device-to-device}}
+
+@entry{P2P, ,\emph{Peer-to-Peer}}
 
 @entry{DSA, ,\emph{Dynamic Spectrum Access}}
 
@@ -357,3 +363,7 @@
 @entry{NAT, ,\emph{Network Address Translation}}
 
 @entry{VOIP, VoIP,\emph{Voice over IP}}
+
+@entry{RFCOMM, ,\emph{Radio-frequency communication}}
+
+@entry{PDA, ,\emph{Personal Digital Assistant}}

@@ -49,7 +49,7 @@
 \def\argTwo{\textit{arg2}}
 \def\obj{\textit{obj}}
 \def\replyTo{\textit{replyTo}}
-\def\workaround{solucion alternativa}
+\def\workaround{soluci\'{o}n alternativa}
 \def\workaroundCaption{\workaround{} para el}
 \def\workaroundCaptionFem{\workaround{} para la}
 
@@ -61,7 +61,7 @@
 \item [Lista de nodos] \ListaNodosDescription{}
 }
 \def\ListaNodosDescription{
-Un conjunto de dos \textit{arrays} ligados, uno con los identificadores de los nodos y otro con los nombres de \'{e}stos. De tal forma que el par (identificador, nombre) comparta la misma posici\'{o}n en ambos \textit{arrays}. Se recuperan con las claves ``nodeIdsList'' y ``nodeNamesList'' respectivamente.
+un conjunto de dos \textit{arrays} ligados, uno con los identificadores de los nodos y otro con los nombres de \'{e}stos. De tal forma que el par (identificador, nombre) comparta la misma posici\'{o}n en ambos \textit{arrays}. Se recuperan con las claves ``\texttt{nodeIdsList}'' y ``\texttt{nodeNamesList}'' respectivamente.
 }
 
 %---
@@ -115,7 +115,7 @@ Un conjunto de dos \textit{arrays} ligados, uno con los identificadores de los n
 
 \providecommand{\messageTableExtraControllerSpecified}[3]{%
 	\noalign{\vskip 0.17cm} %fails with arydshln packet
-	\multicolumn{5}{l}{Extras, controlador: {#1}}\\%
+	\multicolumn{5}{l}{\textit{Extras}, controlador: {#1}}\\%
 	\hline%
 	\textit{key} & \multicolumn{4}{l|}{\textit{value}}\\%
 	\hline
@@ -143,6 +143,21 @@ Un conjunto de dos \textit{arrays} ligados, uno con los identificadores de los n
 	\begin{center}%
 		\begin{tabular}{c}%
 			\textbf{#2, ver figura~\ref{fig:messageProto}}\\ \hline%
+		\end{tabular}%
+	\end{center}%
+%\begin{center}
+%Texto encima línea\\
+%\noindent\rule{8cm}{0.4pt}
+%\line(1,0){450}
+%\end{center}
+\begin{description}%
+}
+
+\providecommand{\protobufTableInitLong}[2][h]{%
+\begin{table}[#1]%
+	\begin{center}%
+		\begin{tabular}{c}%
+			\textbf{#2}\\ \hline%
 		\end{tabular}%
 	\end{center}%
 %\begin{center}
@@ -231,7 +246,7 @@ Un conjunto de dos \textit{arrays} ligados, uno con los identificadores de los n
 \begin{center}%
 	\begin{tabular}{c r @{\hskip 7pt} l}%
 		\hline%
-		\multicolumn{3}{|c|}{Tabla: #1}\\ \hline% 
+		\multicolumn{3}{|c|}{Tabla: \texttt{#1}}\\ \hline% 
 		\noalign{\vskip 6pt}%
 }%
 
