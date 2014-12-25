@@ -213,7 +213,7 @@ El \var{Gestor de Estados} gracias a la referencia que tiene del \textit{Handler
 
 \messageTableInit{\wifiToServ}{1 =\\ \scriptsize{MESSAGE\_STATE\_\\AND\_EVENT\_CHANGE}}{Estado de la interfaz}{Evento}{\nc{}}{\nc{}}
 \messageTableExtraArbitraryText{Si el evento no es \Scst{EVENT\_NO\_DEVICES\_CHANGES} se incluyen estos campos \textit{extra}:}{device\_ip\_address}{Una \String{} con la dirección IP del nodo que ha producido el evento}
-\messageTableEnd{Mensaje del gestor de estados en \wifi{}}{stateManagerWifiMessage}
+\messageTableEnd{Mensaje perteneciente a la interfaz Módulo cognitivo - Controlador, gestor de estados en \wifi{}}{stateManagerWifiMessage}
 
 
 \subsection{Controlador interfaz Bluetooth}
@@ -234,7 +234,7 @@ De igual similitud el servicio debe seguir los mismos pasos para configurar este
 \messageTableInit{\btToServ}{1 =\\ \scriptsize{MESSAGE\_STATE\_\\AND\_EVENT\_CHANGE}}{Estado de la interfaz}{Evento}{Un \textit{array} con las direcciones MAC de los nodos que forman la red}{\nc{}}
 \messageTableExtraArbitraryText{Si el evento no es \Scst{EVENT\_NO\_DEVICES\_CHANGES} se incluyen estos campos \textit{extra}:}{device\_name}{Una \String{} con el nombre proporcionado por los servicios de Bluetooth de \android{} del nodo que ha producido el evento (no usado)}
 \messageTableExtraAddrow{device\_address}{Una \String{} con la dirección MAC de Bluetooth del nodo que nos envía los datos}
-\messageTableEnd{Mensaje del gestor de estados en \bt{}}{stateManagerBtMessage}
+\messageTableEnd{Mensaje perteneciente a la interfaz Módulo cognitivo - Controlador, gestor de estados en \bt{}}{stateManagerBtMessage}
 Al igual que los campos \textit{extra}, el campo \textit{obj} no viene informado si se trata del evento \Scst{EVENT\_NO\_DEVICES\_CHANGES}. De todas formas la información que proporciona este campo no es usada por el servicio debido a que la misma información y más completa se encuentra en el \var{Repositorio}. Lo mismo ocurre con el campo \textit{extra} ``device\_name''. El controlador suministra toda la información que posee que será atendida o no en el \var{Módulo cognitivo}.\\
  
 
@@ -272,12 +272,12 @@ Este permiso informa al usuario final que usa la aplicación sobre las intervenci
 El primer mensaje usado en la negociación tiene la siguiente estructura, no tiene ninguna información adicional más que el \textit{Messeger} de la aplicación para que el \var{Gestor del Aplicaciones} pueda registrarla de forma correcta. Esta información la ubicamos en el campo del mensaje \replyTo{}:
 
 \messageTableInit{\appToServ}{1 =\\ \footnotesize{REGISTER\_CLIENT}}{\nc{}}{\nc{}}{\nc{}}{\messApp{}}
-\messageTableEnd{Mensaje registro cliente}{registerClientMessage}
+\messageTableEnd{Mensaje \msgAPIcaption{} registro cliente}{registerClientMessage}
 
 El segundo mensaje utilizado en la negociación aporta información (ver tabla~\ref{tab:infoHandshaking}) sobre la aplicación. Ésta se codifica de la siguiente manera:
 \messageTableInit{\appToServ}{3 =\\ \scriptsize{REGISTER\_EXCHANGE}}{Papel del nodo}{\nc}{\textit{null}}{\messApp{}}
 \messageTableExtra{appCode}{Una \String{} con el ``código de aplicación''}
-\messageTableEnd{Mensaje entrega parámetros de aplicación}{registerExchangeMessage}
+\messageTableEnd{Mensaje \msgAPIcaption{} entrega parámetros de aplicación}{registerExchangeMessage}
 \begin{itemize}
 	\item \textbf{Papel del nodo}, como un número \integer{}. El valor \bsq{0} indica que la aplicación usuaria es un usuario secundario y el valor \bsq{1} para indicar que se trata de un usuario primario. Este campo lo incluimos en el campo \argOne{} del mensaje.
 	\item \textbf{Código de la aplicación}, como una \String{}. Lo adjuntamos al mensaje como un campo \textit{extra} con la clave ``\texttt{appCode}''.
@@ -294,7 +294,7 @@ Respecto al tercer mensaje que cierra la negociación, la forma de identificar la
 \messageTableExtraAddrow{periodTask}{Un \double{} que representa el periodo tarea cognitiva en segundos}
 \messageTableExtraAddrow{nodeName}{Una \String{} con el nombre del nodo en la red}
 \messageTableExtraAddrow{errorSetupInterface}{Un valor booleano con el resultado de la configuración de la interfaz}
-\messageTableEnd{Mensaje finalización de la negociación: CWSN no establecida}{endHandshakingNotCWSNMessage}
+\messageTableEnd{Mensaje \msgAPIcaption{} finalización de la negociación: CWSN no establecida}{endHandshakingNotCWSNMessage}
 
 La forma de codificar los campos que no aparecen en la tabla~\ref{tab:endHandshakingNotCWSNMessage} es:
 \begin{itemize}
@@ -335,7 +335,7 @@ La forma de codificar los campos que no aparecen en la tabla~\ref{tab:endHandsha
 \messageTableExtraAddrow{appCode}{Una \String{} que identifica al código de la aplicación}
 \messageTableExtraAddrow{nodeIdList}{\textit{Array} de \integer{s} con los identificadores de los nodos}
 \messageTableExtraAddrow{nodeNameList}{\textit{Array} de \String{s} con los nombres de los nodos}
-\messageTableEnd{Mensaje finalización de la negociación: CWSN establecida}{endHandshakingInCWSNMessage}
+\messageTableEnd{Mensaje \msgAPIcaption{} finalización de la negociación: CWSN establecida}{endHandshakingInCWSNMessage}
 La codificación empleada en los campos que difieren en este mensaje es:
 \begin{itemize}
 	\item \textbf{Código de aplicación}, aunque está explicado en la tabla~\ref{tab:endHandshakingInCWSNMessage}, este campo no aparecía en el mensaje anterior. Este campo codificado como una \String{}, lo recuperamos con la clave ``\texttt{appCode}''.
@@ -353,7 +353,7 @@ La información sobre el nodo al que queremos conectarnos la incluimos en el camp
 \end{itemize}
 
 \messageTableInit{\appToServ}{12 = \footnotesize{CONNECT\_TO\\\_VIA\_BT}}{\nc{}}{\nc{}}{nodo al que conectarse}{\nc{}}
-\messageTableEnd{Mensaje para conectarse manualmente a un nodo en \bt{} }{connectToBT}
+\messageTableEnd{Mensaje \msgAPIcaption{}, conexión manual a un nodo en \bt{}}{connectToBT}
 
 %----------
 \subsection{Recibir datos de otros nodos}
@@ -361,7 +361,7 @@ El contenido del mensaje se encuentra en el campo \obj{} del mensaje recibido. P
 
 \messageTableInit{\servToApp}{8 =\\ \scriptsize{INCOMING\_CONTENT}}{\nc{}}{\nc{}}{\textit{payload}}{\nc{}}
 \messageTableExtra{device\_id}{Un \integer{} que identifica al nodo que ha enviado el mensaje}
-\messageTableEnd{Mensaje datos recibidos}{incomingContent}
+\messageTableEnd{Mensaje \msgAPIcaption{} datos recibidos}{incomingContent}
 
 %----------
 \subsection{Enviar mensajes de datos a otros nodos}
@@ -369,7 +369,7 @@ La \String{} que queremos enviar la alojamos en el campo \obj{} del mensaje. La 
 
 \messageTableInit{\appToServ}{4 =\\ \scriptsize{OUTGOING\_CONTENT}}{\nc{}}{\nc{}}{\textit{payload}}{\messApp{}}
 \messageTableExtra{addressedNodes}{Una lista de \integer{}s con los identificadores de los nodos destinatarios del mensaje}
-\messageTableEnd{Mensaje para el envío de datos}{outgoingContent}
+\messageTableEnd{Mensaje \msgAPIcaption{} envío de datos}{outgoingContent}
 
 %----------
 \subsection{Confirmación entrega de datos a otros nodos}
@@ -377,7 +377,7 @@ En el mensaje de confirmación alojamos en el campo \argOne{} el número de mensaj
 \messageTableInit{\servToApp}{6 =\\ \scriptsize{OUTGOING\_CONTENT \_RESULT}}{número mensajes escritos OK}{número mensajes escritos NOK}{\textit{payload}}{\nc{}}
 \messageTableExtra{IdsNotDelivered}{Un \textit{array} de \integer{s} con los identificadores de los nodos a los cuales no les ha llegado el mensaje}
 \messageTableExtraAddrow{NamesNotDelivered}{Un \textit{array} de \String{s} con los nombres de los nodos a los cuales no les ha llegado el mensaje}
-\messageTableEnd{Mensaje resultado envío de datos presentado a la aplicación}{outgoingContentResultApp}
+\messageTableEnd{Mensaje \msgAPIcaption{} resultado de envío de datos presentado a la aplicación}{outgoingContentResultApp}
 
 %----------
 \subsection{Confirmación entrega de datos encolados}
@@ -388,7 +388,7 @@ Además de los subconjuntos de la lista de nodos que se adjuntan como campos \tex
 \messageTableExtraAddrow{NamesTriedToSend}{Un \textit{array} de \String{s} con los nombres de los nodos siguen en red}
 \messageTableExtraAddrow{IdsNotDelivered}{Un \textit{array} de \integer{s} con los identificadores de los nodos que no hemos enviado el mensaje por no encontrarse en la red}
 \messageTableExtraAddrow{NamesNotDelivered}{Un \textit{array} de \String{s} con los nombres de los nodos que no hemos enviado el mensaje por no encontrarse en la red}
-\messageTableEnd{Mensaje informe previo a la salida de mensaje encolado}{queuedMessage}
+\messageTableEnd{Mensaje \msgAPIcaption{} informe previo a la salida de un mensaje encolado}{queuedMessage}
 
 %----------
 \subsection{Información sobre el servicio cognitivo}
@@ -420,7 +420,7 @@ La estructura de la tabla~\ref{tab:serviceInformation} aglutina toda la informac
 \messageTableExtraAddrow{event}{Un \integer{} con el evento producido en la red}
 \messageTableExtraAddrow{nodeIdList}{Un \textit{array} de \integer{s} con los identificadores de los nodos que forman la red en estos momentos}
 \messageTableExtraAddrow{nodeNameList}{Un \textit{array} de \String{} con los nombres de los nodos que forman la población actual}
-\messageTableEnd{Mensaje información evento/estado por parte del servicio}{serviceInformation}
+\messageTableEnd{Mensaje \msgAPIcaption{} información evento/estado por parte del servicio}{serviceInformation}
 
 
 %----------
@@ -435,7 +435,7 @@ Los diferentes códigos de error tienen la siguiente codificación en números \int
 	\item\Scst{CODE\_ERROR\_ILLEGAL\_PAYLOAD}
 \end{enumerate}
 \messageTableInit{\servToApp}{10 =\\ \scriptsize{ERROR\_MESSAGE}}{código de error}{\nc{}}{Descripción del error}{\nc{}}
-\messageTableEnd{Mensaje de error recibido del servicio}{errorMessage}
+\messageTableEnd{Mensaje \msgAPIcaption{} comunicación de error en el servicio}{errorMessage}
 
 %----------
 \subsection{Actualización de parámetros de aplicación}
@@ -447,7 +447,7 @@ Al ser éste un subproceso sacado de la negociación desde el punto de vista de la
 El mensaje que permite al \var{Gestor de Aplicaciones} borrarnos de su base de clientes es el que sigue:
 
 \messageTableInit{\appToServ}{2 =\\ \footnotesize{UNREGISTER \_CLIENT}}{\nc{}}{\nc{}}{\nc{}}{\messApp{}}
-\messageTableEnd{Mensaje desregistro cliente}{unregisterClientMenssage}
+\messageTableEnd{Mensaje \msgAPIcaption{} desregistro cliente}{unregisterClientMenssage}
 
 Para liberar en totalidad la atadura al servicio, se debe realizar la llamada al método \textit{unbindService()}, pasándole como parámetro el objeto de conexión \textit{ServiceConnection}. Una vez liberarda, \android{} nos avisa en la instancia del objeto usado en la conexión.
 
@@ -470,7 +470,7 @@ Como vemos este campo viene informado con un valor booleano a \true{}, esto es l
 El mensaje%(ver tabla~\ref{tab:wa_switch})
 que permite forzar un cambio de contexto es el que sigue, no necesita ninguna información adicional porque se deduce del contexto: 
 \messageTableInit{\appToServ}{22=\footnotesize{WORKAROUND\_\\ SWITCH}}{\nc{}}{\nc{}}{\nc{}}{\messApp{}}
-\messageTableEnd{Mensaje \workaroundCaption{} cambio de interfaz de comunicación}{wa_switch}
+\messageTableEnd{Mensaje \workaround{} \msgAPIcaption{} cambio de interfaz de comunicación}{wa_switch}
 
 %----------
 \subsubsection{Almacenar y liberar datos encolados}
@@ -478,30 +478,30 @@ El mensaje que permite encolar un mensaje de datos directamente saltándonos el f
 
 \messageTableInit{\appToServ}{23=\scriptsize{WORKAROUND\_ PENDINGMESSAGE \_INJECTION}}{\nc{}}{\nc{}}{\textit{payload}}{\messApp{}}
 \messageTableExtra{addressedNodes}{Una lista de \integer{}s con los identificadores de los nodos destinatarios del mensaje}
-\messageTableEnd{Mensaje \workaroundCaption{} encolamiento de mensaje de datos}{wa_queue}
+\messageTableEnd{Mensaje \workaround{} \msgAPIcaption{} encolamiento de mensaje de datos}{wa_queue}
 
 Para expresar el deseo de vaciar la cola de mensajes enviamos al servicio el mensaje formateado en la tabla~\ref{tab:wa_disposalqueue} que no necesita de ninguna información adicional para disparar el proceso.
 
 \messageTableInit{\appToServ}{24=\scriptsize{WORKAROUND\_ PENDINGMESSAGE \_DISPOSAL}}{\nc{}}{\nc{}}{\nc{}}{\messApp{}}
-\messageTableEnd{Mensaje \workaroundCaption{} vaciado cola de mensajes}{wa_disposalqueue}
+\messageTableEnd{Mensaje \workaround{} \msgAPIcaption{} vaciado cola de mensajes}{wa_disposalqueue}
 
 %----------
 \subsubsection{Mensaje de petición y respuesta}
 La estructura del mensaje de la tabla~\ref{tab:wa_reply} permite a un nodo normal guardar la respuesta que suministrará en caso de ser requerida.
 
 \messageTableInit[!h]{\appToServ}{20 = \footnotesize{WORKAROUND\\ \_WHAT\_TO\_REPLY}}{\nc{}}{\nc{}}{\textit{reply}}{\messApp{}}
-\messageTableEnd{Mensaje \workaroundCaption{} salvado de respuesta}{wa_reply}
+\messageTableEnd{Mensaje \workaround{} \msgAPIcaption{} modificación de respuesta a enviar}{wa_reply}
 
 En el campo \obj{} codificamos la respuesta como una \String{}.\\
 
 Sin embargo la aplicación que esté registrada sobre un nodo coordinador, siguiendo la estructura plasmada en la tabla~\ref{tab:wa_ask} puede requerir esta información a un nodo normal.
 \messageTableInit{\appToServ}{21 = \footnotesize{WORKAROUND\\ \_ASK\_RESPONSE}}{\nc{}}{\nc{}}{Identificador nodo}{\messApp{}}
-\messageTableEnd{Mensaje \workaroundCaptionFem{} petición de respuesta}{wa_ask}
+\messageTableEnd{Mensaje \workaround{} \msgAPIcaption{} petición de respuesta}{wa_ask}
 
 Cuando el servicio ha conseguido la respuesta envía a todas las aplicaciones pues no tiene forma de deducir por el contexto al ser procesos no correlados, aunque aquí lo estamos viendo como uno solo. La respuesta viene codificada en el campo \obj{} del mensaje~\ref{tab:wa_ask_response}.
 
 \messageTableInit[!h]{\servToApps}{21 = \footnotesize{WORKAROUND\\ \_ASK\_RESPONSE}}{\nc{}}{\nc{}}{Respuesta del nodo preguntado}{\messApp{}}
-\messageTableEnd{Mensaje \workaroundCaptionFem{} respuesta obtenida}{wa_ask_response}
+\messageTableEnd{Mensaje \workaround{} \msgAPIcaption{} respuesta obtenida}{wa_ask_response}
 
 
 %-------------------
@@ -650,7 +650,7 @@ Este mensaje no se presenta nunca sólo, si no que está encapsulado en un mensaje
 					%\end{description}				
 			\end{description}
 	\end{description}
-\protobufTableEnd{Campos del mensaje enviado al nuevo nodo con información del resto de dispositivos en la red}{populationToNewNode}
+\protobufTableEnd{Campos del mensaje \msgNETcaption{} informando del resto de dispositivos al nuevo nodo}{populationToNewNode}
 
 
 \protobufTableInit{Estructura mensaje nuevo nodo en la red}
@@ -667,7 +667,7 @@ Este mensaje no se presenta nunca sólo, si no que está encapsulado en un mensaje
 					%\end{description}				
 			\end{description}
 	\end{description}
-\protobufTableEnd{Campos del mensaje nuevo nodo en la red informado al resto de nodos}{newNode}
+\protobufTableEnd{Campos del mensaje \msgNETcaption{} informando del nuevo nodo al resto de dispositivos}{newNode}
 
 \clearpage
 Como vimos en diseño, la interfaz condiciona a quien debe dar el primer paso, esto se debe a restricciones de implementación de las diferentes interfaces de comunicación. 
@@ -704,7 +704,7 @@ La estructura de los paquetes \textit{``HelloPacket''} puede verse en la figura~
 		%\item[\fcolorbox{blue}{red}{Dirección MAC}]\hfill\\[3pt] Una \String{} cuyo valor es la dirección MAC de \bt{}, clave que identifica al nodo de manera unívoca
 		\protobufItem{\texttt{macBT}}{Una \String{} cuyo valor es la dirección MAC de \bt{}, clave que identifica al nodo de manera unívoca.}
 	\end{description}
-\protobufTableEnd{Campos del paquete ``HelloPacket''}{helloPacket}
+\protobufTableEnd{Campos del paquete \msgNETcaption{} ``HelloPacket''}{helloPacket}
 
 \subsubsection{Registro bajo Bluetooth}
 \begin{codeInvolved}
@@ -737,7 +737,7 @@ El envío, en el caso de \wifi{} del paquete \textit{``ByePacket''}, se realiza b
 	\begin{description}
 		\protobufItem{\texttt{macBT}}{Una \String{} cuyo valor es la dirección MAC de \bt{}, clave que identifica al nodo de manera unívoca.}
 	\end{description}
-\protobufTableEnd{Campos del paquete ``ByePacket''}{byePacket}
+\protobufTableEnd{Campos del paquete \msgNETcaption{} ``ByePacket''}{byePacket}
 
 Respecto al mensaje de señalización que envía el nodo coordinador al resto de nodos cuando un dispositivo sale de la red, se detallan en la figura~\ref{itm:lostNode} los campos a incluir en el mensaje.
 
@@ -755,7 +755,7 @@ Respecto al mensaje de señalización que envía el nodo coordinador al resto de no
 					%\end{description}				
 			\end{description}
 	\end{description}
-\protobufTableEnd{Campos del mensaje pérdida de un nodo}{lostNode}
+\protobufTableEnd{Campos del mensaje \msgNETcaption{} pérdida de un nodo}{lostNode}
 
 \newpage%ajustar titulo para la nueva página
 %------------------------------
@@ -791,7 +791,7 @@ Se necesitan dos tipos de mensajes de red para implementar una actualización de 
 			\protobufItem{\texttt{type}}{Una \String{} cuyos valores pueden ser: \bsq{n} normal o \bsq{c} coordinador.}			
 		\end{description}
 	\end{description}
-\protobufTableEnd{Campos del mensaje información de parámetros al coordinador}{updateToCoordinator}
+\protobufTableEnd{Campos del mensaje \msgNETcaption{} información de parámetros al coordinador}{updateToCoordinator}
 
 \protobufTableInitLong{Estructura mensaje informe de la actualización de parámetros de un nodo}
 	\protobufItem{\texttt{type}}{Valor \bsq{SIGNALING} del enumerado ``MessageType''.}
@@ -808,7 +808,7 @@ Se necesitan dos tipos de mensajes de red para implementar una actualización de 
 					%\end{description}				
 			\end{description}
 	\end{description}
-\protobufTableEnd{Campos del mensaje informe de actualización de parámetros de un nodo hacia el resto, estructura siguiendo la figura~\ref{fig:messageProto}}{updateParams}
+\protobufTableEnd{Campos del mensaje \msgNETcaption{} informe de actualización de parámetros de un nodo enviado por el coordinador hacia el resto, estructura siguiendo la figura~\ref{fig:messageProto}}{updateParams}
 
 
 %------------------------------
@@ -837,7 +837,7 @@ Ambos controladores entregan los datos leídos al servicio (ver tabla~\ref{tab:me
 \messageTableExtraControllerSpecified{\wifi{}}{device\_ip\_address}{Una \String{} con la dirección IP del nodo que nos envía los datos}
 \messageTableExtraControllerSpecified{\bt{}}{device\_name}{Una \String{} con el nombre proporcionado por los servicios de \bt{} de \android{} (no es relevante)}
 \messageTableExtraAddrow{device\_address}{Una \String{} con la dirección MAC de \bt{} del nodo que nos envía los datos}
-\messageTableEnd{Mensaje recibido por la red entregado por ambos controladores al servicio}{messageReadController}
+\messageTableEnd{Mensaje perteneciente a la interfaz Módulo cognitivo - Controlador en sentido ascendente tras  recibir un mensaje de red}{messageReadController}
 
 \newpage%para ajustar el título a una nueva página.
 \subsubsection{Envío de mensajes}
@@ -860,7 +860,7 @@ El envío comienza con el encolamiento del mensaje si éste ha pasado los mecanism
 	\begin{description}
 		\protobufItem{\texttt{payload}}{Una \String{} con el contenido del mensaje.} 
 	\end{description}
-\protobufTableEnd{Campos del mensaje de datos}{dataMessage}
+\protobufTableEnd{Campos del mensaje \msgNETcaption{} datos}{dataMessage}
 
 El modelo de cola utilizada para encolar los mensajes de datos es \ac{FIFO}. Se implementa con un \textit{LinkedHashMap} en la clase \class[util]{DataMessageQueue}. La razón de no usar un objeto \textit{Queue} puro es que necesitamos acceder a cualquier elemento en todo momento debido a la heterogeneidad de estados en que pueden encontrarse los elementos de ésta.
 
@@ -912,7 +912,7 @@ Una vez este mensaje ha sido escrito con la ayuda del método \textit{send()} del
 \messageTableInit{\controllerToServ}{3 =\\ \scriptsize{MESSAGE\_WRITE}}{número mensajes escritos OK}{número mensajes escritos NOK}{\textit{bytes} enviados a través de la red}{\nc{}}
 \messageTableExtra{requester}{Una \String{} que representa el \textit{messenger} de la aplicación que origina el mensaje}
 \messageTableExtraAddrow{addressNotDelivered}{Una lista de \String{} con las direcciones \ac{MAC} de \bt{} o direcciones IP de los nodos a los cuales el envío del mensaje ha resultado fallido, según el controlador que nos envíe el mensaje}
-\messageTableEnd{Mensaje resultado envío de datos desde el controlador al servicio}{messageWriteController}
+\messageTableEnd{Mensaje perteneciente a la interfaz Módulo cognitivo - controlador en sentido ascendente, resultado de envío de datos}{messageWriteController}
 
 %~\\
 Los métodos \textit{write()} de ambos controladores vistos bajo el modelo de caja negra son idénticos (salvo el parámetro lista de direcciones que toman como parámetro, pero para ello tenemos los métodos uniformadores que hacen que el trato desde el servicio a cada una de los controladores sea el mismo). Sin embargo la implementación difiere ya que no pueden producir los mismos resultados de la misma manera debido a que en \bt{} la conexión está establecida y en \wifi{} hay que establecerla.\\
@@ -975,7 +975,7 @@ El mensaje que devolvemos de vuelta al nodo originario confirmando la entrega de
 				\protobufItem{\texttt{undeliveredNodes}}{Una lista de \String{} con las direcciones MAC de \bt{} de los nodos a los cuales no se ha podido entregar el mensaje.}
 			\end{description}
 	\end{description}
-\protobufTableEnd{Campos del mensaje ACK}{ackMessage}
+\protobufTableEnd{Campos del mensaje \msgNETcaption{} ACK}{ackMessage}
 
 %------------------------------
 \subsection{Sensado del entorno compartido y política cognitiva}
@@ -994,7 +994,7 @@ En la tabla~\ref{itm:scanMessage} se ilustra el formato del mensaje de red para 
 				\protobufItem{\texttt{throughput}}{Un \double{} con el resultado promedio móvil del intervalo medido en segundos entre la llegada de mensajes de datos por parte de las aplicaciones.}
 			\end{description}
 	\end{description}
-\protobufTableEnd{Campos del mensaje SCAN}{scanMessage}
+\protobufTableEnd{Campos del mensaje \msgNETcaption{} SCAN}{scanMessage}
 
 El envío de este mensaje se consigue gracias a la tarea periódica del \var{Optimizador} o a los mecanismos que tiene el módulo de \var{Sensado} para detectar situaciones de peligro.
 %\newpage %para ajustar el título a una nueva página.
@@ -1065,7 +1065,7 @@ El utilizado para que el nodo coordinador avise de un cambio de contexto hacia \
 				\protobufItem{\texttt{ipCoordinator}}{Una \String{} con la dirección IP del nodo coordinador.}
 			\end{description}
 	\end{description}
-\protobufTableEnd{Campos del mensaje SWITCH hacia \wifi{}}{switchToWifi}
+\protobufTableEnd{Campos del mensaje \msgNETcaption{} SWITCH hacia \wifi{}}{switchToWifi}
 
 La estructura de mensaje que vemos en la tabla~\ref{itm:okSwitch} sirve para que el coordinador ponga en conocimiento del nodo normal que ha recibido su petición de entrada en la red.
 
@@ -1075,7 +1075,7 @@ La estructura de mensaje que vemos en la tabla~\ref{itm:okSwitch} sirve para que
 	\begin{description}
 		\protobufItem{\texttt{what}}{Valor \bsq{SWITCH} del enumerado ``AskType''.}
 	\end{description}
-\protobufTableEnd{Campos del mensaje de confirmación entrada (\wifi{}) / interfaz lista (\bt{})}{okSwitch}
+\protobufTableEnd{Campos del mensaje \msgNETcaption{} confirmación entrada (\wifi{}) / interfaz lista (\bt{})}{okSwitch}
 
 \newpage %para ajustar el título a una nueva página.
 \subsubsection{Cambio de contexto con interfaz destino Bluetooth}
@@ -1099,7 +1099,7 @@ La disposición del mensaje de señalización enviado para iniciar el cambio de con
 				\protobufItem{\texttt{toInterface}}{Valor \bsq{TO\_BT} del enumerado ``ToInterface''.}   
 			\end{description}
 	\end{description}
-\protobufTableEnd{Campos del mensaje SWITCH hacia \bt{}}{switchToBT}
+\protobufTableEnd{Campos del mensaje \msgNETcaption{} SWITCH hacia \bt{}}{switchToBT}
 
 Para indicar que la interfaz \bt{} está lista para recibir conexiones entrantes reutilizamos el mensaje (ver tabla~\ref{itm:okSwitch}) visto en \wifi{} para indicar que queremos entrar en la red. Es legítimo usar el mismo pues ambas situaciones reflejan lo mismo: que el nodo normal esta listo en la nueva interfaz en la que desemboca el cambio de contexto.
 
@@ -1121,7 +1121,7 @@ Para indicar que la interfaz \bt{} está lista para recibir conexiones entrantes 
 					\end{description}				
 			\end{description}
 	\end{description}
-\protobufTableEnd{Campos del mensaje finalización cambio de contexto}{endSwitch}
+\protobufTableEnd{Campos del mensaje \msgNETcaption{} finalización cambio de contexto}{endSwitch}
 
 Los \textit{timeouts} utilizados para evitar bloqueos mutuos se implementan siguiendo el esquema de programación basado en \textit{Runnables} siguiendo las directrices de la interfaz \class[java.util.concurrent]{ScheduledFuture<V>} y ejecutados en hebras gestionadas por \class[java\allowbreak.util\allowbreak.concurrent]{Executor}
 
@@ -1162,7 +1162,7 @@ En la figura vemos los componentes que dan sentido a las tres secciones descrita
 	\begin{description}
 		\protobufItem{\texttt{what}}{Valor \bsq{TEST} del enumerado ``AskType''.}
 	\end{description}
-\protobufTableEnd{Campos del mensaje petición de información (\textit{test})}{wa_ask_protoMessage}
+\protobufTableEnd{Campos del mensaje \msgNETcaption{} petición de información (\textit{test})}{wa_ask_protoMessage}
 
 Al recibir esta petición un nodo normal genera el mensaje % (ver tabla~\ref{itm:wa_ask_reply_protoMessage})
 que envía por la red con la respuesta:
@@ -1177,7 +1177,7 @@ que envía por la red con la respuesta:
 				\protobufItem{\texttt{responseField}}{Una \String{} con la respuesta requerida.}				
 			\end{description}
 	\end{description}
-\protobufTableEnd{Campos del mensaje entrega de información (\textit{test})}{wa_ask_reply_protoMessage}
+\protobufTableEnd{Campos del mensaje \msgNETcaption{} entrega de información (\textit{test})}{wa_ask_reply_protoMessage}
 
 
  En este fragmento también tenemos la opción del cambio de contexto manual.   

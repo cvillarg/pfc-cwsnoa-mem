@@ -542,7 +542,7 @@ La petición de atadura junto al envío de estos mensajes arrancarán y configuran 
 	\mess{app}{Register exchange}{srv}
 	\callSelf{srv}{Configuración interfaz}
 	\mess{srv}{Register exchange}{app}
-\umlsdEnd{Handshake CWSN no configurada y servicio no inicializado}{endHandshakingNotInCWSN}
+\umlsdEnd{Proceso de negociación partiendo de una CWSN no configurada y servicio no inicializado}{endHandshakingNotInCWSN}
 
 Esta situación, la más común, es cuando la petición de atadura ha arrancado el \var{Módulo cognitivo} y por tanto estamos en una situación inicial o ya hay aplicaciones montadas sobre éste pero no hay conectividad con otros nodos, en otras palabras, estamos solos en la red. En la figura~\ref{fig:endHandshakingNotInCWSN} se ilustra un ejemplo de cuando el \var{Módulo cognitivo} no estaba arrancado.
 
@@ -557,7 +557,7 @@ En esta situación configuraremos la interfaz no importando si la estuviese ya. A
 	\mess{app}{Register client}{srv}
 	\mess{app}{Register exchange}{srv}
 	\mess{srv}{Register exchange}{app}
-\umlsdEnd{Handshake CWSN configurada}{endHandshakingInCWSN}
+\umlsdEnd{Proceso de negociación con CWSN ya configurada}{endHandshakingInCWSN}
 
 Puede darse el caso que, en este punto del proceso, ya haya aplicaciones montadas sobre el servicio cognitivo y estén cooperando en una \ac{CWSN}. En este caso el \var{Módulo cognitivo} no tiene que configurar nada y se limita a ver si puede satisfacer las necesidades que le acaba de transmitir la nueva aplicación que acaba de registrar, es decir, cambiará el papel del nodo a primario si éste era secundario, un cambio en sentido contrario será ignorado. Una vez hecho esto devolverá en exclusiva a la aplicación solicitante los parámetros del servicio cognitivo (ver tabla~\ref{tab:serviceSettings}) y el estado de la interfaz. En la tabla~\ref{tab:endHandshakingInCWSNMessage} se observa la estructura del tercer mensaje que completa la configuración.
 
@@ -791,7 +791,7 @@ Este envío se realiza gracias a otra \textit{AsyncTask} que al finalizar libera 
 
 Las acciones a ejecutar por los nodos que se quedan en la red son:
 
-\figura{Vectorial/design/salidaRed-event}{width=.7\textwidth}{fig:salidaRed-event}{Flujo evento pérdida de nodo manejado disparado por evento del controlador desde los nodos que se quedan en la red}
+\figura{Vectorial/design/salidaRed-event}{width=.7\textwidth}{fig:salidaRed-event}{Flujograma tras recibir el evento desde el propio controlador de pérdida de un nodo}
 
 
 \paragraph{Nodo normal} En \wifi{} tenemos dos formas de recibir el evento de pérdida de nodo:
@@ -800,7 +800,7 @@ Las acciones a ejecutar por los nodos que se quedan en la red son:
 \item Mediante un mensaje de señalización por parte del coordinador con la información de pérdida de un nodo. En este caso procedemos a marcar en exclusiva a este nodo como inactivo e informar a las aplicaciones registradas del nuevo mapa de red.
 \end{itemize}
 
-\figura{Vectorial/design/salidaRed-signaling}{width=.7\textwidth}{fig:salidaRed-signaling}{Flujo evento pérdida de nodo disparado por señalización manejado desde un nodo normal}
+\figura{Vectorial/design/salidaRed-signaling}{width=.7\textwidth}{fig:salidaRed-signaling}{Flujograma tras recibir mediante señalización del evento de pérdida de un nodo}
 
 \paragraph{Nodo coordinador} Al recibir el paquete \textit{``ByePacket''} se generará el evento de pérdida de nodo que se entregará al \var{Gestor de Interfaces}. Marcaremos este nodo como inactivo y veremos si aún quedan nodos en la red, si la respuesta es afirmativa enviaremos un mensaje de señalización (cuyo detalle se explica en la figura~\ref{itm:lostNode}) a cada nodo restante en la red informando de la pérdida, así ellos podrán recomponer el mapa de red e informar a sus aplicaciones. Informamos también a nuestras aplicaciones registradas del evento y de la nueva lista de nodos. Si la respuesta es negativa, nos limitamos a informar a las aplicaciones registradas del evento de pérdida y del evento de salida de la red.
 
