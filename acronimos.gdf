@@ -294,13 +294,17 @@
 
 @entry{ANR, ,\emph{Android Not Responding}}
 
-@entry{SSID, ,\emph{Service set identification}}
+@entry{SSID, ,\emph{Service Set Identifier}}
+
+@entry{BSSID, ,\emph{Basic Service Set Identifier}}
+
+@entry{IBSS, ,\emph{Independent Basic Service Set}}
 
 @entry{SS7, , \emph{Signalling System no. 7}}
 
 @entry{CB, ,\emph{Connectivity Brokerage}}
 
-@entry{IT, ,\emph{Information technology}}
+@entry{IT, ,\emph{Information Technology}}
 
 @entry{ISP, ,\emph{Internet Service Provider}}
 
@@ -350,7 +354,7 @@
 
 @entry{FDD, ,\emph{Frequency-Division Duplexing}}
 
-@entry{TDD, ,\emph{Time-division duplexing}}
+@entry{TDD, ,\emph{Time-Division Duplexing}}
 
 @entry{QAM, ,\emph{Quadrature Amplitude Modulation}}
 
@@ -367,3 +371,7 @@
 @entry{RFCOMM, ,\emph{Radio-frequency communication}}
 
 @entry{PDA, ,\emph{Personal Digital Assistant}}
+
+@entry{DHCP, ,\emph{Dynamic Host Configuration Protocol}}
+
+@entry{MTU, ,\emph{Maximum Transfer Unit}}
