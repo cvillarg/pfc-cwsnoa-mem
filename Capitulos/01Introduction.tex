@@ -8,125 +8,57 @@
 
 \begin{FraseCelebre}
 \begin{Frase}
-...
+Este es un pequeño paso para la humanidad pero un gran paso para un hombre
 \end{Frase}
 \begin{Fuente}
-...
+Neil Armstrong {\footnotesize\sc con dislexia}
 \end{Fuente}
 \end{FraseCelebre}
 
 \begin{resumen}
-Esta sección tiene que introducir el entorno de radio cognitiva, su
-aparición, su estado actual, sus características, etc.
-Introducir el escenario de CWSN.
-Después habría que explicar el problema de seguridad en este tipo de
-redes --> Motivación
-Objetivos
-Metodología
-Organización de la tesis
-Publicaciones
+Este capítulo esboza una descripción general del proyecto. Se contextualiza y se expone la motivación que ha llevado a realizarlo. También se describe la estructura de la memoria.   
 
 \end{resumen}
 
 
 %-------------------------------------------------------------------
-\section{Cognitive Radio}
+\section{Contexto}
 %-------------------------------------------------------------------
-\label{sec:cognitive}
+\label{sec:background}
 
-Introducción general a lo que es Cognitive Radio, la motivación de su
-aparición, características, estado actual en el mundo, etc.
+El uso y proliferación de dispositivos electrónicos así como el avance de las comunicaciones inalámbricas sigue una tendencia exponencial en las últimas décadas, en parte, gracias al abaratamiento por las economías de escala y la constante necesidad de estar conectados~\cite{internetofthings}. La incesante demanda de comunicaciones inalámbricas, sumando al uso ineficiente del espectro~\cite{wpanIssues} han causado una saturación en las bandas del espectro radio. Alguna de las bandas más usadas son las \ac{ISM} que son bandas sin licencias, es decir, que para operar en ellas no hace falta reservar formalmente ante ningún organismo esa porción del espectro. Algunas de las tecnologías inalámbricas como \wifi{} y \bt{} operan en esta banda, al igual que la mayoría de soluciones de \ac{WSN}. Una \ac{WSN} es un conjunto de sensores distribuidos en el espacio que colaboran para lograr información integra de una situación compleja. Las aplicaciones de este tipo de redes van desde el campo de la medicina, el hogar, la seguridad, el industrial hasta el militar. 
 
-\begin{sequencediagram}
-  \newthread{t}{:Thread}
-  \newinst{a}{:A}
-  \newinst{b}{:B}
+La saturación del espectro se manifiesta en una creciente interferencia y otros efectos no deseados como el aumento del ruido. Para hacer frente a este problema Mitola~\cite{mitola1}\cite{mitola2} introdujo el concepto de \ac{CR} que integra conceptos como sensado del espectro, aprendizaje, adaptación y automantenimiento. Poniendo en juego estos conceptos podemos mejorar la \ac{QOS} de una comunicación gracias al acceso oportunista al espectro mediante la colaboración y la consciencia del entorno. Si llevamos estos conceptos al terreno de red, tenemos una \ac{CN} que mediante metas de extremo a extremo es capaz de controlar y adaptar sus parámetros para lograr comunicaciones más eficientes y fiables.
 
-  \begin{call}{t}{funcA()}{a}{return}
-    \begin{call}{a}{funcA()}{b}{return}
-    \end{call}
-  \end{call}
-\end{sequencediagram}
+Con estos ingredientes surge la \ac{CWSN}~\cite{cwsn} para resolver los problemas de autonomía, consumo y otros~\cite{challenges} de las redes de sensores. Sin embargo, no existen suficientes estudios sobre este tipo de redes por lo que el potencial de éstas es, por el momento, desconocido. Uno de los primeros marcos cognitivos fue \ac{CB}~\cite{conbrok} desarrollado en CU Berkeley junto con TU Berlin y \ac{UPM} entre otros.
 
-\begin{sequencediagram}
-  \newthread{t}{:Thread}
-
-  \begin{call}{t}{function()}{t}{return value}
-  \end{call}
-\end{sequencediagram}
-
-\begin{sequencediagram} \newthread{t1}{:Thread1} \newthread[gray]{t2}{:Thread2}
-\begin{callself}{t1}{loop}{} \end{callself}
-\prelevel\prelevel
-\begin{callself}{t2}{loop}{} \end{callself} 
-\mess{t1}{hola}{t2}
-\begin{callself}{t2}{process}{that} \end{callself} 
-\mess{t2}{hola2}{t1}
-\filldraw[fill=black!30] ($(hola2 to)+(2,-.3)$) rectangle ($(hola2 from) +(2.4,-.8)$)
-  node[midway] {YEPA};
-
-\filldraw[fill=none, draw=orange] ($(hola2 to)+(0,-1)$) rectangle ($(hola2 from) +(0.2,-1.3)$)
-  node[midway] {YEPA3};
-
-\filldraw[fill=black!40] (4,0) rectangle (5,1)
-  node[midway] {YEPA2};
-
-
-\end{sequencediagram}
-
-                                                                                      
-%-------------------------------------------------------------------
-\section{The scenario: Cognitive Wireless Sensor Networks}
-%-------------------------------------------------------------------
-\label{sec:cwsn}
-
-Introducción específica al escenario que atañe a esta tesis. Esplicar
-las características especiales de este escenario.
+En esta tesitura, el campo de aplicación se amplia con la llegada de un nuevo elemento: el \sphone{}, un dispositivo que parece reunir todas las características necesarias para ser incorporado a este tipo de redes. 
 
 %-------------------------------------------------------------------
-\section{Motivation: the security in CWSN}
+\section{Motivación}
 %-------------------------------------------------------------------
-\label{sec:securitycwsn}
+\label{sec:goals}
 
-Introducción al problema de seguridad en CWSN. Esplicar
-que es un problema más importante y crítico que en las redes WSN.
+La inclusión de los \sphone{s} en redes \ac{CWSN} tiene dos grandes motivaciones: por un lado el gran crecimiento experimentado en el número de estos dispositivos alcanzando la cifra de 1900 millones en 2013~\cite{ericsson2014report} y por otro lado las necesidades de coordinación que tienen este tipo de redes.
+
+La penetración de las líneas móviles es ya del 94\% y se prevé que a finales de la década haya 5600 millones de \sphone{s}. La posibilidad de que todo el mundo lleve un \sphone{} en su bolsillo permite recrear redes de sensores en cualquier escenario incluso aquellos dinámicos en el que los nodos que lo formen vayan cambiando según avance el tiempo, transmitiendo los conocimientos adquiridos a nuevos nodos que formen la red en ese momento.
+
+La estructura de una red \ac{WSN} suele ser centralizada, donde los nodos finales envían a un nodo que toma el papel de coordinador, la información obtenida para que éste la procese y la envíe si es necesario fuera de la red. Esto permite que los nodos finales sean lo más livianos posible respecto a potencia de computación y precio, al diseñarse específicamente para llevar a cabo su tarea y no otra. Además una red \ac{CWSN} incrementa la complejidad que de por sí tienen las \ac{WSN}, debido a que la capa de control es más extensa y variada. Es necesario un mayor intercambio de información junto con nuevos protocolos y una mayor reserva de recursos en el nodo.
+
+Un \sphone{} reúne las características que necesita un nodo cognitivo pues mantiene un sistema operativo completo que le permite codificar cualquier tipo de algoritmo, la potencia computacional y memoria no son un factor limitante y cuenta con varias interfaces de comunicación para acceder con diferentes tecnologías a bandas del espectro. El objetivo del autor en este proyecto será la implementación de una arquitectura cognitiva que permita transformar el dispositivo en un nodo cognitivo para que pueda colaborar en una \ac{CWSN}.
 
 %-------------------------------------------------------------------
-\section{Objectives}
+\section{Estructura de la memoria}
 %-------------------------------------------------------------------
-\label{sec:objetives}
+\label{sec:outline}
 
-Definir los objetivos de la tesis
+%En el capítulo 2 presenta el estado del arte que define entre otros los términos \ac{CR}, \ac{CN}, \ac{WSN} y \ac{CWSN}. Esboza el presente y evolución de las comunicaciones móviles, así como las diferentes plataformas móviles. En el capítulo 3, se analizan las características necesarias para implementar una arquitectura cognitiva sobre \android{}, se realiza un estudio sobre las diferentes interfaces de comunicación que sean de interés y se presenta un marco cognitivo que guíe el desarrollo. En el capítulo 4, se presenta el diseño de la arquitectura. El capítulo 5 cubre la implementación, se eligen los componentes y su adecuada organización para seguir las directrices de diseño. En el capítulo 6 se discuten las conclusiones y objetivos logrados. Por último el capítulo 7 describe las líneas futuras de actuación.  
+
+En el capítulo dos presenta el estado del arte que define entre otros los términos \ac{CR}, \ac{CN}, \ac{WSN} y \ac{CWSN}. Esboza el presente y evolución de las comunicaciones móviles, así como las diferentes plataformas móviles. En el capítulo tres, se analizan las características necesarias para implementar una arquitectura cognitiva sobre \android{}, se realiza un estudio sobre las diferentes interfaces de comunicación que sean de interés y se presenta un marco cognitivo que guíe el desarrollo. En el capítulo cuatro, se presenta el diseño de la arquitectura. El capítulo cinco cubre la implementación, se eligen los componentes y su adecuada organización para seguir las directrices de diseño. En el capítulo seis se discuten las conclusiones y objetivos logrados. Por último el capítulo siete describe las líneas futuras de actuación.  
 
 
 %-------------------------------------------------------------------
-\section{Methodology}
-%-------------------------------------------------------------------
-\label{sec:methodogy}
-
-Definir la metodología seguida en la tesis
-
-
-%-------------------------------------------------------------------
-\section{Organization}
-%-------------------------------------------------------------------
-\label{sec:organization}
-
-Organización del documento
-
-
-%-------------------------------------------------------------------
-\section{Publications}
-%-------------------------------------------------------------------
-\label{sec:publications}
-
-Las publicaciones que he conseguido en el transcurso de la tesis
-
-
-
-
-%-------------------------------------------------------------------
-%\section*{\NotasBibliograficas}
+%\section*{\NotasBibliograficas} 
 %-------------------------------------------------------------------
 %\TocNotasBibliograficas
 
