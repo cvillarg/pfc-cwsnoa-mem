@@ -1,0 +1,75 @@
+%---------------------------------------------------------------------
+%
+%                          Capítulo 6
+%
+%---------------------------------------------------------------------
+
+\chapter{Discusión y conclusiones}
+
+\begin{FraseCelebre}
+\begin{Frase}
+Siempre en positivo
+\end{Frase}
+\begin{Fuente}
+María Salud Andrés Donoso
+\end{Fuente}
+\end{FraseCelebre}
+
+\begin{resumen}
+Este capítulo cubre una revisión de los aspectos más importantes del proyecto mencionando sus puntos fuertes y débiles. Qué objetivos se han cumplido y cuáles no, explicando su porqué. También se valorarán las posibilidades y la razón por la cual es deseable tener este tipo de características en los \sphone{s}.
+\end{resumen}
+
+
+%-------------------------------------------------------------------
+%\section{igual sobra...}
+%-------------------------------------------------------------------
+%\label{sec:cognitive}
+
+Llega el momento de recapitular y revisar cuáles objetivos se han cumplido, así como discernir sobre aspectos que sean de interés. La principal conclusión a la que llegamos tras la realización de este proyecto, es la incapacidad de realizar una arquitectura completa si se confía tan sólo en la implementación actual de los niveles inferiores de red. El modelo actual de protocolos y red, enmascaran información a la capa de aplicación. %, donde hemos desarrollado nuestra arquitectura.
+Sin embargo, %para implementar características cognitivas 
+necesitamos controlar estos niveles inferiores de una manera más sencilla y que éstos a su vez, nos brinden información sobre los problemas encontrados en la comunicación para poder optimizarla desde la capa cognitiva o núcleo de nuestra arquitectura que se encuentra en el nivel de aplicación. Lo mismo ocurre con los protocolos de encaminamiento, éstos deben estar supeditados al proceso cognitivo en vez de centrarse en elaborar rutas atendiendo sólo a parámetros relacionados con la minimización del número de saltos o retardo. Para la elaboración de una arquitectura cognitiva necesitamos una red cuya inteligencia esté en los niveles superiores y que haga accesible la información que observe en vez de enmascararla.%\\
+
+Además las características actuales de red están centradas en proporcionar conexión entre usuarios y servidores plenamente expuestos que interconectan usuarios a través de ellos. Sólo se permiten conexiones \ac{D2D} para ciertos servicios muy delimitados (como lo es el intercambio de fotos) y restringidos a un ámbito geográfico local. Esta tendencia irá cambiando con el tiempo a medida que se implante el concepto \ac{IOT}~\cite{internetofthings}, permitiendo conexiones \ac{P2P} entre dispositivos de una forma más sencilla al estar integrada en la plataforma y no tener que desarrollar \textit{software} que cambie este comportamiento. Esto transformará la función de estos servidores dejando de reenviar la información que se les proporcione, a ser un punto de encuentro para únicamente poder establecer estas conexiones.\\
+
+
+Una vez vistos los numerosos y prometedores estudios citados en la sección~\ref{sec:cognitiveNetworks}, es legitimo que veamos a la cognición como una firme candidata para solucionar el problema del mal aprovechamiento del espectro, más si cabe cuando las modulaciones están cada vez más cerca del límite impuesto por el teorema de Shannon-Hartley~\cite{shannonLimit}. Además los estudios también propuestos en la sección~\ref{sec:CRsmartphone}, revelan que los procesos cognitivos son cada vez más frecuentes en el entorno de los \sphone{s}. No obstante, estamos en un entorno muy heterogéneo para llevar a cabo técnicas de \ac{CN} de una manera sencilla y por tanto, de momento, no se está enfocando el diseño de las nuevas redes bajo este foco. La cognición permite incrementar el caudal útil de la red lo confluye en un despliegue más barato debido a que ésta se usa más eficientemente, se requieren menos elementos de red y un menor coste de mantenimiento.\\
+
+Los \sphone{s} tal y como están construidos en la actualidad, no pueden aprovechar plenamente las características que ofrece la \ac{CR}. Por ejemplo, el concepto de usuario primario y secundario utilizado en técnicas de acceso oportunista al espectro no aplica debido a que un \sphone{} opera exclusivamente en dos tipos de bandas: bandas con licencia, donde ellos son los usuarios primarios, utilizadas para la transmisión de voz y datos a través de la red móvil, y bandas sin licencia, empleadas para las demás necesidades de comunicación principalmente con las tecnologías \wifi{} y \bt{}.
+
+En este tipo de bandas se puede realizar una exploración para elegir la tecnología que convenga con la intención de colocar la comunicación en la zona de la banda que mejores características nos ofrezca. Sin embargo en las bandas con licencia, esta elección no es autónoma al basarse principalmente en las decisiones que hagan los elementos de red de la operadora, basada en la necesidad dinámica de recursos.\\% (típicamente los nodos B).\\
+
+%Además las características actuales de red están centradas en proporcionar conexión entre usuarios y servidores plenamente expuestos que interconectan usuarios a través de ellos. Sólo se permiten conexiones \ac{D2D} para ciertos servicios muy delimitados (como lo es el intercambio de fotos) y restringidos a un ámbito geográfico local. Esta tendencia irá cambiando con el tiempo a medida que se implante el concepto \ac{IOT}~\cite{internetofthings}, permitiendo conexiones \ac{P2P} entre dispositivos de una forma más sencilla al estar integrada en la plataforma y no tener que desarrollar \textit{software} que cambie este comportamiento. Esto transformará la función de estos servidores dejando de reenviar la información que se les proporcione, a ser un punto de encuentro para únicamente poder establecer estas conexiones.\\
+
+La plataforma \android{} cumple todos los requisitos para poder implementar procesos cognitivos en ella. Sin embargo, el conocimiento necesario para realizar modificaciones no ofrecidas por el sistema como lo es habilitar el modo de red \adhoc{} en cada dispositivo o implementar mecanismos para recoger y medir tanto las estadísticas de red como el espectro radioeléctrico, puede ser arbitrariamente alto. Esto supone por un lado una barrera para alcanzar nuestros objetivos, y por otro una disminución del número de usuarios potenciales de nuestra aplicación.  Ejemplo de ello es la incorporación del cambio de tipo red utilizada en la interfaz de datos móviles (ver sección~\ref{sec:switchMobileNetwork-analysis}) que restringe la instalación de al menos parte de la aplicación en un segmento de dispositivos importante y en cualquier caso no poder usar los canales convencionales como el instalador de paquetes. Esto limita la facilidad y hace inviable la aplicación de ciertos escenarios donde recrear una \ac{CWSN}. 
+
+Así mismo, soportar varias versiones de la plataforma \android{} implica, entre otros, que no podamos disfrutar de las nuevas características visuales o componentes en los dispositivos que las posean, debido a la compatibilidad hacia atrás que debemos mantener o en caso de usarlos, tener manejar ambos comportamientos lo que deshabilita una única experiencia de usuario. La diversidad de la plataforma implica muchas cosas buenas como las modificaciones del sistema o la documentación existente, pero nos obliga a tener que desarrollar soluciones particulares a problemas comunes.\\ 
+
+En esta pequeña discusión hemos visto la viabilidad de implementar una arquitectura cognitiva aunque no con todas las características que desearíamos. No obstante, la consecución del objetivo nos abre un campo nuevo aplicación al extender los conceptos cognitivos más propios de otras áreas al área de los \sphone{s}. 
+%-----------------------------------------------------
+%\section*{\NotasBibliograficas}
+%-------------------------------------------------------------------
+%\TocNotasBibliograficas
+
+%Citamos algo para que aparezca en la biblo iografía\ldots
+%\citep{ldesc2e}
+
+%\medskip
+
+%Y también ponemos el acrónimo \ac{CVS} para que no cruja.
+
+%Ten en cuenta que si no quieres acrónimos (o no quieres que te falle la compilación en ``release'' mientras no tengas ninguno) basta con que no definas la constante \verb+\acronimosEnRelease+ (en \texttt{config.tex}).
+
+
+%-------------------------------------------------------------------
+%\section*{\ProximoCapitulo}
+%-------------------------------------------------------------------
+%\TocProximoCapitulo
+
+
+% Variable local para emacs, para  que encuentre el fichero maestro de
+% compilación y funcionen mejor algunas teclas rápidas de AucTeX
+%%%
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "../Tesis.tex"
+%%% End:

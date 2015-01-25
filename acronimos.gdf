@@ -375,3 +375,5 @@
 @entry{DHCP, ,\emph{Dynamic Host Configuration Protocol}}
 
 @entry{MTU, ,\emph{Maximum Transfer Unit}}
+
+@entry{IOT, IoT,\emph{Internet of Things}}
