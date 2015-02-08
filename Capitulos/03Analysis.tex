@@ -5,7 +5,7 @@
 %---------------------------------------------------------------------
 
 \chapter{Análisis}
-
+\label{chap:analysis}
 \begin{FraseCelebre}
 \begin{Frase}
 Sólo sé que no se nada y, al saber que no sé nada, algo sé; porque sé que no sé nada
@@ -202,7 +202,7 @@ Es una tecnología~\cite{wifiD} que permite tener enlaces 802.11 entre dispositiv
 
 En~\cite{wifiDvsAdhoc} se analizan los ventajas e inconvenientes de este tipo de red frente a enlaces tipo \adhoc{}. Entre las desventajas están el no ser un sistema escalable que no reacciona muy bien frente a cambios en la tipología, la complejidad de sus protocolos y el hecho de tener que intercambiar mucha información antes del envío de tramas de datos. Su principal ventaja es la seguridad y el cifrado que forman parte del estándar y el descubrimiento de servicios.\\
 
-\android{} introdujo esta característica en su versión 4.0, aunque no todos los dispositivos los soportan, ya que como hemos dicho se necesita de un \textit{software} especial que no todos las tarjetas de red son capaces de incorporar. Lo que incita a pensar la imposibilidad de usar Wext y la adopción de \wifiD{} están relacionados. Otro indicio es la imposibilidad de manejar esta característica aunque subamos de versión un dispositivo del que no hay un desarrollo por parte del fabricante como ocurre en el modelo \bsq{HTC Desire} con CyanogenMod, sistema que integra el \textit{sofware} adecuado. \wifiD{} no presenta, por el momento, un buen rendimiento con más de 4 dispositivos y existen fallos en su implementación en algunos dispositivos como el \bsq{Nexus 7}~\cite{andWifiDBug}. Con respecto al requisito de la \ac{CR} de ser transparente al usuario, el autor no ha sido capaz de desplegar este tipo de redes sin la intervención del usuario. Mediante el uso de \textit{reflection} se logra acceder al método \textit{wifiP2Penable()} de la clase \class[android.net.wifi.p2p]{WifiP2pManager} pero este método termina con la apertura de un dialogo de confirmación al usuario. Este problema hace incompatible la adopción de esta interfaz de comunicación en nuestra arquitectura cognitiva. 
+\android{} introdujo esta característica en su versión 4.0, aunque no todos los dispositivos los soportan, ya que como hemos dicho se necesita de un \textit{software} especial que no todos las tarjetas de red son capaces de incorporar. Lo que incita a pensar la imposibilidad de usar Wext y la adopción de \wifiD{} están relacionados. Otro indicio es la imposibilidad de manejar esta característica aunque subamos de versión un dispositivo del que no hay un desarrollo por parte del fabricante como ocurre en el modelo \bsq{HTC Desire} con CyanogenMod, sistema que integra el \textit{software} adecuado. \wifiD{} no presenta, por el momento, un buen rendimiento con más de 4 dispositivos y existen fallos en su implementación en algunos dispositivos como el \bsq{Nexus 7}~\cite{andWifiDBug}. Con respecto al requisito de la \ac{CR} de ser transparente al usuario, el autor no ha sido capaz de desplegar este tipo de redes sin la intervención del usuario. Mediante el uso de \textit{reflection} se logra acceder al método \textit{wifiP2Penable()} de la clase \class[android.net.wifi.p2p]{WifiP2pManager} pero este método termina con la apertura de un dialogo de confirmación al usuario. Este problema hace incompatible la adopción de esta interfaz de comunicación en nuestra arquitectura cognitiva. 
 
 \subsection{Viabilidad: MTU}
 \label{sec:mtu-analysis}
@@ -327,7 +327,7 @@ Por completar,
 \begin{itemize}
 	\item Sensado y adaptación al medio,
 	\item aprendizaje y colaboración -> almacenamiento y computo alto. Desarrollo software hablar del sdk libre, del NDK para integrar cosas de C, de la bbdd
-	\item otras caracteristicas cognitivas
+	\item otras características cognitivas
 	\item pocos trabajos y pocos framework - necesidad de usar uno: pequeño resumen del CB
 \end{itemize}
 

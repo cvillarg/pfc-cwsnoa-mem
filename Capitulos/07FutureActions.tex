@@ -1,11 +1,11 @@
 %---------------------------------------------------------------------
 %
-%                          Capítulo 6
+%                          Capítulo 7
 %
 %---------------------------------------------------------------------
 
 \chapter{Líneas futuras}
-
+\label{chap:nextDevelopments}
 \begin{FraseCelebre}
 \begin{Frase}
 ``Esto no cesa...''
@@ -16,31 +16,35 @@ Sonia León Martín
 \end{FraseCelebre}
 
 \begin{resumen}
-Este capítulo, el preferido del autor, está construido desde la ilusión, esa cosa que tenemos de niños y que la vida nos va quitando a medida que nos contamina con argumentos del tipo qué deberíamos hacer. En este capítulo no hay límites, no hay imposiciones, hay cambios, eso que nace de la voluntad y la ilusión de este \bsq{cabezonino} que intenta guiar a este \bsq{cachorrino}, un proyecto que, por qué no decirlo, tiene fallos, no está todo lo completo que se desearía, pero\ldots que hay que quererlo igual. Aún quiero seguir intentándolo, seguir aprendiendo fallando, seguir disfrutándote, esto no se queda aquí..  
+%Este capítulo, el preferido del autor, está construido desde la ilusión, esa cosa que tenemos de niños y que la vida nos va quitando a medida que nos contamina con argumentos del tipo qué deberíamos hacer. En este capítulo no hay límites, no hay imposiciones, hay cambios, eso que nace de la voluntad y la ilusión de este \bsq{cabezonino} que intenta guiar a este \bsq{cachorrino}, un proyecto que, por qué no decirlo, tiene fallos, no está todo lo completo que se desearía, pero\ldots que hay que quererlo igual. Aún quiero seguir intentándolo, seguir aprendiendo fallando, seguir disfrutándote, esto no se queda aquí..  
+Este capítulo, el preferido del autor, no tiene límites ni imposiciones, sólo cambios sobre los objetivos del proyecto acordados junto con otros nuevos que ayudan a completarlo, con ello se facilita la proyección hacia el futuro de este trabajo.
 \end{resumen}
-
 
 %-------------------------------------------------------------------
 %\section{igual sobra...}
 %-------------------------------------------------------------------
 %\label{sec:cognitive}
-Aunque a la mente del autor vienen muchas innovaciones y posibles cambios, se intentará modelar aquellas líneas futuras que sean más inmediatas y ventajosas. No obstante, la hoja de ruta no está exenta de cambios que pueden ser provocados, entre otros, por la consecución de estos primeros pasos:\\
+Aunque a la mente del autor vienen muchas innovaciones y posibles cambios, se intentará modelar aquellas líneas futuras que sean más inmediatas y ventajosas. No obstante, la hoja de ruta no está exenta de cambios que pueden ser provocados, entre otros, por la consecución de estos primeros pasos, no importando el orden en el que están presentados:
 
-\paragraph{Solucionar el fallo conocido} Existe un fallo consistente en que el \textit{HashMap} utilizado para almacenar las hebras de conexión en \bt{} pierde el contenido al añadir un valor. Este fallo ocurre siempre que se inicializa este valor en la primera apertura de la aplicación (de la que podemos partir desde un borrado manual de los datos de usuario), el fallo se soluciona arrancando por segunda vez la aplicación. Se intentará investigar por qué ocurre este tipo de fallo a este componente y ver si es posible aplicar otro flujo para solucionarlos.
+\comp{a implementación supongo.. \\
+\paragraph{Solucionar el fallo conocido} No se trata de una línea a seguir en sentido estricto, pero si es deseable partir de una situación sin fallos conocidos. En este proyecto no tenemos esta suerte, nuestro fallo consiste en que el \textit{HashMap} utilizado para almacenar las hebras de conexión en \bt{} pierde el contenido al añadir un valor. Este fallo ocurre siempre que se inicializa este valor en la primera apertura de la aplicación (de la que podemos partir desde un borrado manual de los datos de usuario), el fallo se soluciona arrancando por segunda vez la aplicación. Se intentará investigar por qué ocurre este tipo de fallo a este componente y ver si es posible aplicar otro flujo para solucionarlos.
+} %----
 
 \paragraph{Figura del subcoordinador temporal en \bt{}} Para garantizar la escalabilidad de la \ac{CWSN} es necesario desarrollar esta figura que permita hacer de puente entre \textit{piconets}. Si permitimos un sólo salto, es decir, que un nodo como máximo esté a distancia dos del coordinador general, el número de nodos en la red se amplia de 8 a 50. Permitiendo más saltos podremos alcanzar cualquier número arbitrario de nodos. Además la estructura del \texttt{Repositorio} permite albergar, sin hacer ningún cambio, la información sobre cómo llegar a cualquier nodo no importando el número de saltos. Se materializa aquí un ejemplo de arquitectura flexible y con vistas a futuro al ser diseñada bajo módulos que están preparados para albergar nueva funcionalidad.   
 
 \paragraph{Mejoras en la adaptabilidad} Para independizar la \ac{CWSN} de agentes externos y garantizar en mayor medida la adaptabilidad de la red, habría que desarrollar varias líneas de investigación. En primer lugar una capa intermedia que controlase todas las peculiaridades posibles de cada dispositivo para permitir el despliegue de redes \adhoc{}. En muchos casos esto implicaría modificar partes del sistema operativo para controlar el \textit{driver} de \wifi{} específico. En segundo lugar, una monitorización en tiempo real del parámetro \ac{RSSI} del enlace \bt{} para evitar su pérdida y poder actuar de manera predictiva. En tercer lugar, un estudio completo de los protocolos usados en la red móvil para poder controlar las asignaciones que nos hace la operadora. Junto con esto necesitaríamos reforzar el módulo de \texttt{Sensado} y recoger estadísticas sobre la tasa paquetes retransmitidos, los tiempos de envío y recepción y otros parámetros útiles de cara al aprendizaje. 
+ 
+\paragraph{Extender la arquitectura} Añadir nuevos módulos como el \texttt{Gestor de Recursos} que permitiría añadir información como la batería del dispositivo, la memoria disponible u otros recursos útiles desde el punto de vista de las políticas cognitivas, las cuales podrían ser más extensas y complejas. Por otro lado es necesario mejorar el tratamiento de los datos de aplicación. Aunque la arquitectura no restringe su tamaño o su tipo, existe una restricción en el punto de entrada (\var{Gestor del Sensor}) y no se realiza segmentación, esto permitiría realizar cambios de contexto en mitad de transmisiones al ser reanuadas justo en el punto en el que se quedaron.
 
-\paragraph{Extender la arquitectura} Añadir nuevos módulos como el \texttt{Gestor de Recursos} que permitiría añadir información como la batería del dispositivo, la memoria disponible u otros recursos útiles desde el punto de vista de las políticas cognitivas, las cuales podrían ser más extensas y complejas.
-
-\paragraph{Planes de contingencia} Para actuar en caso de pérdida de nodos u otras eventualidades, así como la entrada automática a la red sin conocer nada de ésta, necesitamos una serie de actuaciones que permitiesen guiar a los nodos en la consecución de estos objetivos. La comunicación mediante \ac{SMS} junto con una capa que añada la fiabilidad de la que carece este tipo de envío, podría ser integrada en estos planes. 
+\paragraph{Mejoras en la gestión y descubrimiento de nodos} Para actuar en caso de pérdida de nodos u otras eventualidades, así como la entrada automática a la red sin conocer nada de ésta, necesitamos una serie de actuaciones que permitiesen guiar a los nodos en la consecución de estos objetivos. La comunicación mediante \ac{SMS} junto con una capa que añada la fiabilidad de la que carece este tipo de envío, podría ser integrada en estos planes. 
 
 \paragraph{No limitar el ámbito geográfico de una CWSN} Al añadir la interfaz móvil a una \ac{CWSN} permite extender de forma muy sencilla el ámbito geográfico de la red. Se nos brinda la posibilidad de tener varias \ac{CWSN} (entidad \texttt{UniNet} localizada en un lugar concreto), que estén interesadas en colaborar formando todas ellas una entidad \texttt{CompNet}~\cite{conbrok}. Por los problemas acontecidos en la sección~\ref{sec:mobile-analysis}, se hace necesario un pequeño servidor externo y expuesto en \textit{Internet}, que reenvíe esta información entre los nodos coordinadores de las diferentes redes que estemos comunicando.
 
 \paragraph{Diferenciación de usuarios} La aplicación permite clasificar, dentro de la propia red, a los usuarios entre primarios y secundarios, pero esta información no es tratada por el momento. Esta característica permitiría dar un trato diferente a usuarios diferentes habilitando la posibilidad de tener subredes que estén comunicadas en ciertos momentos pero que se adapten en sitios diferentes de tal forma que en conjunto la capacidad de la red mejore.
 
 \paragraph{Migrar la arquitectura a otras plataformas móviles} Según vimos en la sección~\ref{subsec:tizen}, Tizen parece ser la mejor opción al poseer casi todas las características de \android{} más el soporte de \adhoc{} de forma nativa, lo que nos permitiría realizar políticas cognitivas soportadas en todos los dispositivos de la plataforma. 
+
+\paragraph{Ampliación del ámbito de operación} Para que pueda colaborar con nodos que se usan de forma tradicional en \ac{CWSN}, actuándo como nodo coordinador, pasarela de información, monitorización o cualquier otra función costosa, permitiendo unos requisitos económicos en el resto de nodos. Addición de nuevo \textit{hardware} de comunicación mediante la conexión al puerto \ac{USB}~\cite{and-usb-host} del \sphone{}.
 
 \paragraph{Aplicar la arquitectura a la voz} Adaptar la arquitectura para que pueda recibir flujos de información continuos y sensibles al retardo como lo es la voz. Se tendrían que estudiar técnicas de traspaso suave de esta comunicación para que sea lo más transparente al usuario y la interconexión con otros servicios del \sphone{}.
 
